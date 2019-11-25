@@ -20,19 +20,17 @@ import org.jtwig.web.servlet.JtwigRenderer;
 
 import static org.javamyadmin.php.Php.*;
 
+/**
+ * 
+ * @see https://github.com/phpmyadmin/phpmyadmin/blob/master/index.php and
+ * https://github.com/phpmyadmin/phpmyadmin/blob/master/libraries/routes.php for
+ * original dispatcher
+ *
+ */
 @WebServlet(urlPatterns = "/", name = "HomeController")
-public class HomeController extends HttpServlet {
+public class HomeController extends AbstractController {
 
 	private static final long serialVersionUID = 2766674644118792082L;
-	private final JtwigRenderer renderer = JtwigFactory.getRenderer();
-
-	/**
-	 * Poor people's session beans injection
-	 * 
-	 * @param req
-	 */
-	private void initSession(HttpServletRequest req) {
-	}
 
 	/**
 	 * GET handler
@@ -45,7 +43,15 @@ public class HomeController extends HttpServlet {
 			return;
 		}
 
-		initSession(request);
+		// @see https://docs.phpmyadmin.net/en/latest/faq.html#faq1-34
+		if (!empty(request.getParameter("db"))) {
+			if (!empty(request.getParameter("table"))) {
+				response.sendRedirect("/sql");
+			} else {
+				response.sendRedirect("/database/structure?db=" + request.getParameter("db"));
+			}
+			return;
+		}
 
 		System.out.println("HERE GLOBALS.server=" + GLOBALS.server);
 		if (GLOBALS.server > 0) {
@@ -110,14 +116,5 @@ public class HomeController extends HttpServlet {
 		renderer.dispatcherFor("/WEB-INF/templates/home/index.twig") //
 				.with(model) //
 				.render(request, response);
-	}
-
-	/**
-	 * POST handler
-	 */
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		this.doGet(request, response);
 	}
 }
