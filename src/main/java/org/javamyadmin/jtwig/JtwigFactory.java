@@ -90,7 +90,10 @@ public class JtwigFactory {
 				jtwigValue = renderNodeService.render(renderRequest, node.getContent());
 			}
 			System.out.println("Here: " + jtwigValue);
-			return new StringRenderable(__(jtwigValue.toString()));
+			
+			// TODO bundles stuff is not the right choice
+			
+			return new StringRenderable(jtwigValue.toString());
 		}
 	}
 
