@@ -41,7 +41,11 @@ helLo WoRlD
 
 </p>
 
-<p> Translations:  {% trans 'My English String' %} </p>
+<p> Translations:  {% trans 'My.English.String' %} </p>
+
+<p> If construct:  {{ true ? 'write me' }} </p>
+
+<p> Problems in precedence:  {{ ('goofy' is empty) ? 'goofy' : 'empty' }} </p>
 
 </body>
 </html>
