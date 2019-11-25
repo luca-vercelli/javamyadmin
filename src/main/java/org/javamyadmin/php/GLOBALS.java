@@ -1,5 +1,9 @@
 package org.javamyadmin.php;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * Mimic PHP GLOBALS
  * 
@@ -9,14 +13,24 @@ package org.javamyadmin.php;
 public class GLOBALS {
 
 	public static final String PMA_VERSION = "0.1";
-	public static Integer server;
+	public static Integer server = 0;
 	public static String ROOT_PATH;
 	// public static Theme PMA_Theme;
 	public static String pmaThemePath;
 	public static String pmaThemeImage;
-	// public static Config PMA_Config = new Config(ROOT_PATH); /// ?!?
+	// public static Config PMA_Config = ?!?
 	public static boolean pma_config_loading = false;
 	public static String message;
-	// public static Config cfg = new Config(null); /// ?!?
+	public static Properties cfg;
 	public static String lang;
+
+	static {
+		try {
+			cfg = new Properties();
+			InputStream is = cfg.getClass().getClassLoader().getResourceAsStream("globals.properties");
+			cfg.load(is);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
