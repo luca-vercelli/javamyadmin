@@ -1,0 +1,47 @@
+<html>
+<body>
+<h2>{{ greet }}</h2>
+Hello world.<br/>
+{{ greet | raw }}<br/>
+
+{%  if bekind %}
+<p> <code>If</code> construct: 0, null, undefined, "", [] are false; 1, "goofy", [1] are true.</p>
+{%  endif %}
+
+<p><code>For</code> construct:
+<ul>
+{% for item in forlist %}<li>{{ item }}</li>{% endfor %}
+</ul>
+Warning: [] and null have 0 items, while undefined has 1 !?!
+</p>
+
+<p> Custom function example: {{ get_image('s_host') }}</p>
+
+<p> Variable setting: {%  set myvar = 1 %} {{ myvar }} </p>
+
+<p>
+Filters vs pipes: <br/>
+
+{{ 'HelLo WoRlD' | lower }} <br />
+
+{{ 'HelLo WoRlD' | lower | capitalize }} <br/>
+
+
+{% filter lower | capitalize %}
+helLo WoRlD
+{% endfilter %}
+ (Nel filter ci deve essere un baco !?!)
+ 
+</p>
+
+<p>Verbatim:
+{% verbatim %}
+{{ test }}
+{% endverbatim %}
+
+</p>
+
+<p> Translations:  {% trans 'My English String' %} </p>
+
+</body>
+</html>
