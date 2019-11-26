@@ -1,6 +1,8 @@
 
 package org.javamyadmin.php;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 /**
@@ -34,7 +36,11 @@ public class Php {
 	 * @return
 	 */
 	public static String htmlspecialchars(String s) {
-		return s; // TODO
+		try {
+			return URLEncoder.encode(s, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalArgumentException("Not an UTF-8 string", e);
+		}
 	}
 
 	/**
@@ -55,9 +61,9 @@ public class Php {
 	 */
 	public static String _ngettext(String sing, String plur, int num) {
 		if (num <= 1) {
-			return gettext(sing);
+			return Gettext.__(sing);
 		} else {
-			return gettext(plur);
+			return Gettext.__(plur);
 		}
 	}
 
@@ -68,7 +74,7 @@ public class Php {
 	 * @return
 	 */
 	public static String gettext(String s) {
-		return s; // TODO
+		return Gettext.__(s);
 	}
 
 	/**
@@ -77,8 +83,8 @@ public class Php {
 	 * @param s
 	 * @return
 	 */
-	public static String __(String msg) {
-		return gettext(msg);
+	public static String __(String s) {
+		return Gettext.__(s);
 	}
 
 	/**
