@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Message;
-import org.javamyadmin.helpers.Response;
-import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -36,7 +34,7 @@ public class HomeController extends AbstractController {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		if (Response.isAjax(request) && !empty(request.getParameter("access_time"))) {
+		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
 			return;
 		}
 

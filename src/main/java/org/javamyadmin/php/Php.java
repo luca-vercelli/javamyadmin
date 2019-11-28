@@ -2,8 +2,15 @@
 package org.javamyadmin.php;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.gson.Gson;
 
 /**
  * Mimic some PHP stuff
@@ -44,13 +51,14 @@ public class Php {
 	}
 
 	/**
-	 * true if not null and not blank
+	 * true if not null not blank, and not empty
 	 * 
 	 * @param s
 	 * @return
 	 */
-	public static boolean empty(String s) {
-		return s == null || s.isEmpty();
+	public static boolean empty(Object s) {
+		return s == null || "".equals(s) || (s instanceof List && ((List<?>) s).isEmpty())
+				|| (s instanceof Map && ((Map<?, ?>) s).isEmpty());
 	}
 
 	/**
@@ -113,5 +121,66 @@ public class Php {
 			s.append(key).append("=").append(params.get(key).toString());
 		}
 		return s.toString();
+	}
+
+	/**
+	 * MD5 String encodig
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String md5(String s) {
+		MessageDigest md;
+		try {
+			md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("MD5 algorithm not available");
+		}
+		byte[] messageDigest = md.digest(s.getBytes());
+		BigInteger number = new BigInteger(1, messageDigest);
+		return number.toString(16);
+	}
+
+	/**
+	 * Return JSON encoded string.
+	 * 
+	 * @param obj
+	 */
+	public static String json_encode(Object obj) {
+
+		// Using Google API
+
+		Gson gson = new Gson();
+		return gson.toJson(obj);
+	}
+
+	/**
+	 * Add to dest all entries coming from src
+	 * 
+	 * @param dest
+	 * @param src
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> array_replace_recursive(Map<String, Object> dest, Map<String, Object> src) {
+		for (Entry<String, Object> entry : src.entrySet()) {
+			if (!dest.containsKey(entry.getKey())) {
+				dest.put(entry.getKey(), entry.getValue());
+				continue;
+			}
+			Object orig = dest.get(entry.getKey());
+
+			// FIXME What about Lists / Collections !?!
+
+			if (orig instanceof Map) {
+				if (entry.getValue() instanceof Map) {
+					Map<String, Object> m1 = (Map<String, Object>) orig;
+					Map<String, Object> m2 = (Map<String, Object>) entry.getValue();
+					array_replace_recursive(m1, m2);
+				} else {
+					dest.put(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+		return dest;
 	}
 }

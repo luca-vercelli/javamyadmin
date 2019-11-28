@@ -5,6 +5,26 @@ Goal of the project: create a port of [PhpMyAdmin](https://github.com/phpmyadmin
 
 We want to use as much resources as possible from PhpMyAdmin (js, twig, images, ...).
 
-We want also some "good" Java code, so automatic translation of code is not what we want.
-
 Twig files are parsed with [JTwig](https://github.com/jtwig/jtwig-core), unluckily that project seems abandoned.
+
+
+# Translating PHP to Java
+
+Trivial conversions:
+
+|   ->     |    .     |
+|   ::     |    .     |
+|   '      |    "     |
+|   .=     |    +=    |
+| bool     | boolean  |
+| string   | String   |
+|  array   |  Map     |
+| elseif   | else if  |
+|  const   |  final   |
+| self.    |          |
+| $this    |   this   |
+| sprintf  | String.format |
+
+More PHP functions have been defined in Php class.
+
+Please notice that a "Singleton" or a "global variable" in PHP are not global at all in Java.

@@ -4,35 +4,43 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.javamyadmin.helpers.Config;
+import org.javamyadmin.helpers.Theme;
+
 /**
- * Mimic PHP GLOBALS
+ * Mimic PHP GLOBALS. Intended to be stored in Request (in JavaEE this would be
+ * a request-scoped bean).
  * 
  * @author lucav
  *
  */
 public class GLOBALS {
 
-	public static final String PMA_VERSION = "0.1";
-	public static Integer server = 0;
-	public static String ROOT_PATH;
-	// public static Theme PMA_Theme;
-	public static String pmaThemePath;
-	public static String pmaThemeImage;
-	// public static Config PMA_Config = ?!?
-	public static boolean pma_config_loading = false;
-	public static String message;
-	public static Properties cfg;
-	public static String lang;
+	public final String PMA_VERSION = "0.1";
+	public Integer server = 0;
+	public String ROOT_PATH;
+	public Theme PMA_Theme;
+	public String pmaThemePath;
+	public String pmaThemeImage;
+	public Config PMA_Config = new Config();
+	public boolean pma_config_loading = false;
+	public String message;
+	public Properties cfg = new Properties();
+	public String lang;
+	public String db;
+	public String table;
+	public Object dbi;
+	public String sql_query;
+	public String error_message;
 
-	static {
+	public GLOBALS() {
 		try {
-			cfg = new Properties();
 			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/global.properties");
 			cfg.load(is);
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (NullPointerException e) {
 			throw new IllegalStateException("File global.properties not found!", e);
+		} catch (IOException e) {
+			throw new IllegalStateException("Error reading global.properties!", e);
 		}
 	}
 }
