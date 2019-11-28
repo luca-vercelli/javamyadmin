@@ -29,7 +29,7 @@
   {{ scripts|raw }}
   <noscript><style>html{display:block}</style></noscript>
 </head>
-<body{{ body_id is not empty ? ' id=' ~ body_id }}>
+<body{{ (body_id is not empty) ? ' id=' ~ body_id }}>
   {{ navigation|raw }}
   {{ custom_header|raw }}
   {{ load_user_preferences|raw }}

@@ -8,15 +8,12 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
-import org.jtwig.web.servlet.JtwigRenderer;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -113,8 +110,10 @@ public class HomeController extends AbstractController {
 		model.put("phpmyadmin_version", GLOBALS.PMA_VERSION);
 		model.put("config_storage_message", null);
 
-		renderer.dispatcherFor("/WEB-INF/templates/home/index.twig") //
+		/*renderer.dispatcherFor("/WEB-INF/templates/home/index.twig") //
 				.with(model) //
-				.render(request, response);
+				.render(request, response);*/
+		
+		render("home/index.twig", model, request, response);
 	}
 }

@@ -27,10 +27,12 @@ public class GLOBALS {
 	static {
 		try {
 			cfg = new Properties();
-			InputStream is = cfg.getClass().getClassLoader().getResourceAsStream("globals.properties");
+			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/global.properties");
 			cfg.load(is);
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			throw new IllegalStateException("File global.properties not found!", e);
 		}
 	}
 }
