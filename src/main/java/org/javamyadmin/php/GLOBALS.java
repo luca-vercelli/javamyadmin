@@ -22,7 +22,7 @@ public class GLOBALS {
 	public Theme PMA_Theme;
 	public String pmaThemePath;
 	public String pmaThemeImage;
-	public Config PMA_Config = new Config();
+	public Config PMA_Config;
 	public boolean pma_config_loading = false;
 	public String message;
 	public Properties cfg = new Properties();
@@ -35,6 +35,7 @@ public class GLOBALS {
 
 	public GLOBALS() {
 		try {
+			
 			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/global.properties");
 			cfg.load(is);
 		} catch (NullPointerException e) {
@@ -42,5 +43,6 @@ public class GLOBALS {
 		} catch (IOException e) {
 			throw new IllegalStateException("Error reading global.properties!", e);
 		}
+		this.PMA_Config = new Config(null, this);
 	}
 }
