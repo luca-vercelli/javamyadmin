@@ -16,16 +16,16 @@ import org.javamyadmin.helpers.Theme;
  */
 public class GLOBALS {
 
-	public final String PMA_VERSION = "0.1";
+	public final String PMA_VERSION = "0.1";	//TODO should be static
 	public Integer server = 0;
-	public String ROOT_PATH;
+	public String ROOT_PATH;	//TODO should be static. Is it needed ?!?
 	public Theme PMA_Theme;
 	public String pmaThemePath;
 	public String pmaThemeImage;
 	public Config PMA_Config;
 	public boolean pma_config_loading = false;
 	public String message;
-	public Properties cfg = new Properties();
+	public Properties cfg = new Properties();	//TODO should be static
 	public String lang;
 	public String db;
 	public String table;

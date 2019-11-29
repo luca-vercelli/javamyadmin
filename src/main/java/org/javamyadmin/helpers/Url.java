@@ -13,6 +13,10 @@ import org.javamyadmin.php.GLOBALS;
 
 public class Url {
 
+	public static String getHiddenInputs(HttpServletRequest req, GLOBALS GLOBALS) {
+		return getHiddenInputs(null, null, 0, null, req, GLOBALS);
+	}
+	
     /**
      * Generates text with hidden inputs.
      * @param req 
@@ -61,8 +65,10 @@ public class Url {
             params.put("lang", GLOBALS.lang);
         }
 
-        for (String skipping:skip ) {
-            params.remove(skipping);
+        if (skip != null) {
+	        for (String skipping:skip ) {
+	            params.remove(skipping);
+	        }
         }
 
         return Url.getHiddenFields(params, "", false, req.getSession());
@@ -197,6 +203,10 @@ public class Url {
      */
     public static String getCommonRaw(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, GLOBALS GLOBALS)
     {
+    	if (params == null) {
+    		params = new HashMap<>();
+    	}
+    	
         /** @var Config PMA_Config */
         String separator = getArgSeparator("none");
 

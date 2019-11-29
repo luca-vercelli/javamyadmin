@@ -326,10 +326,10 @@ public class ThemeManager {
 		if (form) {
 			select_box += "<form name='setTheme' method='post'";
 			select_box += " action='index.php?route=/set-theme' class='disableAjax'>";
-			select_box += Url.getHiddenInputs();
+			select_box += Url.getHiddenInputs(request, GLOBALS);
 		}
 
-		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes")
+		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null, request, GLOBALS)
 				+ "' target='themes' class='themeselect'>";
 		select_box += theme_preview_href + __("Theme:") + "</a>" + "\n";
 
