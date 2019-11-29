@@ -395,7 +395,7 @@ public class Header {
      *
      * @return String The header
      */
-    public Map<String, Object> getDisplay()
+    public String getDisplay()
     {
         if (! this._headerIsSent) {
             if (! this._isAjax && this._isEnabled) {

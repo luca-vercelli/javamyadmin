@@ -63,7 +63,7 @@ public class Footer {
     {
         this.template = new Template();
         this._isEnabled = true;
-        this._scripts = new Scripts();
+        this._scripts = new Scripts(GLOBALS);
         this._isMinimal = false;
         this.relation = new Relation(GLOBALS.dbi);
         
@@ -312,24 +312,24 @@ public class Footer {
      *
      * @return String
      */
-    public Map<String, Object> getDisplay()
+    public String getDisplay()
     {
     	Map<String, Object> model = new HashMap<String, Object>();
     	
         this._setHistory();
         if (this._isEnabled) {
         	
-            String $demoMessage;
-            String $url;
-            Header $header;
-            String $scripts;
-            String $menuHash;
-            String $selfLink;
-            String $errorMessages;
-            String $footer;
+            String $demoMessage = null;
+            String $url = null;
+            Header $header = null;
+            String $scripts = null;
+            String $menuHash = null;
+            String $selfLink = null;
+            String $errorMessages = null;
+            String $footer = null;
         	
             if (! this._isAjax && ! this._isMinimal) {
-                if (Core.getenv("SCRIPT_NAME")
+                if (Core.getenv("SCRIPT_NAME") != null
                     //&& empty($_POST)
                     && ! this._isAjax
                 ) {
@@ -352,7 +352,7 @@ public class Footer {
                         )
                     );
                 }
-                if (Core.getenv("SCRIPT_NAME")
+                if (Core.getenv("SCRIPT_NAME") != null
                     && ! this._isAjax
                 ) {
                     $url = this.getSelfUrl();
@@ -381,18 +381,8 @@ public class Footer {
             model.put("demo_message", $demoMessage);
             model.put("footer", $footer);
             
-            /*return this.template.render("footer", [
-                "is_ajax" => this._isAjax,
-                "is_minimal" => this._isMinimal,
-                "self_link" => $selfLink ?? "",
-                "error_messages" => $errorMessages ?? "",
-                "scripts" => $scripts ?? "",
-                "is_demo" => $GLOBALS["cfg"]["DBG"]["demo"],
-                "demo_message" => $demoMessage ?? "",
-                "footer" => $footer ?? "",
-            ]);*/
         }
-        return model;
+        return this.template.render("footer", model);
     }
 
 }

@@ -1,5 +1,8 @@
 package org.javamyadmin.controllers;
 
+import static org.javamyadmin.php.Php.__;
+import static org.javamyadmin.php.Php.empty;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Message;
-
-import static org.javamyadmin.php.Php.*;
+import org.javamyadmin.helpers.Response;
+import org.javamyadmin.php.GLOBALS;
 
 /**
  * 
@@ -31,7 +34,7 @@ public class HomeController extends AbstractController {
 	 * GET handler
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS)
 			throws ServletException, IOException {
 
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
@@ -112,6 +115,6 @@ public class HomeController extends AbstractController {
 				.with(model) //
 				.render(request, response);*/
 		
-		render("home/index.twig", model, request, response);
+		pmaResponse.response(response);
 	}
 }

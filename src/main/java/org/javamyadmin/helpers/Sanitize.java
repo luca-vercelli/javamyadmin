@@ -78,4 +78,14 @@ public class Sanitize {
 
         return message;
     }
+
+	public static void removeRequestVars(String[] $whitelist) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static Object escapeJsString(String $url) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

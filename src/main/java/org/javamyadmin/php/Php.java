@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -155,6 +157,19 @@ public class Php {
 	}
 
 	/**
+	 * Parse JSON string into an object.
+	 * 
+	 * @param json
+	 */
+	public static Object json_decode(String json) {
+
+		// Using Google API
+
+		Gson gson = new Gson();
+		return gson.fromJson(json, Object.class);
+	}
+
+	/**
 	 * Add to dest all entries coming from src
 	 * 
 	 * @param dest
@@ -197,5 +212,86 @@ public class Php {
 		} catch (NumberFormatException exc) {
 			return false;
 		}
+	}
+
+	/**
+	 * Return true if string represents an array, or a Map
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static boolean is_array(Object x) {
+		return x instanceof Collection || x instanceof Map;
+	}
+
+	private static List<String> scalarTypes = Arrays.asList(new String[] { "integer", "float", "string", "boolean" });
+
+	/**
+	 * Return true if string represents a scalar.
+	 * 
+	 * Scalar variables are those containing an integer, float, string or boolean.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static boolean is_scalar(String x) {
+
+		return x == null || scalarTypes.contains(gettype(x));
+	}
+
+	/**
+	 * Return PHP equivalent type
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static String gettype(Object x) {
+		if (x == null) {
+			return "NULL";
+		} else if (x instanceof Boolean) {
+			return "boolean";
+		} else if (x instanceof Integer || x instanceof Long) {
+			return "integer";
+		} else if (x instanceof Float || x instanceof Double) {
+			return "double";
+		} else if (x instanceof String || x instanceof Character) {
+			return "string";
+		} else if (x instanceof Collection || x instanceof Map) {
+			return "array";
+		} else {
+			return "object";
+		}
+	}
+
+	/**
+	 * Quote string with slashes in a C style
+	 * 
+	 * @param str
+	 *            The string to be escaped
+	 * @param charlist
+	 *            A list of characters to be escaped. If charlist contains
+	 *            characters \n, \r etc., they are converted in C-like style, while
+	 *            other non-alphanumeric characters with ASCII codes lower than 32
+	 *            and higher than 126 converted to octal representation.
+	 * @return
+	 */
+	public static String addcslashes(String str, CharSequence charlist) {
+		for (int i = 0; i < charlist.length(); ++i) {
+			Character ch = charlist.charAt(i);
+			if (ch == '\n') {
+				str = str.replace("\n", "\\n");
+			} else if (ch == '\r') {
+				str = str.replace("\r", "\\r");
+			} else if (ch == '\t') {
+				str = str.replace("\t", "\\t");
+			} else if (ch == '\\') {
+				str = str.replace("\\", "\\\\");
+			} else if (ch < 32 || ch > 126) {
+				str = str.replace(ch.toString(), "\\" + Integer.toOctalString(ch));
+			} else {
+				str = str.replace(ch.toString(), "\\" + ch);
+			}
+		}
+		return str;
 	}
 }

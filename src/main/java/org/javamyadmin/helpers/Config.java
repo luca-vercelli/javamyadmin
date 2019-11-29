@@ -1,20 +1,26 @@
 package org.javamyadmin.helpers;
 
+import static org.javamyadmin.php.Php.E_FATAL;
+import static org.javamyadmin.php.Php.E_USER_ERROR;
+import static org.javamyadmin.php.Php.__;
+import static org.javamyadmin.php.Php.array_replace_recursive;
+import static org.javamyadmin.php.Php.empty;
+import static org.javamyadmin.php.Php.is_numeric;
+import static org.javamyadmin.php.Php.md5;
+import static org.javamyadmin.php.Php.trigger_error;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.php.GLOBALS;
-
-import static org.javamyadmin.php.Php.*;
 
 public class Config {
 
@@ -72,20 +78,17 @@ public class Config {
      */
     public boolean done = false;
     
-    GLOBALS GLOBALS;
-    
     /**
      * constructor
      *
      * @param String source source to read config from
      */
-    public Config(String source /* may be null */, GLOBALS GLOBALS)
+    public Config(String source /* may be null */)
     {
-    	this.GLOBALS = GLOBALS;
     	
     	this.default_source = GLOBALS.ROOT_PATH + "libraries/config.default.php";
     			
-        this.settings .put("is_setup" , false);
+        this.settings.put("is_setup" , false);
 
         // functions need to refresh in case of config file changed goes in
         // PhpMyAdmin\Config.load()
@@ -432,7 +435,7 @@ public class Config {
         	}
         }
 
-        this.settings = array_replace_recursive(this.settings, (Map<String, Object>)GLOBALS.cfg);
+        this.settings = array_replace_recursive(this.settings, (Map)GLOBALS.cfg);
 
         return true;
     }
@@ -592,14 +595,14 @@ public class Config {
         Object prefs_type = this.get("user_preferences");
         if (prefs_type != null) {
             if (default_value == null) {
-                default_value = Core.arrayRead(cfg_path, this.defaults);
+                default_value = (String) Core.arrayRead(cfg_path, this.defaults);
             }
             result = userPreferences.persistOption(cfg_path, new_cfg_value, default_value);
         }
         if (prefs_type != "db" && cookie_name != null) {
             // fall back to cookies
             if (default_value == null) {
-                default_value = Core.arrayRead(cfg_path, this.settings);
+                default_value = (String) Core.arrayRead(cfg_path, this.settings);
             }
             this.setCookie(cookie_name, new_cfg_value, default_value, null, false, null, null);
         }
@@ -622,7 +625,7 @@ public class Config {
     {
         boolean cookie_exists = this.getCookie(cookie_name, req) != null;
         String prefs_type = (String) this.get("user_preferences");
-        if (prefs_type == "db") {
+        if ("db".equals(prefs_type)) {
             // permanent user preferences value exists, remove cookie
             if (cookie_exists) {
                 this.removeCookie(cookie_name, req, resp);
@@ -686,7 +689,9 @@ public class Config {
      */
     public void checkPermissions()
     {
-        // Check for permissions (on platforms that support it):
+        // Not supported by Java ?!?
+    	// Check for permissions (on platforms that support it):
+    	/*
     	File source = new File(this.getSource());
         if (this.get("CheckConfigurationPermissions").equals("true") && source.exists()) {
             String perms = @fileperms(this.getSource());
@@ -703,20 +708,23 @@ public class Config {
                     );
                 }
             }
-        }
+        }*/
     }
 
     /**
      * Checks for errors
      * (must be called after config.inc.php has been merged)
+     * @param request 
+     * @param response
+	* @param GLOBALS GLOBALS 
      *
      * @return void
      */
-    public void checkErrors()
+    public void checkErrors(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Response pmaResponse)
     {
         if (this.error_config_default_file) {
             Core.fatalError(
-                String.format(
+                request, response, GLOBALS, pmaResponse, String.format(
                     __("Could not load default configuration from: %1s"),
                     this.default_source
                 )
@@ -783,7 +791,7 @@ public class Config {
      * @return int Summary of unix timestamps, to be unique on theme parameters
      *             change
      */
-    public String getThemeUniqueValue()
+    public String getThemeUniqueValue(GLOBALS GLOBALS)
     {
         return (
             "" + this.source_mtime +
@@ -1022,6 +1030,10 @@ public class Config {
         return true;
     }
 
+	public boolean setCookie(String cookie, String value) {
+		return setCookie(cookie, value, null, null, false, null, null);
+	}
+
     /**
      * get cookie
      *
@@ -1106,7 +1118,7 @@ public class Config {
      *
      * @return String
      */
-    private static void _renderCustom(String filename, String id): String
+    private static String _renderCustom(String filename, String id)
     {
         String retval = "";
         if (new File(filename).exists()) {
@@ -1124,7 +1136,8 @@ public class Config {
      */
     public static String renderFooter()
     {
-        return _renderCustom(CUSTOM_FOOTER_FILE, "pma_footer");
+    	throw new IllegalArgumentException("Not implemented");
+    	// return _renderCustom(CUSTOM_FOOTER_FILE, "pma_footer"); // cfr. vendors.properties
     }
 
     /**
@@ -1134,7 +1147,8 @@ public class Config {
      */
     public static String renderHeader()
     {
-        return _renderCustom(CUSTOM_HEADER_FILE, "pma_header");
+    	throw new IllegalArgumentException("Not implemented");
+        //return _renderCustom(CUSTOM_HEADER_FILE, "pma_header"); // cfr. vendors.properties
     }
 
     /**
@@ -1182,13 +1196,14 @@ public class Config {
          */
         if (req_number == null) {
         	int i = 0;
-            for (String server: (List<String>)this.settings.get("Servers")) {
-                String verboseToLower = server["verbose"].toLowerCase();
-                String serverToLower = request.toLowerCase();
-                if (server["host"] == request
-                    || server["verbose"] == request
-                    || verboseToLower == serverToLower
-                    || md5(verboseToLower) == serverToLower
+            String serverToLower = request.toLowerCase();
+            Map<String, Map<String, String>> servers = (Map<String, Map<String, String>>) this.settings.get("Servers");
+            for (Map<String, String> server: servers.values()) {
+                String verboseToLower = server.get("verbose").toLowerCase();
+                if (server.get("host").equals(request)
+                    || server.get("verbose").equals(request)
+                    || verboseToLower.equals(serverToLower)
+                    || md5(verboseToLower).equals(serverToLower)
                 ) {
                 	req_number = i;
                     break;
@@ -1208,21 +1223,21 @@ public class Config {
          * present a choice of servers in the case that there are multiple servers
          * and "this.settings["ServerDefault"] = 0" is set.
          */
-
-        if (is_numeric(request) && ! empty(request) && ! empty(this.settings.get("Servers")[request])) {
+        String server;
+        if (is_numeric(request) && ! empty(request) && ! empty(((Map) this.settings.get("Servers")).get("request"))) {
             server = request;
-            this.settings.get("Server") = this.settings.get("Servers")[server];
+            this.settings.put("Server", ((Map) this.settings.get("Servers")).get(server));
         } else {
-            if (! empty(this.settings.get("Servers")[this.settings["ServerDefault"]])) {
-                server = this.settings["ServerDefault"];
-                this.settings.get("Server") = this.settings.get("Servers")[server];
+            if (! empty(((Map) this.settings.get("Servers")).get(this.settings.get("ServerDefault")))) {
+                server = (String) this.settings.get("ServerDefault");
+                this.settings.put("Server", ((Map) this.settings.get("Servers")).get(server));
             } else {
-                server = 0;
-                this.settings.get("Server") = [];
+                server = "0";
+                this.settings.put("Server", new HashMap<>());
             }
         }
 
-        return (int) server;
+        return new Integer(server);
     }
 
     /**
@@ -1233,14 +1248,20 @@ public class Config {
     public void checkServers()
     {
         // Do we have some server?
-        if (! isset(this.settings.get("Servers")) || count(this.settings.get("Servers")) === 0) {
-            // No server => create one with defaults
-            this.settings.get("Servers") = [1 => this.default_server];
-        } else {
+        if (! (this.settings.containsKey("Servers"))) {
+        	this.settings.put("Servers", new ArrayList<Integer>());
+        }
+        
+        if ( ((List)this.settings.get("Servers")).size() == 0  ) {
+        	((List)this.settings.get("Servers")).add(this.default_server);
+        } 
+        
+        /* TODO
+        else {
             // We have server(s) => apply default configuration
             new_servers = [];
 
-            foreach (this.settings.get("Servers") as server_index => each_server) {
+            for (this.settings.get("Servers") as server_index => each_server) {
                 // Detect wrong configuration
                 if (! is_int(server_index) || server_index < 1) {
                     trigger_error(
@@ -1263,7 +1284,7 @@ public class Config {
                 new_servers[server_index] = each_server;
             }
             this.settings.get("Servers") = new_servers;
-        }
+        }*/
     }
 
 }

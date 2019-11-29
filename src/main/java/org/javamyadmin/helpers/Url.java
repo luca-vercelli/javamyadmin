@@ -170,6 +170,10 @@ public class Url {
             Url.getCommonRaw(params, divider, req, GLOBALS)
         );
     }
+    
+    public static String getCommon(Map<String, Object> params, HttpServletRequest req, GLOBALS GLOBALS) {
+    	return getCommon(params, "?", req, GLOBALS);
+    }
 
     /**
      * Generates text with URL parameters.

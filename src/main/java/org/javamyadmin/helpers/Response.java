@@ -211,34 +211,59 @@ public class Response {
     }
 
     /**
-     * Sends a JSON response to the browser
+     * Renders the HTML response text
+     *
+     * @return string
+     */
+    private String _getDisplay()
+    {
+        // The header may contain nothing at all,
+        // if its content was already rendered
+        // and, in this case, the header will be
+        // in the content part of the request
+        String $retval  = this._header.getDisplay();
+        $retval += this._HTML;
+        $retval += this._footer.getDisplay();
+        return $retval;
+    }
+
+    /**
+     * Sends an HTML response to the browser
      *
      * @return void
      */
-    private void _ajaxResponse()
+    private void _htmlResponse(HttpServletResponse response)
+    {
+    	response.getWriter().write(this._getDisplay());
+    }
+
+    /**
+     * Sends a JSON response to the browser
+     * @param response2 
+     *
+     * @return void
+     */
+    private void _ajaxResponse(HttpServletResponse response)
     {
         /* Avoid wrapping in case we"re disabled */
     	
-    	// TODO
-    	
-    	/*
-        if (this._isDisabled) {
-            echo this._getDisplay();
+    	if (this._isDisabled) {
+    		response.getWriter().write(this._getDisplay());
             return;
         }
 
-        if (! isset(this._JSON["message"])) {
-            this._JSON["message"] = this._getDisplay();
-        } elseif (this._JSON["message"] instanceof Message) {
-            this._JSON["message"] = this._JSON["message"].getDisplay();
+        if (! isset(this._JSON.get("message"))) {
+            this._JSON.get("message") = this._getDisplay();
+        } elseif (this._JSON.get("message") instanceof Message) {
+            this._JSON.get("message") = this._JSON.get("message").getDisplay();
         }
 
         if (this._isSuccess) {
-            this._JSON["success"] = true;
+            this._JSON.get("success") = true;
         } else {
-            this._JSON["success"] = false;
-            this._JSON["error"]   = this._JSON["message"];
-            unset(this._JSON["message"]);
+            this._JSON.get("success") = false;
+            this._JSON.get("error")   = this._JSON.get("message");
+            unset(this._JSON.get("message"));
         }
 
         if (this._isSuccess) {
@@ -351,7 +376,27 @@ public class Response {
             ]);
         } else {
             echo $result;
+        }
+    }
+
+    /**
+     * Sends an HTML response to the browser
+     *
+     * @return void
+     */
+    public void response(HttpServletResponse response)
+    {
+        /*
+        TODO
+        $buffer = OutputBuffering::getInstance();
+        if (empty(this._HTML)) {
+            this._HTML = $buffer->getContents();
         }*/
+        if (this.isAjax()) {
+            this._ajaxResponse(response);
+        } else {
+            this._htmlResponse(response);
+        }
     }
 
     /**

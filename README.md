@@ -34,5 +34,21 @@ Less trivial conversions:
 | preg_replace(x,y,z)   |  y.replaceAll(x,z)         |
 | preg_match(x,y)       |  y.matches(x)              |
 | explode(x,y)          |  y.split(x)                |
+| str_replace(x,y,z)    |  z.replace(x,y)            |
 | $_REQUEST[x]          |  request.getParameter(x)   |
-| $_SESSION[x]          |  request.getSession().getAttribute(x)   |
+| $_SESSION[x]          |  request.getSession().getAttribute(x)      |
+| session_id()          |  request.getSession().getId()              |
+
+PHP "array" can be either a Collection or a Map
+In the first case:
+| is_array(x)           |(x instanceof List   |
+| in_array(x,y)         | y.contains(x)       |
+| x[] = y               | x.add(y)            |
+| x[y]                  | x.get(y)            |
+
+In the second case:
+| is_array(x)           | x instanceof Map          |
+| in_array(x,y)         | y.valuesSet().contains(x) |
+| x[y] = z              | x.put(y, z)               |
+| x[y]                  | x.get(y)                  |
+

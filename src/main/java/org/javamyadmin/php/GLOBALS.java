@@ -18,24 +18,25 @@ public class GLOBALS {
 
 	public final String PMA_VERSION = "0.1";	//TODO should be static
 	public Integer server = 0;
-	public String ROOT_PATH;	//TODO should be static. Is it needed ?!?
+	public static String ROOT_PATH = "/";	//TODO should be static. Is it needed ?!?
 	public Theme PMA_Theme;
 	public String pmaThemePath;
 	public String pmaThemeImage;
 	public Config PMA_Config;
-	public boolean pma_config_loading = false;
+	public static boolean pma_config_loading = false;
 	public String message;
-	public Properties cfg = new Properties();	//TODO should be static
+	public static Properties cfg = new Properties();	//TODO should be static
 	public String lang;
 	public String db;
 	public String table;
 	public Object dbi;
 	public String sql_query;
 	public String error_message;
+	public Object error_handler;
+	public String text_dir;
 
 	public GLOBALS() {
 		try {
-			
 			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/global.properties");
 			cfg.load(is);
 		} catch (NullPointerException e) {
@@ -43,6 +44,5 @@ public class GLOBALS {
 		} catch (IOException e) {
 			throw new IllegalStateException("Error reading global.properties!", e);
 		}
-		this.PMA_Config = new Config(null, this);
 	}
 }
