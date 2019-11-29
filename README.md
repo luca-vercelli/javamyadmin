@@ -28,3 +28,11 @@ Trivial conversions:
 More PHP functions have been defined in Php class.
 
 Please notice that a "Singleton" or a "global variable" in PHP are not global at all in Java.
+
+Less trivial conversions:
+
+| preg_replace(x,y,z)   |  y.replaceAll(x,z)         |
+| preg_match(x,y)       |  y.matches(x)              |
+| explode(x,y)          |  y.split(x)                |
+| $_REQUEST[x]          |  request.getParameter(x)   |
+| $_SESSION[x]          |  request.getSession().getAttribute(x)   |

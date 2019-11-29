@@ -161,8 +161,8 @@ public class Php {
 	 * @param src
 	 */
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> array_replace_recursive(Map<String, Object> dest, Map<String, Object> src) {
-		for (Entry<String, Object> entry : src.entrySet()) {
+	public static <T, U> Map<T, U> array_replace_recursive(Map<T, U> dest, Map<T, U> src) {
+		for (Entry<T, U> entry : src.entrySet()) {
 			if (!dest.containsKey(entry.getKey())) {
 				dest.put(entry.getKey(), entry.getValue());
 				continue;
@@ -173,8 +173,8 @@ public class Php {
 
 			if (orig instanceof Map) {
 				if (entry.getValue() instanceof Map) {
-					Map<String, Object> m1 = (Map<String, Object>) orig;
-					Map<String, Object> m2 = (Map<String, Object>) entry.getValue();
+					Map<T, U> m1 = (Map<T, U>) orig;
+					Map<T, U> m2 = (Map<T, U>) entry.getValue();
 					array_replace_recursive(m1, m2);
 				} else {
 					dest.put(entry.getKey(), entry.getValue());
@@ -182,5 +182,20 @@ public class Php {
 			}
 		}
 		return dest;
+	}
+
+	/**
+	 * Return true if string represents a number
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public static boolean is_numeric(String x) {
+		try {
+			new Double(x);
+			return true;
+		} catch (NumberFormatException exc) {
+			return false;
+		}
 	}
 }
