@@ -38,6 +38,10 @@ public class GLOBALS {
 	public boolean PMA_NO_SESSION = false;
 	public String message;
 	public String buffer_message;
+	
+	// ?!?
+	public Object reload;
+	public Object focus_querywindow;
 
 	static {
 		cfg = new Properties();

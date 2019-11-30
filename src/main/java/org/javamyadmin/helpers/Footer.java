@@ -50,7 +50,7 @@ public class Footer {
     /**
      * @var Relation
      */
-    private Relation relation;
+    // TODO private Relation relation;
 
     /**
      * @var Template
@@ -70,7 +70,7 @@ public class Footer {
         this._isEnabled = true;
         this._scripts = new Scripts(GLOBALS);
         this._isMinimal = false;
-        this.relation = new Relation(GLOBALS.dbi);
+        // TODO this.relation = new Relation(GLOBALS.dbi);
         
         this.GLOBALS = GLOBALS;
         this.request = request;
@@ -254,7 +254,7 @@ public class Footer {
      */
     private void _setHistory()
     {
-        if (! Core.isValid(request.getParameter("no_history"))
+        /* TODO if (! Core.isValid(request.getParameter("no_history"))
             && empty(GLOBALS.error_message)
             && ! empty(GLOBALS.sql_query)
             && GLOBALS.dbi != null
@@ -266,7 +266,7 @@ public class Footer {
                 GLOBALS.cfg.get("Server.user"),
                 GLOBALS.sql_query
             );
-        }
+        }*/
     }
 
     /**

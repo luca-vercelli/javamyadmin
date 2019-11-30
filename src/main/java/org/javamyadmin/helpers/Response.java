@@ -83,7 +83,7 @@ public class Response {
             $buffer.start();
             register_shutdown_function([this, "response"]);
         }*/
-        this._header = new Header(GLOBALS);
+        this._header = new Header(request, response, GLOBALS);
         this._HTML   = "";
         this._JSON   = new HashMap<>();
         this._footer = new Footer(request, GLOBALS, this);
@@ -315,19 +315,19 @@ public class Response {
                 // set current db, table and sql query in the querywindow
                 // (this is for the bottom console)
                 String $query = "";
-                Integer $maxChars = GLOBALS.cfg["MaxCharactersInDisplayedSQL"];
-                if (isset(GLOBALS.sql_query)
-                    && mb_strlen(GLOBALS.sql_query) < $maxChars
+                Integer $maxChars = new Integer((String) GLOBALS.cfg.get("MaxCharactersInDisplayedSQL"));
+                if (!empty(GLOBALS.sql_query)
+                    && GLOBALS.sql_query.length() < $maxChars
                 ) {
                     $query = GLOBALS.sql_query;
                 }
+                Map<String, Object> params = new HashMap<>();
+                params.put("db", Core.ifSetOr(GLOBALS.db, ""));
+                params.put("table", Core.ifSetOr(GLOBALS.table, ""));
+                params.put("sql_query", $query);
                 this.addJSON(
                     "reloadQuerywindow",
-                    [
-                        "db" => Core.ifSetOr(GLOBALS["db"], ""),
-                        "table" => Core.ifSetOr(GLOBALS["table"], ""),
-                        "sql_query" => $query,
-                    ]
+                    params
                 );
                 if (! empty(GLOBALS.focus_querywindow)) {
                     this.addJSON("_focusQuerywindow", $query);
@@ -390,8 +390,9 @@ public class Response {
      * Sends an HTML response to the browser
      *
      * @return void
+     * @throws IOException 
      */
-    public void response()
+    public void response() throws IOException
     {
         /*
         TODO
