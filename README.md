@@ -33,6 +33,7 @@ Please notice that a "Singleton" or a "global variable" in PHP are not global at
 
 Less trivial conversions:
 
+|  PHP     |   Java   |
 |----------|----------|
 | preg_replace(x,y,z)   |  y.replaceAll(x,z)         |
 | preg_match(x,y)       |  y.matches(x)              |
@@ -47,6 +48,7 @@ Less trivial conversions:
 PHP "array" can be either a Collection or a Map
 In the first case:
 
+|  PHP     |   Java   |
 |----------|----------|
 | is_array(x)           |(x instanceof List   |
 | in_array(x,y)         | y.contains(x)       |
@@ -55,6 +57,7 @@ In the first case:
 
 In the second case:
 
+|  PHP     |   Java   |
 |----------|----------|
 | is_array(x)           | x instanceof Map          |
 | in_array(x,y)         | y.valuesSet().contains(x) |
