@@ -6,6 +6,11 @@ import static org.javamyadmin.php.Php.*;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Language object
+ *
+ * @package PhpMyAdmin
+ */
 public class Language implements Comparable<Language> {
     protected String code;
     protected String name;

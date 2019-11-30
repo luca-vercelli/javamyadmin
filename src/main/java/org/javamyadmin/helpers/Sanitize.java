@@ -3,6 +3,11 @@ package org.javamyadmin.helpers;
 import org.javamyadmin.helpers.html.Generator;
 import static org.javamyadmin.php.Php.*;
 
+/**
+ * This class includes various sanitization methods that can be called statically
+ *
+ * @package PhpMyAdmin
+ */
 public class Sanitize {
 
     /**

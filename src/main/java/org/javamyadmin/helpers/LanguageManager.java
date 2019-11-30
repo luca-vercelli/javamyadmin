@@ -3,6 +3,11 @@ package org.javamyadmin.helpers;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Language selection manager
+ *
+ * @package PhpMyAdmin
+ */
 public class LanguageManager {
     /**
      * @var array Definition data for languages

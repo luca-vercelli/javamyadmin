@@ -11,6 +11,11 @@ import javax.servlet.http.HttpSession;
 
 import org.javamyadmin.php.GLOBALS;
 
+/**
+ * Static methods for URL/hidden inputs generating
+ *
+ * @package PhpMyAdmin
+ */
 public class Url {
 
 	public static String getHiddenInputs(HttpServletRequest req, GLOBALS GLOBALS) {

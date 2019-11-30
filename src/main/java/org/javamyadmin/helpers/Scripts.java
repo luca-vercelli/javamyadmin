@@ -9,6 +9,13 @@ import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
 
+/**
+ * Collects information about which JavaScript
+ * files and objects are necessary to render
+ * the page and generates the relevant code.
+ *
+ * @package PhpMyAdmin
+ */
 public class Scripts {
 
 	public static class FStruct {

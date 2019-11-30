@@ -583,14 +583,14 @@ public class Config {
      *
      * @return true|Message
      */
-    public boolean setUserValue(
+    public Message setUserValue(
         String cookie_name,
         String cfg_path,
         String new_cfg_value,
         String default_value 
     ) {
     	UserPreferences userPreferences = new UserPreferences();
-        boolean result = true;
+    	Message result = null;
         // use permanent user preferences if possible
         Object prefs_type = this.get("user_preferences");
         if (prefs_type != null) {

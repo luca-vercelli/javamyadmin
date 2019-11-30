@@ -5,7 +5,11 @@ import java.util.Map;
 
 import org.javamyadmin.php.GLOBALS;
 
-// intended for use with header.twig
+/**
+ * Class used to output the HTTP and HTML headers
+ *
+ * @package PhpMyAdmin
+ */
 public class Header {
 
     /**

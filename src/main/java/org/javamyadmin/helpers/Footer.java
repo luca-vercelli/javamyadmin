@@ -11,6 +11,11 @@ import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.php.GLOBALS;
 import static org.javamyadmin.php.Php.*;
 
+/**
+ * Class used to output the footer
+ *
+ * @package PhpMyAdmin
+ */
 public class Footer {
 	   /**
      * Scripts instance

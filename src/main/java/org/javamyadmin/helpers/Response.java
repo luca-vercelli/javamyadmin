@@ -1,5 +1,9 @@
 package org.javamyadmin.helpers;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +71,7 @@ public class Response {
 
     private HttpServletRequest request;
     private HttpServletResponse response;
+    private GLOBALS GLOBALS;
     
     /**
      * Creates a new class instance
@@ -89,6 +94,7 @@ public class Response {
         
         this.request = request;
         this.response = response;
+        this.GLOBALS = GLOBALS;
     }
 
     /**
@@ -231,8 +237,9 @@ public class Response {
      * Sends an HTML response to the browser
      *
      * @return void
+     * @throws IOException 
      */
-    private void _htmlResponse(HttpServletResponse response)
+    private void _htmlResponse() throws IOException
     {
     	response.getWriter().write(this._getDisplay());
     }
@@ -243,7 +250,7 @@ public class Response {
      *
      * @return void
      */
-    private void _ajaxResponse(HttpServletResponse response)
+    private void _ajaxResponse()
     {
         /* Avoid wrapping in case we"re disabled */
     	
@@ -252,31 +259,31 @@ public class Response {
             return;
         }
 
-        if (! isset(this._JSON.get("message"))) {
-            this._JSON.get("message") = this._getDisplay();
-        } elseif (this._JSON.get("message") instanceof Message) {
-            this._JSON.get("message") = this._JSON.get("message").getDisplay();
+        if (empty(this._JSON.get("message"))) {
+            this._JSON.put("message", this._getDisplay());
+        } else if (this._JSON.get("message") instanceof Message) {
+            this._JSON.put("message", ((Message) this._JSON.get("message")).getDisplay());
         }
 
         if (this._isSuccess) {
-            this._JSON.get("success") = true;
+            this._JSON.put("success", true);
         } else {
-            this._JSON.get("success") = false;
-            this._JSON.get("error")   = this._JSON.get("message");
-            unset(this._JSON.get("message"));
+            this._JSON.put("success", false);
+            this._JSON.put("error", this._JSON.get("message"));
+            this._JSON.remove("message");
         }
 
         if (this._isSuccess) {
-            this.addJSON("title", "<title>" . this.getHeader().getPageTitle() . "</title>");
+            this.addJSON("title", "<title>" + this.getHeader().getPageTitle() + "</title>");
 
-            if (isset($GLOBALS["dbi"])) {
-                $menuHash = this.getHeader().getMenu().getHash();
+            if (GLOBALS.dbi != null) {
+                String $menuHash = this.getHeader().getMenu().getHash();
                 this.addJSON("menuHash", $menuHash);
-                $hashes = [];
-                if (isset($_REQUEST["menuHashes"])) {
-                    $hashes = explode("-", $_REQUEST["menuHashes"]);
+                List<String> $hashes = Collections.emptyList();
+                if (!empty(request.getParameter("menuHashes"))) {
+                    $hashes = Arrays.asList(request.getParameter("menuHashes").split("-"));
                 }
-                if (! in_array($menuHash, $hashes)) {
+                if (! $hashes.contains($menuHash)) {
                     this.addJSON(
                         "menu",
                         this.getHeader()
@@ -290,42 +297,42 @@ public class Response {
             this.addJSON("selflink", this.getFooter().getSelfUrl());
             this.addJSON("displayMessage", this.getHeader().getMessage());
 
-            $debug = this._footer.getDebugMessage();
-            if (empty($_REQUEST["no_debug"])
-                && strlen($debug) > 0
+            String $debug = this._footer.getDebugMessage();
+            if (empty(request.getParameter("no_debug"))
+                && ! empty($debug)
             ) {
                 this.addJSON("debug", $debug);
             }
 
-            $errors = this._footer.getErrorMessages();
-            if (strlen($errors) > 0) {
+            String $errors = this._footer.getErrorMessages();
+            if (!empty($errors) ) {
                 this.addJSON("errors", $errors);
             }
-            $promptPhpErrors = $GLOBALS["error_handler"].hasErrorsForPrompt();
+            String $promptPhpErrors = GLOBALS.error_handler.hasErrorsForPrompt();
             this.addJSON("promptPhpErrors", $promptPhpErrors);
 
-            if (empty($GLOBALS["error_message"])) {
+            if (empty(GLOBALS.error_message)) {
                 // set current db, table and sql query in the querywindow
                 // (this is for the bottom console)
-                $query = "";
-                $maxChars = $GLOBALS["cfg"]["MaxCharactersInDisplayedSQL"];
-                if (isset($GLOBALS["sql_query"])
-                    && mb_strlen($GLOBALS["sql_query"]) < $maxChars
+                String $query = "";
+                Integer $maxChars = GLOBALS.cfg["MaxCharactersInDisplayedSQL"];
+                if (isset(GLOBALS.sql_query)
+                    && mb_strlen(GLOBALS.sql_query) < $maxChars
                 ) {
-                    $query = $GLOBALS["sql_query"];
+                    $query = GLOBALS.sql_query;
                 }
                 this.addJSON(
                     "reloadQuerywindow",
                     [
-                        "db" => Core.ifSetOr($GLOBALS["db"], ""),
-                        "table" => Core.ifSetOr($GLOBALS["table"], ""),
+                        "db" => Core.ifSetOr(GLOBALS["db"], ""),
+                        "table" => Core.ifSetOr(GLOBALS["table"], ""),
                         "sql_query" => $query,
                     ]
                 );
-                if (! empty($GLOBALS["focus_querywindow"])) {
+                if (! empty(GLOBALS.focus_querywindow)) {
                     this.addJSON("_focusQuerywindow", $query);
                 }
-                if (! empty($GLOBALS["reload"])) {
+                if (! empty(GLOBALS.reload)) {
                     this.addJSON("reloadNavigation", 1);
                 }
                 this.addJSON("params", this.getHeader().getJsParams());
@@ -334,10 +341,10 @@ public class Response {
 
         // Set the Content-Type header to JSON so that jQuery parses the
         // response correctly.
-        Core.headerJSON();
+        Core.headerJSON(response);
 
-        $result = json_encode(this._JSON);
-        if ($result === false) {
+        String $result = json_encode(this._JSON);
+        /* TDO if ($result === false) {
             switch (json_last_error()) {
                 case JSON_ERROR_NONE:
                     $error = "No errors";
@@ -374,8 +381,8 @@ public class Response {
                 "success" => false,
                 "error" => "JSON encoding failed: " . $error,
             ]);
-        } else {
-            echo $result;
+        } else */ {
+            response.getWriter().write($result);
         }
     }
 
@@ -384,7 +391,7 @@ public class Response {
      *
      * @return void
      */
-    public void response(HttpServletResponse response)
+    public void response()
     {
         /*
         TODO
@@ -393,9 +400,9 @@ public class Response {
             this._HTML = $buffer->getContents();
         }*/
         if (this.isAjax()) {
-            this._ajaxResponse(response);
+            this._ajaxResponse();
         } else {
-            this._htmlResponse(response);
+            this._htmlResponse();
         }
     }
 
