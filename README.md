@@ -45,12 +45,12 @@ Less trivial conversions:
 | session_id()          |  request.getSession().getId()              |
 | echo x                |  response.getWriter().write(x)             |
 
-PHP "array" can be either a Collection or a Map
+PHP "array" can be either a List or a Map
 In the first case:
 
 |  PHP     |   Java   |
 |----------|----------|
-| is_array(x)           |(x instanceof List   |
+| is_array(x)           | x instanceof List   |
 | in_array(x,y)         | y.contains(x)       |
 | x[] = y               | x.add(y)            |
 | x[y]                  | x.get(y)            |
