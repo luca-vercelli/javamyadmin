@@ -7,11 +7,13 @@ We want to use as much resources as possible from PhpMyAdmin (js, twig, images, 
 
 Twig files are parsed with [JTwig](https://github.com/jtwig/jtwig-core), unluckily that project seems abandoned.
 
-
+	
 # Translating PHP to Java
 
 Trivial conversions:
 
+|  PHP     |   Java   |
+|----------|----------|
 |   ->     |    .     |
 |   ::     |    .     |
 |   '      |    "     |
@@ -31,22 +33,29 @@ Please notice that a "Singleton" or a "global variable" in PHP are not global at
 
 Less trivial conversions:
 
+|----------|----------|
 | preg_replace(x,y,z)   |  y.replaceAll(x,z)         |
 | preg_match(x,y)       |  y.matches(x)              |
 | explode(x,y)          |  y.split(x)                |
+| implode(x,y)          |  String.join(y,x)          |
 | str_replace(x,y,z)    |  z.replace(x,y)            |
 | $_REQUEST[x]          |  request.getParameter(x)   |
 | $_SESSION[x]          |  request.getSession().getAttribute(x)      |
 | session_id()          |  request.getSession().getId()              |
+| echo x                |  response.getWriter().write(x)             |
 
 PHP "array" can be either a Collection or a Map
 In the first case:
+
+|----------|----------|
 | is_array(x)           |(x instanceof List   |
 | in_array(x,y)         | y.contains(x)       |
 | x[] = y               | x.add(y)            |
 | x[y]                  | x.get(y)            |
 
 In the second case:
+
+|----------|----------|
 | is_array(x)           | x instanceof Map          |
 | in_array(x,y)         | y.valuesSet().contains(x) |
 | x[y] = z              | x.put(y, z)               |
