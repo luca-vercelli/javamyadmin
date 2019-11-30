@@ -1192,6 +1192,11 @@ public class Util {
         return $retval;
     } // end of the "getMessage()" function
 
+    public static String getMessage(
+            Object $message) {
+    	return getMessage($message, null, "notice");
+    }
+    
     /**
      * Execute an EXPLAIN query and formats results similar to MySQL command line
      * utility.
@@ -3201,10 +3206,10 @@ public class Util {
      *
      * @return String
      */
-    public static function expandUserString(
-        $String,
-        $escape = null,
-        array $updates = []
+    public static String expandUserString(
+        String $String,
+        Object $escape /*= null*/,
+        Map $updates /*= []*/
     ) {
         /* Content */
         $vars = [];
@@ -3294,6 +3299,11 @@ public class Util {
         return strtr((String) strftime($String), $replace);
     }
 
+    public static String expandUserString(
+            String $String) {
+    	return expandUserString($String, null, new HashMap<>());
+    }
+            
     /**
      * Prepare the form used to browse anywhere on the local server for a file to
      * import

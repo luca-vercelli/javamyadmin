@@ -39,12 +39,55 @@ public class Php {
 	}
 
 	/**
-	 * Convert special characters to HTML entities
+	 * Convert special characters to HTML entities.
+	 * 
+	 * @see https://stackoverflow.com/questions/5134959
 	 * 
 	 * @param s
 	 * @return
 	 */
 	public static String htmlspecialchars(String s) {
+	    StringBuilder builder = new StringBuilder();
+	    boolean previousWasASpace = false;
+	    for( char c : s.toCharArray() ) {
+	        if( c == ' ' ) {
+	            if( previousWasASpace ) {
+	                builder.append("&nbsp;");
+	                previousWasASpace = false;
+	                continue;
+	            }
+	            previousWasASpace = true;
+	        } else {
+	            previousWasASpace = false;
+	        }
+	        switch(c) {
+	            case '<': builder.append("&lt;"); break;
+	            case '>': builder.append("&gt;"); break;
+	            case '&': builder.append("&amp;"); break;
+	            case '"': builder.append("&quot;"); break;
+	            case '\n': builder.append("<br>"); break;
+	            // We need Tab support here, because we print StackTraces as HTML
+	            case '\t': builder.append("&nbsp; &nbsp; &nbsp;"); break;  
+	            default:
+	                if( c < 128 ) {
+	                    builder.append(c);
+	                } else {
+	                    builder.append("&#").append((int)c).append(";");
+	                }    
+	        }
+	    }
+	    return builder.toString();
+	}
+
+	/**
+	 * URL-encodes string. This function is convenient when encoding a string to be
+	 * used in a query part of a URL, as a convenient way to pass variables to the
+	 * next page
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String urlencode(String s) {
 		try {
 			return URLEncoder.encode(s, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -266,13 +309,11 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str
-	 *            The string to be escaped
-	 * @param charlist
-	 *            A list of characters to be escaped. If charlist contains
-	 *            characters \n, \r etc., they are converted in C-like style, while
-	 *            other non-alphanumeric characters with ASCII codes lower than 32
-	 *            and higher than 126 converted to octal representation.
+	 * @param str The string to be escaped
+	 * @param charlist A list of characters to be escaped. If charlist contains
+	 * characters \n, \r etc., they are converted in C-like style, while other
+	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
+	 * 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {

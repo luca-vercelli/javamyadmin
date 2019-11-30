@@ -38,12 +38,13 @@ Less trivial conversions:
 | preg_replace(x,y,z)   |  y.replaceAll(x,z)         |
 | preg_match(x,y)       |  y.matches(x)              |
 | explode(x,y)          |  y.split(x)                |
-| implode(x,y)          |  String.join(y,x)          |
+| implode(x,y)          |  String.join(x,y)          |
 | str_replace(x,y,z)    |  z.replace(x,y)            |
 | $_REQUEST[x]          |  request.getParameter(x)   |
 | $_SESSION[x]          |  request.getSession().getAttribute(x)      |
 | session_id()          |  request.getSession().getId()              |
 | echo x                |  response.getWriter().write(x)             |
+| header("x:y")         |  response.addHeader(x, y)                  |
 
 PHP "array" can be either a List or a Map
 In the first case:

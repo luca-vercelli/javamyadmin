@@ -16,15 +16,16 @@ import org.javamyadmin.helpers.Theme;
  */
 public class GLOBALS {
 
-	public final String PMA_VERSION = "0.1"; // TODO should be static
+	public static final String PMA_PATH_TO_BASEDIR = "";  // Is it needed ?!?
+	public static final String PMA_VERSION = "0.1";
 	public Integer server = 0;
-	public static String ROOT_PATH = "/"; // TODO should be static. Is it needed ?!?
+	public static final String ROOT_PATH = "/"; // Is it needed ?!?
+	public boolean IS_TRANSFORMATION_WRAPPER = false;
 	public Theme PMA_Theme;
 	public String pmaThemePath;
 	public String pmaThemeImage;
 	public Config PMA_Config;
 	public static boolean pma_config_loading = false;
-	public String message;
 	public static Properties cfg;
 	public String lang;
 	public String db;
@@ -35,6 +36,8 @@ public class GLOBALS {
 	public Object error_handler;
 	public String text_dir;
 	public boolean PMA_NO_SESSION = false;
+	public String message;
+	public String buffer_message;
 
 	static {
 		cfg = new Properties();

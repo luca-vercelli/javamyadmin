@@ -34,8 +34,8 @@ public abstract class AbstractController extends HttpServlet {
 		$containerBuilder = new ContainerBuilder();
 		GLOBALS.error_handler = $containerBuilder.get("error_handler");
 		GLOBALS.PMA_Config = $containerBuilder.get("config");
-		if (! defined("PMA_NO_SESSION")) {
-		    Session.setUp(GLOBALS.PMA_Config, GLOBALS.error_handler);
+		if (! GLOBALS.PMA_NO_SESSION == true) {
+		    // TODO Session.setUp(GLOBALS.PMA_Config, GLOBALS.error_handler);
 		}
 		
 		boolean $token_provided, $token_mismatch;
@@ -70,7 +70,8 @@ public abstract class AbstractController extends HttpServlet {
 		/*
 		 * Store currently selected recent table.
 		 * Affect GLOBALS.db"] and GLOBALS.table"]
-		 */
+		 *
+		 * TODO, maybe
 		if (!empty(request.getParameter("selected_recent_table")) && Core.isValid(request.getParameter("selected_recent_table"))) {
 		    String $recent_table = json_decode(request.getParameter("selected_recent_table"));
 		    $diMigration.setGlobal(
@@ -94,7 +95,7 @@ public abstract class AbstractController extends HttpServlet {
 		/*
 		 * SQL query to be executed
 		 * @global String GLOBALS.sql_query"]
-		 */
+		 *
 		$diMigration.setGlobal("sql_query", "");
 		if (Core.isValid($_POST["sql_query"])) {
 		    $diMigration.setGlobal("sql_query", $_POST["sql_query"]);
@@ -134,7 +135,7 @@ public abstract class AbstractController extends HttpServlet {
 		        // no generic solution for loading preferences from cache as some settings
 		        // need to be kept for processing in
 		        // PhpMyAdmin\Config.loadUserPreferences()
-		        $cache_key = "server_" . GLOBALS.server"];
+		        $cache_key = "server_" + GLOBALS.server;
 		        if (isset($_SESSION["cache"][$cache_key]["userprefs"]["LoginCookieValidity"])
 		        ) {
 		            $value

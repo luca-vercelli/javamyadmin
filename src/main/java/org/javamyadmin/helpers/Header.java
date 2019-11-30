@@ -1,9 +1,17 @@
 package org.javamyadmin.helpers;
 
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.php.GLOBALS;
+import static org.javamyadmin.php.Php.*;
 
 /**
  * Class used to output the HTTP and HTML headers
@@ -25,7 +33,7 @@ public class Header {
      * @access private
      * @var Console
      */
-    private Console _console;
+    // TODO private Console _console;
     /**
      * Menu instance
      *
@@ -101,7 +109,7 @@ public class Header {
     /**
      * @var UserPreferences
      */
-    private String userPreferences;
+    // TODO private UserPreferences userPreferences;
 
     /**
      * @var Template
@@ -111,15 +119,19 @@ public class Header {
     /**
      * @var Navigation
      */
-    private String navigation;
+    // TODO private Navigation navigation;
 
     private GLOBALS GLOBALS;
+	private HttpServletRequest request;
+	private HttpServletResponse response;
     
     /**
      * Creates a new class instance
      */
-    public Header(GLOBALS GLOBALS)
+    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS)
     {
+    	this.request = request;
+    	this.response = response;
     	this.GLOBALS = GLOBALS;
     	
         this.template = new Template();
@@ -128,7 +140,7 @@ public class Header {
         this._isAjax = false;
         this._bodyId = "";
         this._title = "";
-        this._console = new Console();
+        // TODO this._console = new Console();
         String $db = GLOBALS.db; // FIXME col xxx che sono globali
         String $table = GLOBALS.table;
         this._menu = new Menu(
@@ -145,18 +157,19 @@ public class Header {
         // offer to load exported settings from localStorage
         // (detection will be done in JavaScript)
         this._userprefsOfferImport = false;
-        if (GLOBALS.PMA_Config.get("user_preferences") == "session"
-            && ! isset($_SESSION["userprefs_autoload"])
+        if ("session".equals(GLOBALS.PMA_Config.get("user_preferences"))
+            && ! empty(request.getSession().getAttribute("userprefs_autoload"))
         ) {
             this._userprefsOfferImport = true;
         }
 
+        /* TODO
         this.userPreferences = new UserPreferences();
         this.navigation = new Navigation(
             this.template,
             new Relation(GLOBALS.dbi),
             GLOBALS.dbi
-        );
+        );*/
     }
 
     /**
@@ -185,12 +198,12 @@ public class Header {
         this._scripts.addFile("menu_resizer.js");
 
         // Cross-framing protection
-        if ($GLOBALS["cfg"]["AllowThirdPartyFraming"] === false) {
+        if ("false".equals(GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
             this._scripts.addFile("cross_framing_protection.js");
         }
 
         this._scripts.addFile("rte.js");
-        if ($GLOBALS["cfg"]["SendErrorReports"] !== "never") {
+        if (!"never".equals(GLOBALS.cfg.get("SendErrorReports"))) {
             this._scripts.addFile("vendor/tracekit.js");
             this._scripts.addFile("error_report.js");
         }
@@ -198,7 +211,9 @@ public class Header {
         // Here would not be a good place to add CodeMirror because
         // the user preferences have not been merged at this point
 
-        this._scripts.addFile("messages.php", ["l" => $GLOBALS["lang"]]);
+        Map<String, Object> params = new HashMap<>();
+        params.put("l", GLOBALS.lang);
+        this._scripts.addFile("messages.php", params);
         this._scripts.addFile("config.js");
         this._scripts.addFile("doclinks.js");
         this._scripts.addFile("functions.js");
@@ -206,10 +221,10 @@ public class Header {
         this._scripts.addFile("indexes.js");
         this._scripts.addFile("common.js");
         this._scripts.addFile("page_settings.js");
-        if ($GLOBALS["cfg"]["enable_drag_drop_import"] === true) {
+        if ("true".equals(GLOBALS.cfg.get("enable_drag_drop_import"))) {
             this._scripts.addFile("drag_drop_import.js");
         }
-        if (! $GLOBALS["PMA_Config"].get("DisableShortcutKeys")) {
+        if (empty(GLOBALS.PMA_Config.get("DisableShortcutKeys"))) {
             this._scripts.addFile("shortcuts_handler.js");
         }
         this._scripts.addCode(this.getJsParamsCode());
@@ -226,48 +241,48 @@ public class Header {
     	Map<String, Object> params = new HashMap<String, Object>();
     	
     	throw new IllegalStateException("serve la request qui");
-        /*$db = strlen($GLOBALS["db"]) ? $GLOBALS["db"] : "";
-        $table = strlen($GLOBALS["table"]) ? $GLOBALS["table"] : "";
+        /*$db = strlen(GLOBALS["db"]) ? GLOBALS["db"] : "";
+        $table = strlen(GLOBALS["table"]) ? GLOBALS["table"] : "";
         $pftext = isset($_SESSION["tmpval"]["pftext"])
             ? $_SESSION["tmpval"]["pftext"] : "";
 
         $params = [
             "common_query" => Url.getCommonRaw(),
             "opendb_url" => Util.getScriptNameForOption(
-                $GLOBALS["cfg"]["DefaultTabDatabase"],
+                GLOBALS.cfg["DefaultTabDatabase"],
                 "database"
             ),
-            "lang" => $GLOBALS["lang"],
-            "server" => $GLOBALS["server"],
+            "lang" => GLOBALS["lang"],
+            "server" => GLOBALS["server"],
             "table" => $table,
             "db" => $db,
             "token" => $_SESSION[" PMA_token "],
-            "text_dir" => $GLOBALS["text_dir"],
-            "show_databases_navigation_as_tree" => $GLOBALS["cfg"]["ShowDatabasesNavigationAsTree"],
+            "text_dir" => GLOBALS["text_dir"],
+            "show_databases_navigation_as_tree" => GLOBALS.cfg["ShowDatabasesNavigationAsTree"],
             "pma_text_default_tab" => Util.getTitleForTarget(
-                $GLOBALS["cfg"]["DefaultTabTable"]
+                GLOBALS.cfg["DefaultTabTable"]
             ),
             "pma_text_left_default_tab" => Util.getTitleForTarget(
-                $GLOBALS["cfg"]["NavigationTreeDefaultTabTable"]
+                GLOBALS.cfg["NavigationTreeDefaultTabTable"]
             ),
             "pma_text_left_default_tab2" => Util.getTitleForTarget(
-                $GLOBALS["cfg"]["NavigationTreeDefaultTabTable2"]
+                GLOBALS.cfg["NavigationTreeDefaultTabTable2"]
             ),
-            "LimitChars" => $GLOBALS["cfg"]["LimitChars"],
+            "LimitChars" => GLOBALS.cfg["LimitChars"],
             "pftext" => $pftext,
-            "confirm" => $GLOBALS["cfg"]["Confirm"],
-            "LoginCookieValidity" => $GLOBALS["cfg"]["LoginCookieValidity"],
+            "confirm" => GLOBALS.cfg["Confirm"],
+            "LoginCookieValidity" => GLOBALS.cfg["LoginCookieValidity"],
             "session_gc_maxlifetime" => (int) ini_get("session.gc_maxlifetime"),
-            "logged_in" => isset($GLOBALS["dbi"]) ? $GLOBALS["dbi"].isUserType("logged") : false,
-            "is_https" => $GLOBALS["PMA_Config"].isHttps(),
-            "rootPath" => $GLOBALS["PMA_Config"].getRootPath(),
+            "logged_in" => isset(GLOBALS["dbi"]) ? GLOBALS["dbi"].isUserType("logged") : false,
+            "is_https" => GLOBALS["PMA_Config"].isHttps(),
+            "rootPath" => GLOBALS["PMA_Config"].getRootPath(),
             "arg_separator" => Url.getArgSeparator(),
             "PMA_VERSION" => PMA_VERSION,
         ];
-        if (isset($GLOBALS["cfg"]["Server"], $GLOBALS["cfg"]["Server"]["auth_type"])) {
-            $params["auth_type"] = $GLOBALS["cfg"]["Server"]["auth_type"];
-            if (isset($GLOBALS["cfg"]["Server"]["user"])) {
-                $params["user"] = $GLOBALS["cfg"]["Server"]["user"];
+        if (isset(GLOBALS.cfg["Server"], GLOBALS.cfg["Server"]["auth_type"])) {
+            $params["auth_type"] = GLOBALS.cfg["Server"]["auth_type"];
+            if (isset(GLOBALS.cfg["Server"]["user"])) {
+                $params["user"] = GLOBALS.cfg["Server"]["user"];
             }
         }
 
@@ -283,14 +298,14 @@ public class Header {
     public String getJsParamsCode()
     {
         Map<String, Object> $params = this.getJsParams();
-        for (String entry: params.entrySet()) {
+        for (Entry<String, Object> entry: $params.entrySet()) {
             if (entry.getValue() instanceof Boolean) {
                 $params.put(entry.getKey(), entry.getKey() + ":" + (((Boolean)entry.getValue()) ? "true" : "false") + "");
             } else {
-                $params.put(entry.getKey(), entry.getKey() + ":"" + Sanitize.escapeJsString($value) + """);
+                $params.put(entry.getKey(), entry.getKey() + ":'" + Sanitize.escapeJsString((String) entry.getValue()) + "'");
             }
         }
-        return "CommonParams.setAll({" + implode(",", $params) + "});";
+        return "CommonParams.setAll({" + String.join(",", (Collection)$params.values()) + "});";
     }
 
     /**
@@ -314,7 +329,7 @@ public class Header {
     public void setAjax(boolean $isAjax)
     {
         this._isAjax = $isAjax;
-        this._console.setAjax($isAjax);
+        // TODO this._console.setAjax($isAjax);
     }
 
     /**
@@ -369,7 +384,7 @@ public class Header {
     public void disableMenuAndConsole()
     {
         this._menuEnabled = false;
-        this._console.disable();
+        // TODO this._console.disable();
     }
 
     /**
@@ -402,23 +417,35 @@ public class Header {
     public String getDisplay()
     {
         if (! this._headerIsSent) {
+            String $baseDir = null;
+            String $uniqueValue = null;
+            String $themePath = null;
+            String $version = null;
+            String $messages = null;
+            String $recentTable = null;
+            String $customHeader = null;
+            String $navigation = null;
+            String $loadUserPreferences = null;
+            String $menu = null;
+            String $console = null;
+            		
             if (! this._isAjax && this._isEnabled) {
                 this.sendHttpHeaders();
 
-                String $baseDir = GLOBALS.PMA_PATH_TO_BASEDIR;
-                String $uniqueValue = GLOBALS.PMA_Config.getThemeUniqueValue();
-                String $themePath = GLOBALS.pmaThemePath;
-                String $version = getVersionParameter();
+                $baseDir = GLOBALS.PMA_PATH_TO_BASEDIR;
+                $uniqueValue = GLOBALS.PMA_Config.getThemeUniqueValue(GLOBALS);
+                $themePath = GLOBALS.pmaThemePath;
+                $version = getVersionParameter();
 
                 // The user preferences have been merged at this point
                 // so we can conditionally add CodeMirror
-                if ($GLOBALS["cfg"]["CodemirrorEnable"]) {
+                if (!empty(GLOBALS.cfg.get("CodemirrorEnable"))) {
                     this._scripts.addFile("vendor/codemirror/lib/codemirror.js");
                     this._scripts.addFile("vendor/codemirror/mode/sql/sql.js");
                     this._scripts.addFile("vendor/codemirror/addon/runmode/runmode.js");
                     this._scripts.addFile("vendor/codemirror/addon/hint/show-hint.js");
                     this._scripts.addFile("vendor/codemirror/addon/hint/sql-hint.js");
-                    if ($GLOBALS["cfg"]["LintEnable"]) {
+                    if (!empty(GLOBALS.cfg.get("LintEnable"))) {
                         this._scripts.addFile("vendor/codemirror/addon/lint/lint.js");
                         this._scripts.addFile(
                             "codemirror/addon/lint/sql-lint.js"
@@ -427,34 +454,34 @@ public class Header {
                 }
                 this._scripts.addCode(
                     "ConsoleEnterExecutes="
-                    + ($GLOBALS["cfg"]["ConsoleEnterExecutes"] ? "true" : "false")
+                    + GLOBALS.cfg.get("ConsoleEnterExecutes")
                 );
-                this._scripts.addFiles(this._console.getScripts());
+                // TODO this._scripts.addFiles(this._console.getScripts());
                 if (this._userprefsOfferImport) {
                     this._scripts.addFile("config.js");
                 }
 
-                if (this._menuEnabled && $GLOBALS["server"] > 0) {
-                    $navigation = this.navigation.getDisplay();
+                if (this._menuEnabled && GLOBALS.server > 0) {
+                    // TODO $navigation = this.navigation.getDisplay();
                 }
 
                 $customHeader = Config.renderHeader();
 
                 // offer to load user preferences from localStorage
                 if (this._userprefsOfferImport) {
-                    $loadUserPreferences = this.userPreferences.autoloadGetHeader();
+                    // TODO $loadUserPreferences = this.userPreferences.autoloadGetHeader();
                 }
 
-                if (this._menuEnabled && $GLOBALS["server"] > 0) {
+                if (this._menuEnabled && GLOBALS.server > 0) {
                     $menu = this._menu.getDisplay();
                 }
-                $console = this._console.getDisplay();
+                // TODO $console = this._console.getDisplay();
                 $messages = this.getMessage();
             }
-            if (this._isEnabled && empty($_REQUEST["recent_table"])) {
+            if (this._isEnabled && empty(request.getParameter("recent_table"))) {
                 $recentTable = this._addRecentTable(
-                    $GLOBALS["db"],
-                    $GLOBALS["table"]
+                    GLOBALS.db,
+                    GLOBALS.table
                 );
             }
             
@@ -463,35 +490,29 @@ public class Header {
             model.put("is_enabled", this._isEnabled);
             model.put("lang", GLOBALS.lang);
             model.put("allow_third_party_framing", GLOBALS.cfg.get("AllowThirdPartyFraming"));
+            model.put("is_print_view" , this._isPrintView);
+			model.put("base_dir", $baseDir);
+			model.put("unique_value", $uniqueValue);
+			model.put("theme_path", $themePath);
+			model.put("version", $version);
+			model.put("text_dir", GLOBALS.text_dir);
+			model.put("server", GLOBALS.server > 0 ? GLOBALS.server : null);
+			model.put("title", this.getPageTitle());
+			model.put("scripts", this._scripts.getDisplay());
+			model.put("body_id", this._bodyId);
+			model.put("navigation", $navigation);
+			model.put("custom_header", $customHeader);
+			model.put("load_user_preferences", $loadUserPreferences);
+			model.put("show_hint", GLOBALS.cfg.get("ShowHint"));
+			model.put("is_warnings_enabled", this._warningsEnabled);
+			model.put("is_menu_enabled", this._menuEnabled);
+			model.put("menu", $menu);
+			model.put("console", $console);
+			model.put("messages", $messages);
+			model.put("has_recent_table", empty(request.getParameter("recent_table")));
+			model.put("recent_table", $recentTable);            
             
-            
-            return this.template.render("header", [
-                "is_ajax" => this._isAjax,
-                "is_enabled" => this._isEnabled,
-                "lang" => $GLOBALS["lang"],
-                "allow_third_party_framing" => $GLOBALS["cfg"]["AllowThirdPartyFraming"],
-                "is_print_view" => this._isPrintView,
-                "base_dir" => $baseDir ?? "",
-                "unique_value" => $uniqueValue ?? "",
-                "theme_path" => $themePath ?? "",
-                "version" => $version ?? "",
-                "text_dir" => $GLOBALS["text_dir"],
-                "server" => $GLOBALS["server"] ?? null,
-                "title" => this.getPageTitle(),
-                "scripts" => this._scripts.getDisplay(),
-                "body_id" => this._bodyId,
-                "navigation" => $navigation ?? "",
-                "custom_header" => $customHeader ?? "",
-                "load_user_preferences" => $loadUserPreferences ?? "",
-                "show_hint" => $GLOBALS["cfg"]["ShowHint"],
-                "is_warnings_enabled" => this._warningsEnabled,
-                "is_menu_enabled" => this._menuEnabled,
-                "menu" => $menu ?? "",
-                "console" => $console ?? "",
-                "messages" => $messages ?? "",
-                "has_recent_table" => empty($_REQUEST["recent_table"]),
-                "recent_table" => $recentTable ?? "",
-            ]);
+            return this.template.render("header", model);
         }
         return "";
     }
@@ -506,24 +527,27 @@ public class Header {
     {
         String $retval = "";
         String $message = "";
-        if (! empty($GLOBALS["message"])) {
-            $message = $GLOBALS["message"];
-            unset($GLOBALS["message"]);
-        } else if (! empty($_REQUEST["message"])) {
-            $message = $_REQUEST["message"];
+        if (! empty(GLOBALS.message)) {
+            $message = GLOBALS.message;
+            GLOBALS.message = null;
+        } else if (! empty(request.getParameter("message"))) {
+            $message = request.getParameter("message");
         }
         if (! empty($message)) {
-            if (isset($GLOBALS["buffer_message"])) {
-                $buffer_message = $GLOBALS["buffer_message"];
+        	String $buffer_message = null;
+            if (GLOBALS.buffer_message != null) {
+                $buffer_message = GLOBALS.buffer_message;
             }
             $retval += Util.getMessage($message);
-            if (isset($buffer_message)) {
-                $GLOBALS["buffer_message"] = $buffer_message;
+            if (!empty($buffer_message)) {
+                GLOBALS.buffer_message = $buffer_message;
             }
         }
         return $retval;
     }
 
+    private static SimpleDateFormat gmdate = new SimpleDateFormat("E, d M y H:m:s 'GMT'");
+    
     /**
      * Sends out the HTTP headers
      *
@@ -531,112 +555,111 @@ public class Header {
      */
     public void sendHttpHeaders()
     {
-        if (defined("TESTSUITE")) {
-            return;
-        }
-        $map_tile_urls = " *.tile.openstreetmap.org";
+        String $map_tile_urls = " *.tile.openstreetmap.org";
 
         /**
          * Sends http headers
          */
-        $GLOBALS["now"] = gmdate("D, d M Y H:i:s") . " GMT";
-        if (! empty($GLOBALS["cfg"]["CaptchaLoginPrivateKey"])
-            && ! empty($GLOBALS["cfg"]["CaptchaLoginPublicKey"])
+        String $captcha_url;
+        
+        String now = gmdate.format(new Date());
+        if (! empty(GLOBALS.cfg.get("CaptchaLoginPrivateKey"))
+            && ! empty(GLOBALS.cfg.get("CaptchaLoginPublicKey"))
         ) {
             $captcha_url
                 = " https://apis.google.com https://www.google.com/recaptcha/"
-                . " https://www.gstatic.com/recaptcha/ https://ssl.gstatic.com/ ";
+                + " https://www.gstatic.com/recaptcha/ https://ssl.gstatic.com/ ";
         } else {
             $captcha_url = "";
         }
         /* Prevent against ClickJacking by disabling framing */
-        if (strtolower((String) $GLOBALS["cfg"]["AllowThirdPartyFraming"]) === "sameorigin") {
-            header(
-                "X-Frame-Options: SAMEORIGIN"
+        if ("sameorigin".equalsIgnoreCase((String) GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
+            response.addHeader(
+                "X-Frame-Options", "SAMEORIGIN"
             );
-        } else if ($GLOBALS["cfg"]["AllowThirdPartyFraming"] !== true) {
-            header(
-                "X-Frame-Options: DENY"
+        } else if (!"true".equals(GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
+            response.addHeader(
+                "X-Frame-Options", "DENY"
             );
         }
-        header(
-            "Referrer-Policy: no-referrer"
+        response.addHeader(
+            "Referrer-Policy", "no-referrer"
         );
-        header(
-            "Content-Security-Policy: default-src "self" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"] . ";"
-            . "script-src "self" "unsafe-inline" "unsafe-eval" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"] . ";"
-            . "style-src "self" "unsafe-inline" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"]
-            . ";"
-            . "img-src "self" data: "
-            . $GLOBALS["cfg"]["CSPAllow"]
-            . $map_tile_urls
-            . $captcha_url
-            . ";"
-            . "object-src "none";"
+        response.addHeader(
+            "Content-Security-Policy", "default-src \"self\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + "script-src \"self\" \"unsafe-inline\" \"unsafe-eval\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + "style-src \"self\" \"unsafe-inline\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow")
+            + ";"
+            + "img-src \"self\" data: "
+            + GLOBALS.cfg.get("CSPAllow")
+            + $map_tile_urls
+            + $captcha_url
+            + ";"
+            + "object-src \"none\";"
         );
-        header(
-            "X-Content-Security-Policy: default-src "self" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"] . ";"
-            . "options inline-script eval-script;"
-            . "referrer no-referrer;"
-            . "img-src "self" data: "
-            . $GLOBALS["cfg"]["CSPAllow"]
-            . $map_tile_urls
-            . $captcha_url
-            . ";"
-            . "object-src "none";"
+        response.addHeader(
+            "X-Content-Security-Policy", "default-src \"self\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + "options inline-script eval-script;"
+            + "referrer no-referrer;"
+            + "img-src \"self\" data: "
+            + GLOBALS.cfg.get("CSPAllow")
+            + $map_tile_urls
+            + $captcha_url
+            + ";"
+            + "object-src \"none\";"
         );
-        header(
-            "X-WebKit-CSP: default-src "self" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"] . ";"
-            . "script-src "self" "
-            . $captcha_url
-            . $GLOBALS["cfg"]["CSPAllow"]
-            . " "unsafe-inline" "unsafe-eval";"
-            . "referrer no-referrer;"
-            . "style-src "self" "unsafe-inline" "
-            . $captcha_url
-            . ";"
-            . "img-src "self" data: "
-            . $GLOBALS["cfg"]["CSPAllow"]
-            . $map_tile_urls
-            . $captcha_url
-            . ";"
-            . "object-src "none";"
+        response.addHeader(
+            "X-WebKit-CSP", "default-src \"self\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + "script-src \"self\" "
+            + $captcha_url
+            + GLOBALS.cfg.get("CSPAllow")
+            + " \"unsafe-inline\" \"unsafe-eval\";"
+            + "referrer no-referrer;"
+            + "style-src \"self\" \"unsafe-inline\" "
+            + $captcha_url
+            + ";"
+            + "img-src \"self\" data: "
+            + GLOBALS.cfg.get("CSPAllow")
+            + $map_tile_urls
+            + $captcha_url
+            + ";"
+            + "object-src \"none\";"
         );
         // Re-enable possible disabled XSS filters
         // see https://www.owasp.org/index.php/List_of_useful_HTTP_headers
-        header(
-            "X-XSS-Protection: 1; mode=block"
+        response.addHeader(
+            "X-XSS-Protection", "1; mode=block"
         );
         // "nosniff", prevents Internet Explorer and Google Chrome from MIME-sniffing
         // a response away from the declared content-type
         // see https://www.owasp.org/index.php/List_of_useful_HTTP_headers
-        header(
-            "X-Content-Type-Options: nosniff"
+        response.addHeader(
+            "X-Content-Type-Options", "nosniff"
         );
         // Adobe cross-domain-policies
         // see https://www.adobe.com/devnet/articles/crossdomain_policy_file_spec.html
-        header(
-            "X-Permitted-Cross-Domain-Policies: none"
+        response.addHeader(
+            "X-Permitted-Cross-Domain-Policies", "none"
         );
         // Robots meta tag
         // see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag
-        header(
-            "X-Robots-Tag: noindex, nofollow"
+        response.addHeader(
+            "X-Robots-Tag", "noindex, nofollow"
         );
         Core.noCacheHeader();
-        if (! defined("IS_TRANSFORMATION_WRAPPER")) {
+        if (!GLOBALS.IS_TRANSFORMATION_WRAPPER) {
             // Define the charset to be used
-            header("Content-Type: text/html; charset=utf-8");
+            response.addHeader("Content-Type", "text/html; charset=utf-8");
         }
         this._headerIsSent = true;
     }
@@ -649,16 +672,17 @@ public class Header {
      */
     public String getPageTitle()
     {
-        if ((empty(this._title)) {
-            if ($GLOBALS["server"] > 0) {
-                if (strlen($GLOBALS["table"])) {
-                    $temp_title = $GLOBALS["cfg"]["TitleTable"];
-                } else if (strlen($GLOBALS["db"])) {
-                    $temp_title = $GLOBALS["cfg"]["TitleDatabase"];
-                } else if (strlen($GLOBALS["cfg"]["Server"]["host"])) {
-                    $temp_title = $GLOBALS["cfg"]["TitleServer"];
+        if ((empty(this._title))) {
+            if (GLOBALS.server > 0) {
+            	String $temp_title;
+                if (! empty(GLOBALS.table)) {
+                    $temp_title = (String) GLOBALS.cfg.get("TitleTable");
+                } else if (!empty(GLOBALS.db)) {
+                    $temp_title = (String) GLOBALS.cfg.get("TitleDatabase");
+                } else if (!empty(((Map<String,Object>) GLOBALS.cfg.get("Server")).get("host"))) {
+                    $temp_title = (String) GLOBALS.cfg.get("TitleServer");
                 } else {
-                    $temp_title = $GLOBALS["cfg"]["TitleDefault"];
+                    $temp_title = (String) GLOBALS.cfg.get("TitleDefault");
                 }
                 this._title = htmlspecialchars(
                     Util.expandUserString($temp_title)
@@ -680,12 +704,14 @@ public class Header {
      */
     private String _addRecentTable(String $db, String $table)
     {
-        $retval = "";
+    	return ""; //TODO
+    	/*
+        String $retval = "";
         if (this._menuEnabled
-            && strlen($table) > 0
-            && ((Integer)GLOBALS.cfg.get("NumRecentTables")) > 0
+            && !empty($table)
+            && (new Integer((String) GLOBALS.cfg.get("NumRecentTables")) > 0)
         ) {
-            $tmp_result = RecentFavoriteTable.getInstance("recent").add(
+            String $tmp_result = RecentFavoriteTable.getInstance("recent").add(
                 $db,
                 $table
             );
@@ -696,7 +722,7 @@ public class Header {
                 $retval = $error.getDisplay();
             }
         }
-        return $retval;
+        return $retval;*/
     }
 
     /**
@@ -707,7 +733,7 @@ public class Header {
      */
     public static String getVersionParameter()
     {
-        return "v=" + urlencode(GLOBALS.PMA_VERSION);
+        return "v=" + urlencode(org.javamyadmin.php.GLOBALS.PMA_VERSION);
     }
 
 }
