@@ -235,15 +235,17 @@ public class Footer {
     public String getErrorMessages()
     {
         String $retval = "";
+        /* FIXME
         if (GLOBALS.error_handler.hasDisplayErrors()) {
             $retval += GLOBALS.error_handler..getDispErrors();
         }
 
         /**
          * Report php errors
-         */
+         *
         GLOBALS.error_handler.reportErrors();
-
+		*/
+        
         return $retval;
     }
 

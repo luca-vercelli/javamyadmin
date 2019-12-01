@@ -249,8 +249,9 @@ public class Response {
      * @param response2 
      *
      * @return void
+     * @throws IOException 
      */
-    private void _ajaxResponse()
+    private void _ajaxResponse() throws IOException
     {
         /* Avoid wrapping in case we"re disabled */
     	
@@ -308,8 +309,8 @@ public class Response {
             if (!empty($errors) ) {
                 this.addJSON("errors", $errors);
             }
-            String $promptPhpErrors = GLOBALS.error_handler.hasErrorsForPrompt();
-            this.addJSON("promptPhpErrors", $promptPhpErrors);
+            // Unsupported String $promptPhpErrors = GLOBALS.error_handler.hasErrorsForPrompt();
+            // this.addJSON("promptPhpErrors", $promptPhpErrors);
 
             if (empty(GLOBALS.error_message)) {
                 // set current db, table and sql query in the querywindow

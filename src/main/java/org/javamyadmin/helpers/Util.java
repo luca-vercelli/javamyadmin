@@ -451,7 +451,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function showDocu($page, $anchor = "", $bbcode = false)
+    public static String showDocu($page, $anchor = "", $bbcode = false)
     {
         return showDocLink(getDocuLink($page, $anchor), "documentation", $bbcode);
     } // end of the "showDocu()" function

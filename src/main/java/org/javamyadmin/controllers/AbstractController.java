@@ -31,9 +31,9 @@ public abstract class AbstractController extends HttpServlet {
 		// cfr. commons.inc.php
 		
 		// ContainerBuilder.
-		$containerBuilder = new ContainerBuilder();
-		GLOBALS.error_handler = $containerBuilder.get("error_handler");
-		GLOBALS.PMA_Config = $containerBuilder.get("config");
+		// $containerBuilder = new ContainerBuilder();
+		// GLOBALS.error_handler = $containerBuilder.get("error_handler");
+		// GLOBALS.PMA_Config = $containerBuilder.get("config");
 		if (! GLOBALS.PMA_NO_SESSION == true) {
 		    // TODO Session.setUp(GLOBALS.PMA_Config, GLOBALS.error_handler);
 		}

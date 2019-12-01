@@ -6,11 +6,14 @@ import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 
@@ -47,36 +50,48 @@ public class Php {
 	 * @return
 	 */
 	public static String htmlspecialchars(String s) {
-	    StringBuilder builder = new StringBuilder();
-	    boolean previousWasASpace = false;
-	    for( char c : s.toCharArray() ) {
-	        if( c == ' ' ) {
-	            if( previousWasASpace ) {
-	                builder.append("&nbsp;");
-	                previousWasASpace = false;
-	                continue;
-	            }
-	            previousWasASpace = true;
-	        } else {
-	            previousWasASpace = false;
-	        }
-	        switch(c) {
-	            case '<': builder.append("&lt;"); break;
-	            case '>': builder.append("&gt;"); break;
-	            case '&': builder.append("&amp;"); break;
-	            case '"': builder.append("&quot;"); break;
-	            case '\n': builder.append("<br>"); break;
-	            // We need Tab support here, because we print StackTraces as HTML
-	            case '\t': builder.append("&nbsp; &nbsp; &nbsp;"); break;  
-	            default:
-	                if( c < 128 ) {
-	                    builder.append(c);
-	                } else {
-	                    builder.append("&#").append((int)c).append(";");
-	                }    
-	        }
-	    }
-	    return builder.toString();
+		StringBuilder builder = new StringBuilder();
+		boolean previousWasASpace = false;
+		for (char c : s.toCharArray()) {
+			if (c == ' ') {
+				if (previousWasASpace) {
+					builder.append("&nbsp;");
+					previousWasASpace = false;
+					continue;
+				}
+				previousWasASpace = true;
+			} else {
+				previousWasASpace = false;
+			}
+			switch (c) {
+			case '<':
+				builder.append("&lt;");
+				break;
+			case '>':
+				builder.append("&gt;");
+				break;
+			case '&':
+				builder.append("&amp;");
+				break;
+			case '"':
+				builder.append("&quot;");
+				break;
+			case '\n':
+				builder.append("<br>");
+				break;
+			// We need Tab support here, because we print StackTraces as HTML
+			case '\t':
+				builder.append("&nbsp; &nbsp; &nbsp;");
+				break;
+			default:
+				if (c < 128) {
+					builder.append(c);
+				} else {
+					builder.append("&#").append((int) c).append(";");
+				}
+			}
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -93,6 +108,18 @@ public class Php {
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalArgumentException("Not an UTF-8 string", e);
 		}
+	}
+
+	/**
+	 * First character to uppercase
+	 * 
+	 * @return
+	 */
+	public static String ucfirst(String str) {
+		if (str == null || str.length() == 0) {
+			return str;
+		}
+		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
 	}
 
 	/**
@@ -334,5 +361,41 @@ public class Php {
 			}
 		}
 		return str;
+	}
+
+	/**
+	 * Return array entries that match the pattern
+	 * 
+	 * @param pattern
+	 * @param array
+	 * @return
+	 */
+	public static List<String> preg_grep(String pattern, List<String> array) {
+		Pattern p = Pattern.compile(pattern);
+		List<String> result = new ArrayList<>();
+		for (String s : array) {
+			if (p.matcher(s).matches()) {
+				result.add(s);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Return array entries that match the pattern
+	 * 
+	 * @param pattern
+	 * @param array
+	 * @return
+	 */
+	public static <U> Map<U, String> preg_grep(String pattern, Map<U, String> array) {
+		Pattern p = Pattern.compile(pattern);
+		Map<U, String> result = new HashMap<>();
+		for (Entry<U, String> entry : array.entrySet()) {
+			if (p.matcher(entry.getValue()).matches()) {
+				result.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return result;
 	}
 }
