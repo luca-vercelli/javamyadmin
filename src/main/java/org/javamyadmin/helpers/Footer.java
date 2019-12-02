@@ -213,7 +213,7 @@ public class Footer {
         $retval += "<div id='selflink' class='print_ignore'>";
         $retval += "<a href='" + htmlspecialchars($url) + "'"
             + " title='" + __("Open new phpMyAdmin window") + "' target='_blank' rel='noopener noreferrer'>";
-        if (Util.showIcons("TabsMode")) {
+        if (Util.showIcons("TabsMode", GLOBALS)) {
             $retval += Generator.getImage(
                 "window-new",
                 __("Open new phpMyAdmin window"),
