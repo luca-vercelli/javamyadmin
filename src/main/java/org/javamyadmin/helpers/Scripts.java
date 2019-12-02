@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
@@ -50,7 +51,7 @@ public class Scripts {
 	/**
 	 * @var Template
 	 */
-	private Template template;
+	//private Template template;
 
 	private GLOBALS GLOBALS;
 
@@ -59,7 +60,7 @@ public class Scripts {
 	 *
 	 */
 	public Scripts(GLOBALS GLOBALS) {
-		this.template = new Template();
+		//this.template = new Template();
 		this._files = new HashMap<>();
 		this._code = "";
 		this.GLOBALS = GLOBALS;
@@ -171,7 +172,7 @@ public class Scripts {
 		model.put("version", GLOBALS.PMA_VERSION);
 		model.put("code", this._code);
 
-		return this.template.render("scripts", model);
+		return JtwigFactory.render("scripts", model);
 
 	}
 

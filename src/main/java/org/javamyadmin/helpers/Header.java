@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 import static org.javamyadmin.php.Php.*;
 
@@ -114,7 +115,7 @@ public class Header {
     /**
      * @var Template
      */
-    private Template template;
+    //private Template template;
 
     /**
      * @var Navigation
@@ -134,7 +135,7 @@ public class Header {
     	this.response = response;
     	this.GLOBALS = GLOBALS;
     	
-        this.template = new Template();
+        //this.template = new Template();
 
         this._isEnabled = true;
         this._isAjax = false;
@@ -513,7 +514,7 @@ public class Header {
 			model.put("has_recent_table", empty(request.getParameter("recent_table")));
 			model.put("recent_table", $recentTable);            
             
-            return this.template.render("header", model);
+            return JtwigFactory.render("header", model);
         }
         return "";
     }

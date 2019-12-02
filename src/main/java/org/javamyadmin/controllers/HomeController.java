@@ -1,7 +1,6 @@
 package org.javamyadmin.controllers;
 
-import static org.javamyadmin.php.Php.__;
-import static org.javamyadmin.php.Php.empty;
+import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
-import org.javamyadmin.helpers.Template;
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 
 /**
@@ -35,7 +34,7 @@ public class HomeController extends AbstractController {
 	 * GET handler
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, Map $_SESSION, GLOBALS GLOBALS, Template template)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, GLOBALS GLOBALS)
 			throws ServletException, IOException {
 
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
@@ -112,7 +111,7 @@ public class HomeController extends AbstractController {
 		model.put("phpmyadmin_version", GLOBALS.PMA_VERSION);
 		model.put("config_storage_message", null);
 
-		String html = template.render("home/index", model);
+		String html = JtwigFactory.render("home/index", model);
 		pmaResponse.addHTML(html);
 	}
 }

@@ -340,13 +340,11 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str
-	 *            The string to be escaped
-	 * @param charlist
-	 *            A list of characters to be escaped. If charlist contains
-	 *            characters \n, \r etc., they are converted in C-like style, while
-	 *            other non-alphanumeric characters with ASCII codes lower than 32
-	 *            and higher than 126 converted to octal representation.
+	 * @param str The string to be escaped
+	 * @param charlist A list of characters to be escaped. If charlist contains
+	 * characters \n, \r etc., they are converted in C-like style, while other
+	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
+	 * 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -499,6 +497,10 @@ public class Php {
 	}
 
 	/**
+	 * Map of session attributes.
+	 * 
+	 * The map is connected with the underlying HttpSession object.
+	 * 
 	 * @see $_SESSION
 	 * @author lucav
 	 *

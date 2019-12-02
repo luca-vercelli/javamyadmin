@@ -1,7 +1,6 @@
 package org.javamyadmin.helpers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,6 +15,11 @@ import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
 
+/**
+ * Singleton class used to manage the rendering of pages in PMA
+ *
+ * @package PhpMyAdmin
+ */
 public class Response {
     /**
      * Header instance
@@ -86,7 +90,7 @@ public class Response {
         this._header = new Header(request, response, GLOBALS, session);
         this._HTML   = "";
         this._JSON   = new HashMap<>();
-        this._footer = new Footer(request, GLOBALS, this);
+        this._footer = new Footer(GLOBALS, this);
 
         this._isSuccess  = true;
         this._isDisabled = false;
@@ -180,7 +184,7 @@ public class Response {
     public void addHTML(Object $content)
     {
         if ($content instanceof List) {
-            for (Object $msg: ((List)$content)) {
+            for (Object $msg: ((List<?>)$content)) {
                 this.addHTML($msg);
             }
         } else if ($content instanceof Message) {
@@ -203,8 +207,8 @@ public class Response {
     public void addJSON(Object $json, Object $value /*= null*/)
     {
         if ($json instanceof Map) {
-        	Map<?,?> map = ((Map)$json);
-            for (Entry entry: map.entrySet()) {
+        	Map<?,?> map = ((Map<?,?>)$json);
+            for (Entry<?,?> entry: map.entrySet()) {
                 this.addJSON(entry.getKey(), entry.getValue());
             }
         } else { // $json must be a String

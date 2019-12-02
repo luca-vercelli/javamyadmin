@@ -1,5 +1,7 @@
 package org.javamyadmin.helpers;
 
+import org.javamyadmin.jtwig.JtwigFactory;
+
 /**
  * Functions for displaying user preferences pages
  *
@@ -260,7 +262,7 @@ public class UserPreferences {
         $script_name = basename(basename($GLOBALS["PMA_PHP_SELF"]));
         $return_url = $script_name + "?" + http_build_query($_GET, "", "&");
 
-        return this.template.render("preferences/autoload", [
+        return JtwigFactory.render("preferences/autoload", [
             "hidden_inputs" => Url.getHiddenInputs(),
             "return_url" => $return_url,
         ]);
