@@ -61,9 +61,9 @@ public class Menu {
      * @return void
      * @throws IOException 
      */
-    public void display(HttpServletResponse response) throws IOException
+    public void display(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS) throws IOException
     {
-        response.getWriter().write(this.getDisplay());
+        response.getWriter().write(this.getDisplay(request, GLOBALS));
     }
 
     /**
@@ -71,9 +71,9 @@ public class Menu {
      *
      * @return string
      */
-    public String getDisplay()
+    public String getDisplay(HttpServletRequest request, GLOBALS GLOBALS)
     {
-        String  $retval  = this._getBreadcrumbs();
+        String  $retval  = this._getBreadcrumbs(request, GLOBALS);
         $retval += this._getMenu();
         return $retval;
     }
@@ -83,10 +83,10 @@ public class Menu {
      *
      * @return string
      */
-    public String getHash()
+    public String getHash(HttpServletRequest request, GLOBALS GLOBALS)
     {
         return 
-            md5(this._getMenu() + this._getBreadcrumbs()).substring(0,8);
+            md5(this._getMenu() + this._getBreadcrumbs(request, GLOBALS)).substring(0,8);
     }
 
     /**
@@ -218,6 +218,7 @@ public class Menu {
             __("Server")
         );
 
+        /* TODO
         if (!empty(this._db)) {
             $retval += $separator;
             if (Util.showIcons("TabsMode", GLOBALS)) {
@@ -278,9 +279,8 @@ public class Menu {
                     $tbl_is_view ? __("View") : __("Table")
                 );
 
-                /*
-                 * Displays table comment
-                 */
+                // Displays table comment
+                 
                 if (! empty($show_comment)
                     && ! isset(GLOBALS.avoid_show_comment)
                 ) {
@@ -307,9 +307,7 @@ public class Menu {
                 // in Util.getDbInfo() only once
                 if ($cfgRelation["commwork"]) {
                     String $comment = this.relation.getDbComment(this._db);
-                    /**
-                     * Displays table comment
-                     */
+                    // Displays table comment
                     if (! empty($comment)) {
                         $retval += "<span class='table_comment'"
                             + " id='span_table_comment'>"
@@ -321,7 +319,7 @@ public class Menu {
                     } // end if
                 }
             }
-        }
+        }*/
         $retval += "<div class='clearfloat'></div>";
         $retval += "</div>";
         return $retval;
@@ -342,6 +340,7 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getTableTabs()
     {
+    	
         global $route;
 
         $db_is_system_schema = GLOBALS["dbi"].isSystemSchema(this._db);
