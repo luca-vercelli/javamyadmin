@@ -9,11 +9,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import com.google.gson.Gson;
 
@@ -336,11 +340,13 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str The string to be escaped
-	 * @param charlist A list of characters to be escaped. If charlist contains
-	 * characters \n, \r etc., they are converted in C-like style, while other
-	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
-	 * 126 converted to octal representation.
+	 * @param str
+	 *            The string to be escaped
+	 * @param charlist
+	 *            A list of characters to be escaped. If charlist contains
+	 *            characters \n, \r etc., they are converted in C-like style, while
+	 *            other non-alphanumeric characters with ASCII codes lower than 32
+	 *            and higher than 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -397,5 +403,137 @@ public class Php {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * This is NOT a PHP function, this correspond to PHP construct:
+	 * 
+	 * array[k1][k2][k3]
+	 */
+	public static Object multiget(Map map, String... keys) {
+
+		if (keys.length < 1) {
+			throw new IllegalArgumentException("At least one key required");
+		}
+
+		// Hashmaps part
+		for (int i = 0; i < keys.length - 1; ++i) {
+			String key = keys[i];
+			if (map.containsKey(key)) {
+				map = (Map) map.get(key);
+			} else {
+				return null;
+			}
+		}
+
+		// value part
+		return map.get(keys[keys.length - 1]);
+	}
+
+	/**
+	 * This is NOT a PHP function, this correspond to PHP construct:
+	 * 
+	 * unset(array[k1][k2][k3])
+	 */
+	public static void multiremove(Map map, String... keys) {
+
+		if (keys.length < 1) {
+			throw new IllegalArgumentException("At least one key required");
+		}
+
+		// Hashmaps part
+		for (int i = 0; i < keys.length - 1; ++i) {
+			String key = keys[i];
+			if (map.containsKey(key)) {
+				map = (Map) map.get(key);
+			} else {
+				return;
+			}
+		}
+
+		// value part
+		map.remove(keys[keys.length - 1]);
+	}
+
+	/**
+	 * This is NOT a PHP function, this correspond to PHP construct:
+	 * 
+	 * array[k1][k2][k3] = val
+	 */
+	public static void multiput(Map map, Object value, String... keys) {
+
+		if (keys.length < 1) {
+			throw new IllegalArgumentException("At least one key required");
+		}
+
+		// Hashmaps part
+		for (int i = 0; i < keys.length - 1; ++i) {
+			String key = keys[i];
+			if (map.containsKey(key)) {
+				map = (Map) map.get(key);
+			} else {
+				Map newmap = new HashMap();
+				map.put(key, newmap);
+				map = newmap;
+			}
+		}
+
+		// value part
+		map.put(keys[keys.length - 1], value);
+	}
+
+	/**
+	 * Read-only Map of POST/GET parameters.
+	 * 
+	 * This method filter 1 result per parameter. Use request.getParameterMap() to
+	 * have all results.
+	 */
+	public static Map<String, String> $_REQUEST(HttpServletRequest request) {
+		Map<String, String> map = new HashMap<>();
+		Enumeration<String> names = request.getParameterNames();
+		while (names.hasMoreElements()) {
+			String name = names.nextElement();
+			map.put(name, request.getParameter(name));
+		}
+		return map;
+	}
+
+	/**
+	 * @see $_SESSION
+	 * @author lucav
+	 *
+	 */
+	public static class SessionMap extends HashMap<String, Object> {
+
+		private static final long serialVersionUID = -5777091141669867338L;
+		private HttpSession session;
+
+		public SessionMap(HttpSession session) {
+			this.session = session;
+			Enumeration<String> names = session.getAttributeNames();
+			while (names.hasMoreElements()) {
+				String name = names.nextElement();
+				put(name, session.getAttribute(name));
+			}
+		}
+
+		@Override
+		public Object put(String key, Object value) {
+			session.setAttribute(key, value);
+			return super.put(key, value);
+		}
+
+		@Override
+		public Object remove(Object key) {
+			session.removeAttribute((String) key);
+			return super.remove(key);
+		}
+	}
+
+	/**
+	 * Read-only Map of session attributes.
+	 */
+	public static SessionMap $_SESSION(HttpSession session) {
+		return new SessionMap(session);
 	}
 }

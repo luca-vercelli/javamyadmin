@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.javamyadmin.php.GLOBALS;
 
 /**
  * Generates and renders the top menu
@@ -31,6 +34,7 @@ public class Menu {
      * @var string
      */
     private String _table;
+	private Map<String, Object> session;
 
     /**
      * @var Relation
@@ -43,11 +47,12 @@ public class Menu {
      * @param string $db    Database name
      * @param string $table Table name
      */
-    public Menu(String $db, String $table)
+    public Menu(String $db, String $table, Map<String, Object> session)
     {
         this._db = $db;
         this._table = $table;
         //this.relation = new Relation(GLOBALS.dbi);
+        this.session = session;
     }
 
     /**
@@ -108,9 +113,9 @@ public class Menu {
             $level = "server";
         }
 
-        List $allowedTabs = this._getAllowedTabs($level);
+        Map<String, Map<String, String>> $allowedTabs = this._getAllowedTabs($level);
         for (Entry<String, MenuStruct> $entry : $tabs.entrySet()) {
-            if (! $allowedTabs.contains($entry)) { //FIXME List o Map ???
+            if (! $allowedTabs.containsKey($entry.getKey())) {
                 $tabs.remove($entry.getKey());
             }
         }
@@ -124,13 +129,15 @@ public class Menu {
      *
      * @return array list of allowed tabs
      */
-    private List _getAllowedTabs(String $level)
+    private Map<String, Map<String, String>> _getAllowedTabs(String $level)
     {
         String $cache_key = "menu-levels-" + $level;
-        if (Util.cacheExists($cache_key)) {
-            return Util.cacheGet($cache_key);
+        if (Util.cacheExists($cache_key, session)) {
+            return (Map<String, Map<String, String>>) Util.cacheGet($cache_key, null, session);
         }
-        List $allowedTabs = Util.getMenuTabList($level);
+        Map<String, Map<String, String>> $allowedTabs = Util.getMenuTabList($level);
+        /*
+        TODO
         $cfgRelation = this.relation.getRelationsParam();
         if ($cfgRelation["menuswork"]) {
             $groupTable = Util.backquote($cfgRelation["db"])
@@ -144,7 +151,7 @@ public class Menu {
                 + " AND `tab` LIKE '" + $level + "%'"
                 + " AND `usergroup` = (SELECT usergroup FROM "
                 + $userTable + " WHERE `username` = '"
-                + GLOBALS["dbi"].escapeString(GLOBALS.cfg["Server"]["user"]) + "')";
+                + GLOBALS["dbi"].escapeString(GLOBALS.cfg.get("Server")["user"]) + "')";
 
             $result = this.relation.queryAsControlUser($sql_query, false);
             if ($result) {
@@ -156,8 +163,8 @@ public class Menu {
                     unset($allowedTabs[$tabName]);
                 }
             }
-        }
-        Util.cacheSet($cache_key, $allowedTabs);
+        }*/
+        Util.cacheSet($cache_key, $allowedTabs, session);
         return $allowedTabs;
     }
 
@@ -166,77 +173,81 @@ public class Menu {
      *
      * @return string HTML formatted breadcrumbs
      */
-    private String  _getBreadcrumbs()
+    private String  _getBreadcrumbs(HttpServletRequest request, GLOBALS GLOBALS)
     {
         String $retval = "";
-        boolean $tbl_is_view = GLOBALS["dbi"].getTable(this._db, this._table)
+        boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)
             .isView();
-        if (empty(GLOBALS.cfg["Server"]["host"])) {
-            GLOBALS.cfg["Server"]["host"] = "";
+        if (empty(multiget(GLOBALS.cfg, "Server", "host"))) {
+            multiput(GLOBALS.cfg, "", "Server", "host");
         }
-        $server_info = ! empty(GLOBALS.cfg["Server"]["verbose"])
-            ? GLOBALS.cfg["Server"]["verbose"]
-            : GLOBALS.cfg["Server"]["host"];
-        $server_info += empty(GLOBALS.cfg["Server"]["port"])
+        String $server_info = ! empty(multiget(GLOBALS.cfg, "Server", "verbose"))
+            ? (String) multiget(GLOBALS.cfg, "Server", "verbose")
+            : (String) multiget(GLOBALS.cfg, "Server", "host");
+        $server_info += empty(multiget(GLOBALS.cfg, "Server", "port"))
             ? ""
-            : ":" . GLOBALS.cfg["Server"]["port"];
+            : ":" + multiget(GLOBALS.cfg, "Server", "port");
 
-        $separator = "<span class="separator item">&nbsp;»</span>";
-        $item = "<a href="%1$s%2$s" class="item">";
+        String $separator = "<span class='separator item'>&nbsp;Â»</span>";
+        String $item = "<a href='%1$s%2$s' class='item'>";
 
-        if (Util.showText("TabsMode")) {
+        if (Util.showText("TabsMode", GLOBALS)) {
             $item += "%4$s: ";
         }
         $item += "%3$s</a>";
-        $retval += "<div id="floating_menubar"></div>";
-        $retval += "<div id="serverinfo">";
-        if (Util.showIcons("TabsMode")) {
+        $retval += "<div id='floating_menubar'></div>";
+        $retval += "<div id='serverinfo'>";
+        Map<String, Object> params = new HashMap<>();
+        params.put("class", "item");
+        if (Util.showIcons("TabsMode", GLOBALS)) {
             $retval += Util.getImage(
                 "s_host",
                 "",
-                ["class" => "item"]
+                params
             );
         }
-        $scriptName = Util.getScriptNameForOption(
-            GLOBALS.cfg["DefaultTabServer"],
+        String $scriptName = Util.getScriptNameForOption(
+            (String) GLOBALS.cfg.get("DefaultTabServer"),
             "server"
         );
-        $retval += sprintf(
+        $retval += String.format(
             $item,
             $scriptName,
-            Url.getCommon([], strpos($scriptName, "?") === false ? "?" : "&"),
+            Url.getCommon(null, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
             htmlspecialchars($server_info),
             __("Server")
         );
 
-        if (strlen(this._db) > 0) {
+        if (!empty(this._db)) {
             $retval += $separator;
-            if (Util.showIcons("TabsMode")) {
+            if (Util.showIcons("TabsMode", GLOBALS)) {
                 $retval += Util.getImage(
                     "s_db",
                     "",
-                    ["class" => "item"]
+                    params
                 );
             }
             $scriptName = Util.getScriptNameForOption(
-                GLOBALS.cfg["DefaultTabDatabase"],
+                (String) GLOBALS.cfg.get("DefaultTabDatabase"),
                 "database"
             );
-            $retval += sprintf(
+            Map<String, Object> paramsDb = new HashMap<>();
+            paramsDb.put("db", this._db);
+            $retval += String.format(
                 $item,
                 $scriptName,
-                Url.getCommon(["db" => this._db], strpos($scriptName, "?") === false ? "?" : "&"),
+                Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
                 htmlspecialchars(this._db),
                 __("Database")
             );
             // if the table is being dropped, $_REQUEST["purge"] is set to "1"
             // so do not display the table name in upper div
-            if (strlen((string) this._table) > 0
-                && ! (isset($_REQUEST["purge"]) && $_REQUEST["purge"] == "1")
+            if (! empty(this._table))
+                && ! ("1".equals(request.getParameter("purge")))
             ) {
-                $table_class_object = GLOBALS["dbi"].getTable(
-                    GLOBALS["db"],
-                    GLOBALS["table"]
+                Object $table_class_object = GLOBALS.dbi.getTable(
+                    GLOBALS.db,
+                    GLOBALS.table
                 );
                 if ($table_class_object.isView()) {
                     $tbl_is_view = true;
@@ -246,34 +257,32 @@ public class Menu {
                     $show_comment = $table_class_object.getComment();
                 }
                 $retval += $separator;
-                if (Util.showIcons("TabsMode")) {
-                    $icon = $tbl_is_view ? "b_views" : "s_tbl";
+                if (Util.showIcons("TabsMode", GLOBALS)) {
+                    String $icon = $tbl_is_view ? "b_views" : "s_tbl";
                     $retval += Util.getImage(
                         $icon,
                         "",
-                        ["class" => "item"]
+                        params
                     );
                 }
                 $scriptName = Util.getScriptNameForOption(
-                    GLOBALS.cfg["DefaultTabTable"],
+                    (String) GLOBALS.cfg.get("DefaultTabTable"),
                     "table"
                 );
-                $retval += sprintf(
+                paramsDb.put("table", this._table);
+                $retval += String.format(
                     $item,
                     $scriptName,
-                    Url.getCommon([
-                        "db" => this._db,
-                        "table" => this._table,
-                    ], strpos($scriptName, "?") === false ? "?" : "&"),
-                    str_replace(" ", "&nbsp;", htmlspecialchars(this._table)),
+                    Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
+                    htmlspecialchars(this._table).replace(" ", "&nbsp;"),
                     $tbl_is_view ? __("View") : __("Table")
                 );
 
-                /**
+                /*
                  * Displays table comment
                  */
                 if (! empty($show_comment)
-                    && ! isset(GLOBALS["avoid_show_comment"])
+                    && ! isset(GLOBALS.avoid_show_comment)
                 ) {
                     if (mb_strstr($show_comment, "; InnoDB free")) {
                         $show_comment = preg_replace(
@@ -282,10 +291,10 @@ public class Menu {
                             $show_comment
                         );
                     }
-                    $retval += "<span class="table_comment"";
-                    $retval += " id="span_table_comment">";
-                    $retval += sprintf(
-                        __("“%s”"),
+                    $retval += "<span class='table_comment'";
+                    $retval += " id='span_table_comment'>";
+                    $retval += String.format(
+                        __("â€œ%sâ€�"),
                         htmlspecialchars($show_comment)
                     );
                     $retval += "</span>";
@@ -297,23 +306,23 @@ public class Menu {
                 // Get additional information about tables for tooltip is done
                 // in Util.getDbInfo() only once
                 if ($cfgRelation["commwork"]) {
-                    $comment = this.relation.getDbComment(this._db);
+                    String $comment = this.relation.getDbComment(this._db);
                     /**
                      * Displays table comment
                      */
                     if (! empty($comment)) {
-                        $retval += "<span class="table_comment""
-                            + " id="span_table_comment">"
-                            + sprintf(
-                                __("“%s”"),
+                        $retval += "<span class='table_comment'"
+                            + " id='span_table_comment'>"
+                            + String.format(
+                                __("â€œ%sâ€�"),
                                 htmlspecialchars($comment)
                             )
-                            . "</span>";
+                            + "</span>";
                     } // end if
                 }
             }
         }
-        $retval += "<div class="clearfloat"></div>";
+        $retval += "<div class='clearfloat'></div>";
         $retval += "</div>";
         return $retval;
     }

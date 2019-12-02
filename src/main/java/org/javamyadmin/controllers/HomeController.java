@@ -35,7 +35,7 @@ public class HomeController extends AbstractController {
 	 * GET handler
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS, Template template)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, Map $_SESSION, GLOBALS GLOBALS, Template template)
 			throws ServletException, IOException {
 
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {

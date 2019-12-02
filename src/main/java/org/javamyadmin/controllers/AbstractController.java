@@ -3,6 +3,7 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -263,8 +264,9 @@ public abstract class AbstractController extends HttpServlet {
 		// load user preferences
 		GLOBALS.PMA_Config.loadUserPreferences();
 		
+		Map $_SESSION = $_SESSION(request.getSession());
 		// We override standard service request! Always call doGet
-		this.doGet(request, response, pmaResponse, GLOBALS, new Template());
+		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS, new Template());
 
 		pmaResponse.response();
 	}
@@ -272,7 +274,7 @@ public abstract class AbstractController extends HttpServlet {
 	/**
 	 * GET handler. Must be defined.
 	 */
-	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS, Template template)
+	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, Map $_SESSION, GLOBALS GLOBALS, Template template)
 			throws ServletException, IOException;
 
 

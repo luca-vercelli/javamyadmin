@@ -30,7 +30,7 @@ public class DatabasesController extends AbstractController {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			GLOBALS GLOBALS, Template template) throws ServletException, IOException {
+			Map $_SESSION, GLOBALS GLOBALS, Template template) throws ServletException, IOException {
 		
 		Map<String, Object> model = new HashMap<>();
 //	      'is_create_database_shown' => $cfg['ShowCreateDb'],
