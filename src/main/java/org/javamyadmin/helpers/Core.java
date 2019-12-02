@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.javamyadmin.php.GLOBALS;
+import static org.javamyadmin.php.Php.*;
 
 public class Core {
     /**
@@ -104,7 +105,7 @@ public class Core {
      * @todo add some more var types like hex, bin, ...?
      * @see https://secure.php.net/gettype
      */
-    public static boolean isValid(Object $var, String $type /*= "length"*/, Object $compare /*= null*/)
+    public static boolean isValid(Object $var, Object $type /*= "length"*/, Object $compare /*= null*/)
     {
         if ($var == null) {
             // var is not even set
@@ -118,11 +119,11 @@ public class Core {
             return ((List)$type).contains($var);
         }
         if ($type instanceof Map) {
-        	return ((Map)$type).containsValu($var);
+        	return ((Map)$type).containsValue($var);
         }
         // allow some aliases of var types
-        $type = strtolower($type);
-        switch ($type) {
+        $type = ((String)$type).toLowerCase();
+        switch ((String)$type) {
             case "identic":
                 $type = "identical";
                 break;
@@ -164,7 +165,7 @@ public class Core {
         }
         // do the check
         if ($type.equals("length") || $type.equals("scalar")) {
-            $is_scalar = is_scalar($var);
+            boolean $is_scalar = is_scalar($var);
             if ($is_scalar && $type.equals("length")) {
                 return ((String) $var).length() > 0;
             }
@@ -369,7 +370,7 @@ public class Core {
      *
      * @return boolean whether $page is valid or not (in $whitelist or not)
      */
-    public static boolean checkPageValidity(&$page, array $whitelist = [], $include = false)
+    public static boolean checkPageValidity(String $page, List $whitelist /*= []*/, boolean $include /*= false*/)
     {
         if (empty($whitelist)) {
             $whitelist = $goto_whitelist;
@@ -943,7 +944,7 @@ public class Core {
      *
      * @return String
      */
-    public static function sanitizeMySQLHost(String $name): String
+    public static String sanitizeMySQLHost(String $name)
     {
         while (strtolower(substr($name, 0, 2)) == "p:") {
             $name = substr($name, 2);
@@ -959,7 +960,7 @@ public class Core {
      *
      * @return String
      */
-    public static function sanitizeMySQLUser(String $name): String
+    public static String sanitizeMySQLUser(String $name) 
     {
         $position = strpos($name, chr(0));
         if ($position !== false) {
@@ -976,7 +977,7 @@ public class Core {
      *
      * @return mixed
      */
-    public static function safeUnserialize(String $data)
+    public static mixed safeUnserialize(String $data)
     {
         if (! is_string($data)) {
             return null;
@@ -1053,7 +1054,7 @@ public class Core {
      *
      * @return void
      */
-    public static function configure(): void
+    public static void configure()
     {
         /**
          * Set utf-8 encoding for PHP
@@ -1078,7 +1079,7 @@ public class Core {
      *
      * @return void
      */
-    public static function checkConfiguration(): void
+    public static void checkConfiguration()
     {
         /**
          * As we try to handle charsets by ourself, mbstring overloads just
@@ -1114,7 +1115,7 @@ public class Core {
      *
      * @return void
      */
-    public static function checkRequest(): void
+    public static void checkRequest()
     {
         if (isset($_REQUEST["GLOBALS"]) || isset($_FILES["GLOBALS"])) {
             fatalError(__("GLOBALS overwrite attempt"));
@@ -1132,7 +1133,7 @@ public class Core {
      * @param String $sqlQuery The sql query
      * @return String
      */
-    public static function signSqlQuery($sqlQuery)
+    public static String signSqlQuery(String $sqlQuery)
     {
         /** @var array $cfg */
         global $cfg;
@@ -1145,7 +1146,7 @@ public class Core {
      * @param String $signature The Signature to check
      * @return boolean
      */
-    public static function checkSqlQuerySignature($sqlQuery, $signature)
+    public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature)
     {
         /** @var array $cfg */
         global $cfg;
