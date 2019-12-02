@@ -1,5 +1,7 @@
 package org.javamyadmin.helpers;
 
+import java.io.File;
+
 /**
  * Misc functions used all over the scripts.
  *
@@ -46,12 +48,12 @@ public class Util {
      *
      * @return String an html snippet
      */
-    public static function getIcon(
-        $icon,
-        $alternate = "",
-        $force_text = false,
-        $menu_icon = false,
-        $control_param = "ActionLinksMode"
+    public static String getIcon(
+        String $icon,
+        String $alternate /*= ""*/,
+        boolean $force_text /*= false*/,
+        boolean $menu_icon /*= false*/,
+        String $control_param /*= "ActionLinksMode"*/
     ) {
         $include_icon = $include_text = false;
         if (showIcons($control_param)) {
@@ -91,7 +93,7 @@ public class Util {
      *
      * @return String an html IMG tag
      */
-    public static function getImage($image, $alternate = "", array $attributes = [])
+    public static String getImage(String $image, String $alternate /*= ""*/, Map<String, Object> $attributes /*= []*/)
     {
         $alternate = htmlspecialchars($alternate);
 
@@ -124,7 +126,7 @@ public class Util {
         }
 
         // generate the IMG tag
-        $template = "<img src="themes/dot.gif" title="%s" alt="%s"%s>";
+        $template = "<img src='themes/dot.gif' title='%s' alt='%s'%s>";
         return sprintf($template, $title, $alt, $attr_str);
     }
 
@@ -208,8 +210,8 @@ public class Util {
 
         if ($quote === null) {
             $quotes[] = "`";
-            $quotes[] = """;
-            $quotes[] = """;
+            $quotes[] = "'";
+            $quotes[] = "'";
         } else {
             $quotes[] = $quote;
         }
@@ -245,7 +247,7 @@ public class Util {
      * @access  public
      * @todo    move into PMA_Sql
      */
-    public static function formatSql($sqlQuery, $truncate = false)
+    public static String formatSql(String $sqlQuery, boolean $truncate /*= false*/)
     {
         global $cfg;
 
@@ -272,7 +274,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function showCopyToClipboard($text)
+    public static String showCopyToClipboard(String $text)
     {
         $open_link = "  <a href='#' class='copyQueryBtn' data-text='"
             + htmlspecialchars($text) + "'>" + __("Copy") + "</a>";
@@ -387,31 +389,14 @@ public class Util {
      *
      * @access  public
      */
-    public static function showMySQLDocu(
-        $link,
-        boolean $bigIcon = false,
-        $url = null,
-        $text = null,
-        $anchor = ""
-    ): String {
-        if ($url === null) {
-            $url = getMySQLDocuURL($link, $anchor);
-        }
-        $openLink = "<a href="" + htmlspecialchars($url) + "" target="mysql_doc">";
-        $closeLink = "</a>";
-        $html = "";
-
-        if ($bigIcon) {
-            $html = $openLink .
-                    getImage("b_sqlhelp", __("Documentation"))
-                    + $closeLink;
-        } elseif ($text !== null) {
-            $html = $openLink + $text + $closeLink;
-        } else {
-            $html = showDocLink($url, "mysql_doc");
-        }
-
-        return $html;
+    public static String showMySQLDocu(
+    	String $link,
+        boolean $bigIcon /*= false*/,
+        String $url /*= null*/,
+        String $text /*= null*/,
+        String $anchor /*= ""*/
+    ) {
+    	return ""; //Unsupported
     } // end of the "showMySQLDocu()" function
 
     /**
@@ -422,22 +407,9 @@ public class Util {
      *
      * @return String URL
      */
-    public static function getDocuLink($page, $anchor = "")
+    public static String getDocuLink(String $page, String $anchor /*= ""*/)
     {
-        /* Construct base URL */
-        $url =  $page + ".html";
-        if (! empty($anchor)) {
-            $url += "#" + $anchor;
-        }
-
-        /* Check if we have built local documentation, however
-         * provide consistent URL for testsuite
-         */
-        if (! defined("TESTSUITE") && @file_exists(ROOT_PATH + "doc/html/index.html")) {
-            return "doc/html/" + $url;
-        }
-
-        return Core.linkURL("https://docs.phpmyadmin.net/en/latest/" + $url);
+    	return ""; // unsupported
     }
 
     /**
@@ -451,7 +423,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String showDocu($page, $anchor = "", $bbcode = false)
+    public static String showDocu(String $page, String $anchor /*= ""*/, boolean $bbcode /*= false*/)
     {
         return showDocLink(getDocuLink($page, $anchor), "documentation", $bbcode);
     } // end of the "showDocu()" function
@@ -465,7 +437,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function showPHPDocu($target)
+    public static String showPHPDocu(String $target)
     {
         $url = Core.getPHPDocLink($target);
 
@@ -481,10 +453,10 @@ public class Util {
      *
      * @access  public
      */
-    public static function showHint($message)
+    public static String showHint(String $message, GLOBALS GLOBALS)
     {
-        if (GLOBALS.cfg["ShowHint"]) {
-            $classClause = " class="pma_hint"";
+        if (GLOBALS.cfg.get("ShowHint")) {
+            $classClause = " class='pma_hint'";
         } else {
             $classClause = "";
         }
@@ -513,12 +485,12 @@ public class Util {
      *
      * @access public
      */
-    public static function mysqlDie(
-        $server_msg = "",
-        $sql_query = "",
-        $is_modify_link = true,
-        $back_url = "",
-        $exit = true
+    public static void mysqlDie(
+        String $server_msg /*= ""*/,
+        String $sql_query /*= ""*/,
+        boolean $is_modify_link /*= true*/,
+        String $back_url /*= ""*/,
+        boolean $exit /*= true*/
     ) {
         global $table, $db;
 
@@ -606,12 +578,12 @@ public class Util {
                 if (strlen($table) > 0) {
                     $_url_params["db"] = $db;
                     $_url_params["table"] = $table;
-                    $doedit_goto = "<a href="" + Url.getFromRoute("/table/sql", $_url_params) + "">";
+                    $doedit_goto = "<a href="" + Url.getFromRoute("/table/sql", $_url_params) + "'>";
                 } elseif (strlen($db) > 0) {
                     $_url_params["db"] = $db;
-                    $doedit_goto = "<a href="" + Url.getFromRoute("/database/sql", $_url_params) + "">";
+                    $doedit_goto = "<a href="" + Url.getFromRoute("/database/sql", $_url_params) + "'>";
                 } else {
-                    $doedit_goto = "<a href="" + Url.getFromRoute("/server/sql", $_url_params) + "">";
+                    $doedit_goto = "<a href="" + Url.getFromRoute("/server/sql", $_url_params) + "'>";
                 }
 
                 $error_msg += $doedit_goto
@@ -691,7 +663,7 @@ public class Util {
             $_SESSION["Import_message"]["go_back_url"] = $back_url;
 
             $error_msg += "<fieldset class="tblFooters">"
-                + "[ <a href="" + $back_url + "">" + __("Back") + "</a> ]"
+                + "[ <a href="" + $back_url + "'>" + __("Back") + "</a> ]"
                 + "</fieldset>" + "\n\n";
         }
 
@@ -707,7 +679,7 @@ public class Util {
      * @return int the possibly modified row count
      *
      */
-    private static function _checkRowCount($db, array $table)
+    private static int _checkRowCount(String $db, Map $table)
     {
         $rowCount = 0;
 
@@ -742,11 +714,11 @@ public class Util {
      *
      * @return array    (recursive) grouped table list
      */
-    public static function getTableList(
-        $db,
-        $tables = null,
-        $limit_offset = 0,
-        $limit_count = false
+    public static Map getTableList(
+        String $db,
+        String $tables /*= null*/,
+        int $limit_offset /*= 0*/,
+        boolean $limit_count /*= false*/
     ) {
         $sep = GLOBALS.cfg["NavigationTreeTableSeparator"];
 
@@ -853,7 +825,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function backquote($a_name, $do_it = true)
+    public static Object backquote(Object $a_name, boolean $do_it /*= true*/)
     {
         return static.backquoteCompat($a_name, "NONE", $do_it);
     } // end of the "backquote()" function
@@ -879,10 +851,10 @@ public class Util {
      *
      * @access  public
      */
-    public static function backquoteCompat(
-        $a_name,
-        $compatibility = "MSSQL",
-        $do_it = true
+    public static String backquoteCompat(
+        Object $a_name,
+        String $compatibility /*= "MSSQL"*/,
+        boolean $do_it /*= true*/
     ) {
         if (is_array($a_name)) {
             foreach ($a_name as &$data) {
@@ -900,7 +872,7 @@ public class Util {
         // @todo add more compatibility cases (ORACLE for example)
         switch ($compatibility) {
             case "MSSQL":
-                $quote = """;
+                $quote = "'";
                 $escapeChar = "\\";
                 break;
             default:
@@ -1149,7 +1121,7 @@ public class Util {
             $retval += "<form action="" + Url.getFromRoute("/sql") + "" method="post">";
             $retval += Url.getHiddenInputs($GLOBALS["db"], $GLOBALS["table"]);
             $retval += "<input type="hidden" name="sql_query" value=""
-                + htmlspecialchars($sql_query) + "">";
+                + htmlspecialchars($sql_query) + "'>";
 
             // avoid displaying a Profiling checkbox that could
             // be checked, which would reexecute an INSERT, for example
@@ -1205,7 +1177,7 @@ public class Util {
      *
      * @return String query resuls
      */
-    private static function _generateRowQueryOutput($sqlQuery)
+    private static String _generateRowQueryOutput(String $sqlQuery)
     {
         $ret = "";
         $result = $GLOBALS["dbi"].query($sqlQuery);
@@ -1242,7 +1214,7 @@ public class Util {
      *
      * @return boolean whether profiling is supported
      */
-    public static function profilingSupported()
+    public static boolean profilingSupported()
     {
         if (! cacheExists("profiling_supported")) {
             // 5.0.37 has profiling but for example, 5.1.20 does not
@@ -1270,7 +1242,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function formatByteDown($value, $limes = 6, $comma = 0)
+    public static Map formatByteDown(double $value, in $limes /*= 6*/, int $comma /*= 0*/)
     {
         if ($value === null) {
             return null;
@@ -1386,7 +1358,7 @@ public class Util {
             -5 => "f",
             -4 => "p",
             -3 => "n",
-            -2 => "µ",
+            -2 => "Âµ",
             -1 => "m",
             0 => " ",
             1 => "k",
@@ -1467,7 +1439,7 @@ public class Util {
      *
      * @return integer  The numerical part of the expression (for example 8)
      */
-    public static function extractValueFromFormattedSize($formatted_size)
+    public static int extractValueFromFormattedSize(String $formatted_size)
     {
         $return_value = -1;
 
@@ -1505,7 +1477,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function localisedDate($timestamp = -1, $format = "")
+    public static String localisedDate(long $timestamp /*= -1*/, String $format /*= ""*/)
     {
         $month = [
             /* l10n: Short month name */
@@ -1600,7 +1572,7 @@ public class Util {
      *
      * @access  public
      */
-    public static function getHtmlTab(array $tab, array $url_params = [])
+    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/)
     {
         $template = new Template();
         // default values
@@ -1685,7 +1657,7 @@ public class Util {
                 ],
             ];
         } else {
-            $item["content"] = "<span class="tab" + htmlentities($tab["class"]) + """
+            $item["content"] = "<span class="tab" + htmlentities($tab["class"]) + "'"
                 + $tabId + ">" + $tab["text"] + "</span>";
         }
 
@@ -1704,11 +1676,11 @@ public class Util {
      *
      * @return String  html-code for tab-navigation
      */
-    public static function getHtmlTabs(
-        array $tabs,
-        array $url_params,
-        $menu_id,
-        $resizable = false
+    public static String getHtmlTabs(
+        Map $tabs,
+        Map $url_params,
+        String $menu_id,
+        boolean $resizable /*= false*/
     ) {
         $class = "";
         if ($resizable) {
@@ -1751,11 +1723,11 @@ public class Util {
      *
      * @return String  the results to be echoed or saved in an array
      */
-    public static function linkOrButton(
-        $url,
-        $message,
-        $tag_params = [],
-        $target = ""
+    public static String linkOrButton(
+        String $url,
+        String $message,
+        Object $tag_params /*= []*/,
+        String $target /*= ""*/
     ) {
         $url_length = strlen($url);
 
@@ -1808,7 +1780,7 @@ public class Util {
              * The data-post indicates that client should do POST
              * this is handled in js/ajax.js
              */
-            $tag_params_strings[] = "data-post="" + (isset($parts[1]) ? $parts[1] : "") + """;
+            $tag_params_strings[] = "data-post="" + (isset($parts[1]) ? $parts[1] : "") + "'";
             $url = $parts[0];
             if (array_key_exists("class", $tag_params)
                 && strpos($tag_params["class"], "create_view") !== false
@@ -1818,7 +1790,7 @@ public class Util {
         }
 
         foreach ($tag_params as $par_name => $par_value) {
-            $tag_params_strings[] = $par_name + "="" + htmlspecialchars($par_value) + """;
+            $tag_params_strings[] = $par_name + "="" + htmlspecialchars($par_value) + "'";
         }
 
         // no whitespace within an <a> else Safari will make it part of the link
@@ -1834,7 +1806,7 @@ public class Util {
      *
      * @return array  the parameter/value pairs, for example [0] db=sakila
      */
-    public static function splitURLQuery($url)
+    public static Map<String, String> splitURLQuery(String $url)
     {
         // decode encoded url separators
         $separator = Url.getArgSeparator();
@@ -1863,7 +1835,7 @@ public class Util {
      *
      * @return String  the formatted value
      */
-    public static function timespanFormat($seconds)
+    public static String timespanFormat(long $seconds)
     {
         $days = floor($seconds / 86400);
         if ($days > 0) {
@@ -1902,7 +1874,7 @@ public class Util {
      *
      * @access public
      */
-    public static function checkParameters($params, $request = false)
+    public static void checkParameters(String[] $params, boolean $request /*= false*/)
     {
         $reported_script_name = basename($GLOBALS["PMA_PHP_SELF"]);
         $found_error = false;
@@ -1946,14 +1918,14 @@ public class Util {
      *
      * @return array the calculated condition and whether condition is unique
      */
-    public static function getUniqueCondition(
-        $handle,
-        $fields_cnt,
-        array $fields_meta,
-        array $row,
-        $force_unique = false,
-        $restrict_to_table = false,
-        $analyzed_sql_results = null
+    public static Map getUniqueCondition(
+        Object $handle,
+        int $fields_cnt,
+        Map $fields_meta,
+        Map $row,
+        boolean $force_unique /*= false*/,
+        String $restrict_to_table /*= false*/,
+        Map $analyzed_sql_results /*= null*/
     ) {
         $primary_key          = "";
         $unique_key           = "";
@@ -2065,7 +2037,7 @@ public class Util {
                     }
                 } elseif ($meta.type == "bit") {
                     $con_val = "= b""
-                        + printableBitValue((int) $row[$i], (int) $meta.length) + """;
+                        + printableBitValue((int) $row[$i], (int) $meta.length) + "'";
                 } else {
                     $con_val = "= \""
                         + $GLOBALS["dbi"].escapeString($row[$i]) + "\"";
@@ -2105,7 +2077,7 @@ public class Util {
             $clause_is_unique = false;
         }
 
-        $where_clause = trim(preg_replace("|\s?AND$|", "", $preferred_condition));
+        $where_clause = trim(preg_replace("|\\s?AND$|", "", $preferred_condition));
         return [
             $where_clause,
             $clause_is_unique,
@@ -2121,7 +2093,7 @@ public class Util {
      *
      * @return String
      */
-    public static function getCharsetQueryPart($collation, $override = false)
+    public static String getCharsetQueryPart(String $collation, boolean $override /*= false*/)
     {
         list($charset) = explode("_", $collation);
         $keyword = " CHARSET=";
@@ -2146,24 +2118,24 @@ public class Util {
      *
      * @access  public
      */
-    public static function getButtonOrImage(
-        $button_name,
-        $button_class,
-        $text,
-        $image,
-        $value = ""
+    public static String getButtonOrImage(
+    	String $button_name,
+    	String $button_class,
+    	String $text,
+    	String $image,
+    	String $value /*= ""*/
     ) {
         if ($value == "") {
             $value = $text;
         }
         if (GLOBALS.cfg["ActionLinksMode"] == "text") {
-            return " <input class="btn btn-link" type="submit" name="" + $button_name + """
-                + " value="" + htmlspecialchars($value) + """
-                + " title="" + htmlspecialchars($text) + "">" + "\n";
+            return " <input class='btn btn-link' type='submit' name='" + $button_name + "'"
+                + " value='" + htmlspecialchars($value) + "'"
+                + " title='" + htmlspecialchars($text) + "'>" + "\n";
         }
-        return "<button class="btn btn-link " + $button_class + "" type="submit""
-            + " name="" + $button_name + "" value="" + htmlspecialchars($value)
-            + "" title="" + htmlspecialchars($text) + "">" + "\n"
+        return "<button class='btn btn-link " + $button_class + "' type='submit'"
+            + " name='" + $button_name + "' value='" + htmlspecialchars($value)
+            + "' title='" + htmlspecialchars($text) + "'>" + "\n"
             + getIcon($image, $text)
             + "</button>" + "\n";
     } // end function
@@ -2190,17 +2162,17 @@ public class Util {
      *
      * @access  public
      */
-    public static function pageselector(
-        $name,
-        $rows,
-        $pageNow = 1,
-        $nbTotalPage = 1,
-        $showAll = 200,
-        $sliceStart = 5,
-        $sliceEnd = 5,
-        $percent = 20,
-        $range = 10,
-        $prompt = ""
+    public static String pageselector(
+    	String $name,
+        int $rows,
+        int $pageNow /*= 1*/,
+        int $nbTotalPage /*= 1*/,
+        int $showAll /*= 200*/,
+        int $sliceStart /*= 5*/,
+        int $sliceEnd /*= 5*/,
+        int $percent /*= 20*/,
+        int $range /*= 10*/,
+        String $prompt /*= ""*/
     ) {
         $increment = floor($nbTotalPage / $percent);
         $pageNowMinusRange = ($pageNow - $range);
@@ -2303,7 +2275,7 @@ public class Util {
                 $selected = "";
             }
             $gotopage += "                <option " + $selected
-                + " value="" + (($i - 1) * $rows) + "">" + $i + "</option>" + "\n";
+                + " value="" + (($i - 1) * $rows) + "'>" + $i + "</option>" + "\n";
         }
 
         $gotopage += " </select>";
@@ -2319,9 +2291,9 @@ public class Util {
      * @return int $page_num
      * @access public
      */
-    public static function getPageFromPosition($pos, $max_count)
+    public static int getPageFromPosition(int $pos, int $max_count)
     {
-        return (int) floor($pos / $max_count) + 1;
+        return (int) Math.floor($pos / $max_count) + 1;
     }
 
     /**
@@ -2343,15 +2315,15 @@ public class Util {
      *
      * @todo    use $pos from $_url_params
      */
-    public static function getListNavigator(
-        $count,
-        $pos,
-        array $_url_params,
-        $script,
-        $frame,
-        $max_count,
-        $name = "pos",
-        $classes = []
+    public static String getListNavigator(
+        int $count,
+        int $pos,
+        Map<String, String> $_url_params,
+        String $script,
+        String $frame,
+        int $max_count,
+        String $name /*= "pos"*/,
+        String[] $classes /*= []*/
     ) {
 
         // This is often coming from $cfg["MaxTableList"] and
@@ -2367,7 +2339,7 @@ public class Util {
 
         if ($max_count < $count) {
             $classes[] = "pageselector";
-            $list_navigator_html += "<div class="" + implode(" ", $classes) + "">";
+            $list_navigator_html += "<div class="" + implode(" ", $classes) + "'>";
 
             if ($frame != "frame_navigation") {
                 $list_navigator_html += __("Page number:");
@@ -2385,17 +2357,17 @@ public class Util {
                     $caption1 += _pgettext("First page", "Begin");
                     $caption2 += _pgettext("Previous page", "Previous");
                 }
-                $title1 = " title="" + _pgettext("First page", "Begin") + """;
-                $title2 = " title="" + _pgettext("Previous page", "Previous") + """;
+                $title1 = " title="" + _pgettext("First page", "Begin") + "'";
+                $title2 = " title="" + _pgettext("Previous page", "Previous") + "'";
 
                 $_url_params[$name] = 0;
                 $list_navigator_html += "<a" + $class + $title1 + " href="" + $script
-                    + Url.getCommon($_url_params, "&") + "">" + $caption1
+                    + Url.getCommon($_url_params, "&") + "'>" + $caption1
                     + "</a>";
 
                 $_url_params[$name] = $pos - $max_count;
                 $list_navigator_html += " <a" + $class + $title2
-                    + " href="" + $script + Url.getCommon($_url_params, "&") + "">"
+                    + " href="" + $script + Url.getCommon($_url_params, "&") + "'>"
                     + $caption2 + "</a>";
             }
 
@@ -2422,8 +2394,8 @@ public class Util {
                     $caption3 += " &gt;";
                     $caption4 += " &gt;&gt;";
                 }
-                $title3 = " title="" + _pgettext("Next page", "Next") + """;
-                $title4 = " title="" + _pgettext("Last page", "End") + """;
+                $title3 = " title="" + _pgettext("Next page", "Next") + "'";
+                $title4 = " title="" + _pgettext("Last page", "End") + "'";
 
                 $_url_params[$name] = $pos + $max_count;
                 $list_navigator_html += "<a" + $class + $title3 + " href="" + $script
@@ -2458,7 +2430,7 @@ public class Util {
      *
      * @return String  per user directory
      */
-    public static function userDir($dir)
+    public static String  userDir(String $dir)
     {
         // add trailing slash
         if (mb_substr($dir, -1) != "/") {
@@ -2475,9 +2447,9 @@ public class Util {
      *
      * @return String  html link to default db page
      */
-    public static function getDbLink($database = "")
+    public static String getDbLink(String $database /*= ""*/)
     {
-        if (strlen((String) $database) === 0) {
+        if (strlen((String) $database) == 0) {
             if (strlen((String) $GLOBALS["db"]) === 0) {
                 return "";
             }
@@ -2496,11 +2468,11 @@ public class Util {
             + "" title=""
             + htmlspecialchars(
                 sprintf(
-                    __("Jump to database “%s”."),
+                    __("Jump to database â€œ%sâ€�."),
                     $database
                 )
             )
-            + "">" + htmlspecialchars($database) + "</a>";
+            + "'>" + htmlspecialchars($database) + "</a>";
     }
 
     /**
@@ -2834,7 +2806,7 @@ public class Util {
      */
     public static function convertBitDefaultValue($bit_default_value)
     {
-        return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b""), """);
+        return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b""), "'");
     }
 
     /**
@@ -2938,7 +2910,7 @@ public class Util {
         // for the case ENUM("&#8211;","&ldquo;")
         $displayed_type = htmlspecialchars($printtype);
         if (mb_strlen($printtype) > GLOBALS.cfg["LimitChars"]) {
-            $displayed_type  = "<abbr title="" + htmlspecialchars($printtype) + "">";
+            $displayed_type  = "<abbr title="" + htmlspecialchars($printtype) + "'>";
             $displayed_type += htmlspecialchars(
                 mb_substr(
                     $printtype,
@@ -3083,7 +3055,7 @@ public class Util {
 
         if ($includeSRID) {
             $srid = $wktarr[1] ?? null;
-            $wktval = """ + $wktval + ""," + $srid;
+            $wktval = "'" + $wktval + ""," + $srid;
         }
         @$GLOBALS["dbi"].freeResult($wktresult);
 
@@ -3142,7 +3114,7 @@ public class Util {
      *
      * @return String script name corresponding to the config word
      */
-    public static function getScriptNameForOption($target, $location)
+    public static String getScriptNameForOption(String $target, String $location)
     {
         if ($location == "server") {
             // Values for $cfg["DefaultTabServer"]
@@ -3312,7 +3284,7 @@ public class Util {
      *
      * @return String
      */
-    public static function getBrowseUploadFileBlock($max_upload_size)
+    public static String getBrowseUploadFileBlock(String $max_upload_size)
     {
         $block_html = "";
 
@@ -3439,7 +3411,7 @@ public class Util {
      * @return mixed   An HTML snippet or an array of datatypes.
      *
      */
-    public static function getSupportedDatatypes($html = false, $selected = "")
+    public static Object getSupportedDatatypes(boolean $html /*= false*/, String $selected /*= ""*/)
     {
         if ($html) {
             // NOTE: the SELECT tag in not included in this snippet.
@@ -3447,7 +3419,7 @@ public class Util {
 
             foreach ($GLOBALS["dbi"].types.getColumns() as $key => $value) {
                 if (is_array($value)) {
-                    $retval += "<optgroup label="" + htmlspecialchars($key) + "">";
+                    $retval += "<optgroup label="" + htmlspecialchars($key) + "'>";
                     foreach ($value as $subvalue) {
                         if ($subvalue == $selected) {
                             $retval += sprintf(
@@ -3875,7 +3847,7 @@ public class Util {
      * @return String   An HTML snippet of a dropdown list with function
      *                    names appropriate for the requested column.
      */
-    public static function getFunctionsForField(array $field, $insert_mode, array $foreignData)
+    public static String getFunctionsForField(Map $field, boolean $insert_mode, Map $foreignData)
     {
         $default_function = getDefaultFunctionForField($field, $insert_mode);
         $dropdown_built = [];
@@ -3938,7 +3910,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static function currentUserHasPrivilege($priv, $db = null, $tbl = null)
+    public static boolean currentUserHasPrivilege(String $priv, String $db /*= null*/, String $tbl /*= null*/)
     {
         // Get the username for the current user in the format
         // required to use in the information schema database.
@@ -3948,11 +3920,11 @@ public class Util {
             return true;
         }
 
-        $username  = """";
-        $username += str_replace(""", """", $user);
-        $username += """@""";
-        $username += str_replace(""", """", $host);
-        $username += """";
+        $username  = "'"";
+        $username += str_replace("'", "'"", $user);
+        $username += "'"@"'";
+        $username += str_replace("'", "'"", $host);
+        $username += "'"";
 
         // Prepare the query
         $query = "SELECT `PRIVILEGE_TYPE` FROM `INFORMATION_SCHEMA`.`%s` "
@@ -4023,7 +3995,7 @@ public class Util {
      *
      * @return String
      */
-    public static function getServerType()
+    public static String getServerType()
     {
         if ($GLOBALS["dbi"].isMariaDB()) {
             return "MariaDB";
@@ -4041,7 +4013,7 @@ public class Util {
      *
      * @return String
      */
-    public static function getServerSSL()
+    public static String getServerSSL()
     {
         $server = GLOBALS.cfg["Server"];
         $class = "caution";
@@ -4058,7 +4030,7 @@ public class Util {
             $class = "";
             $message = __("SSL is used");
         }
-        return "<span class="" + $class + "">" + $message + "</span> " + showDocu("setup", "ssl");
+        return "<span class="" + $class + "'>" + $message + "</span> " + showDocu("setup", "ssl");
     }
 
     /**
@@ -4070,7 +4042,7 @@ public class Util {
      *
      * @return array
      */
-    public static function parseEnumSetValues($definition, $escapeHtml = true)
+    public static Map parseEnumSetValues(String $definition, boolean $escapeHtml /*= true*/)
     {
         $values_string = htmlentities($definition, ENT_COMPAT, "UTF-8");
         // There is a JS port of the below parser in functions.js
@@ -4086,17 +4058,17 @@ public class Util {
                 ? ""
                 : mb_substr($values_string, $i + 1, 1);
 
-            if (! $in_string && $curr == """) {
+            if (! $in_string && $curr == "'") {
                 $in_string = true;
             } elseif (($in_string && $curr == "\\") && $next == "\\") {
                 $buffer += "&#92;";
                 $i++;
-            } elseif (($in_string && $next == """)
-                && ($curr == """ || $curr == "\\")
+            } elseif (($in_string && $next == "'")
+                && ($curr == "'" || $curr == "\\")
             ) {
                 $buffer += "&#39;";
                 $i++;
-            } elseif ($in_string && $curr == """) {
+            } elseif ($in_string && $curr == "'") {
                 $in_string = false;
                 $values[] = $buffer;
                 $buffer = "";
@@ -4127,7 +4099,7 @@ public class Util {
      *
      * @return String Matching regular expression.
      */
-    public static function getFirstOccurringRegularExpression(array $regex_array, $query)
+    public static String getFirstOccurringRegularExpression(List $regex_array, String $query)
     {
         $minimum_first_occurence_index = null;
         $regex = null;
@@ -4152,7 +4124,7 @@ public class Util {
      *
      * @return array|null list of tabs for the menu
      */
-    public static function getMenuTabList($level = null)
+    public static Map getMenuTabList(String $level /*= null*/)
     {
         $tabList = [
             "server" => [
@@ -4219,7 +4191,7 @@ public class Util {
      *
      * @return String time, datetime or timestamp strings with fractional seconds
      */
-    public static function addMicroseconds($value)
+    public static Strnig addMicroseconds(String $value)
     {
         if (empty($value) || $value == "CURRENT_TIMESTAMP"
             || $value == "current_timestamp()") {
@@ -4246,7 +4218,7 @@ public class Util {
      *
      * @return String the MIME type for compression, or "none"
      */
-    public static function getCompressionMimeType($file)
+    public static String getCompressionMimeType(File $file)
     {
         $test = fread($file, 4);
         $len = strlen($test);
@@ -4279,31 +4251,31 @@ public class Util {
      *
      * @return String HTML code for one link
      */
-    public static function getNavigationLink(
-        $link,
-        $showText,
-        $text,
-        $showIcon,
-        $icon,
-        $linkId = "",
-        $disableAjax = false,
-        $linkTarget = "",
-        array $classes = []
+    public static String getNavigationLink(
+    	String $link,
+        boolean $showText,
+        String $text,
+        boolean $showIcon,
+        String $icon,
+        String $linkId /*= ""*/,
+        boolean $disableAjax /*= false*/,
+        String $linkTarget /*= ""*/,
+        List<String> $classes /*= []*/
     ) {
-        $retval = "<a href="" + $link + """;
+        $retval = "<a href='" + $link + "'";
         if (! empty($linkId)) {
-            $retval += " id="" + $linkId + """;
+            $retval += " id='" + $linkId + "'";
         }
         if (! empty($linkTarget)) {
-            $retval += " target="" + $linkTarget + """;
+            $retval += " target='" + $linkTarget + "'";
         }
         if ($disableAjax) {
             $classes[] = "disableAjax";
         }
         if (! empty($classes)) {
-            $retval += " class="" + implode(" ", $classes) + """;
+            $retval += " class='" + implode(" ", $classes) + "'";
         }
-        $retval += " title="" + $text + "">";
+        $retval += " title='" + $text + "'>";
         if ($showIcon) {
             $retval += getImage(
                 $icon,
@@ -4326,7 +4298,7 @@ public class Util {
      *
      * @return String COLLATE clause if needed or empty String.
      */
-    public static function getCollateForIS()
+    public static String getCollateForIS()
     {
         $names = $GLOBALS["dbi"].getLowerCaseNames();
         if ($names === "0") {
@@ -4344,7 +4316,7 @@ public class Util {
      *
      * @return array processes index data
      */
-    public static function processIndexData(array $indexes)
+    public static Map processIndexData(Map $indexes)
     {
         $lastIndex    = "";
 
@@ -4398,7 +4370,7 @@ public class Util {
      *
      * @return String html
      */
-    public static function getStartAndNumberOfRowsPanel($sql_query)
+    public static String getStartAndNumberOfRowsPanel(String $sql_query)
     {
         $template = new Template();
 
@@ -4436,7 +4408,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static function isVirtualColumnsSupported()
+    public static boolean isVirtualColumnsSupported()
     {
         $serverType = getServerType();
         $serverVersion = $GLOBALS["dbi"].getVersion();
@@ -4454,7 +4426,7 @@ public class Util {
      * @return array
      *
      */
-    public static function getDbInfo($db, ?String $sub_part)
+    public static Map getDbInfo(String $db, String $sub_part)
     {
         global $cfg;
 
@@ -4630,7 +4602,7 @@ public class Util {
      * @return array list of tables
      *
      */
-    public static function getTablesWhenOpen($db, $db_info_result)
+    public static List getTablesWhenOpen(String $db, Object $db_info_result)
     {
         $sot_cache = [];
         $tables = [];
@@ -4753,7 +4725,7 @@ public class Util {
      *
      * @return String
      */
-    public static function generateRandom(int $length, boolean $asHex = false): String
+    public static String generateRandom(int $length, boolean $asHex = false)
     {
         $result = "";
         if (class_exists(Random.class)) {
@@ -4825,7 +4797,7 @@ public class Util {
      *
      * @return String Link to be displayed in the table header
      */
-    public static function sortableTableHeader($title, $sort, $initialSortOrder = "ASC")
+    public static String sortableTableHeader(String $title, String $sort, String $initialSortOrder /*= "ASC"*/)
     {
         $requestedSort = "table";
         $requestedSortOrder = $futureSortOrder = $initialSortOrder;

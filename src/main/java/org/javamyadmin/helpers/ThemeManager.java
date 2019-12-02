@@ -27,6 +27,7 @@ public class ThemeManager {
 	 */
 	// private static ThemeManager _instance = new ThemeManager(); // Not a
 	// singleton, in Java
+	// Use GLOBALS.themeManager
 
 	/**
 	 * @var String path to theme folder
@@ -73,57 +74,52 @@ public class ThemeManager {
 	private GLOBALS GLOBALS;
 
 	/**
-     * Constructor for Theme Manager class
-     * @param req 
-     * @param req 
-     *
-     * @access public
-     */
-    public ThemeManager(HttpServletRequest req, GLOBALS GLOBALS)
-    {
-    	this.request = req;
-    	this.GLOBALS = GLOBALS;
-    	
-        this.theme_default = FALLBACK_THEME;
-        this.active_theme = "";
+	 * Constructor for Theme Manager class
+	 * 
+	 * @param req
+	 * @param req
+	 *
+	 * @access public
+	 */
+	public ThemeManager(HttpServletRequest req, GLOBALS GLOBALS) {
+		this.request = req;
+		this.GLOBALS = GLOBALS;
 
-        if (!setThemesPath("./themes/")) {
-            return;
-        }
+		this.theme_default = FALLBACK_THEME;
+		this.active_theme = "";
 
-        this.setThemePerServer((Boolean) GLOBALS.cfg.get("ThemePerServer"));
+		if (!setThemesPath("./themes/")) {
+			return;
+		}
 
-        this.loadThemes();
+		this.setThemePerServer((Boolean) GLOBALS.cfg.get("ThemePerServer"));
 
-        this.theme = new Theme();
+		this.loadThemes();
 
-        boolean config_theme_exists = true;
+		this.theme = new Theme();
 
-        if (! this.checkTheme((String) GLOBALS.cfg.get("ThemeDefault"))) {
-            trigger_error(
-                String.format(
-                    __("Default theme %s not found!"),
-                    htmlspecialchars((String)GLOBALS.cfg.get("ThemeDefault"))
-                ),
-                E_USER_ERROR
-            );
-            config_theme_exists = false;
-        } else {
-            this.theme_default = (String) GLOBALS.cfg.get("ThemeDefault");
-        }
+		boolean config_theme_exists = true;
 
-        // check if user have a theme cookie
-        String cookie_theme = this.getThemeCookie(req);
-        if ( cookie_theme == null || ! this.setActiveTheme(cookie_theme)) {
-            if (config_theme_exists) {
-                // otherwise use default theme
-                this.setActiveTheme(this.theme_default);
-            } else {
-                // or fallback theme
-                this.setActiveTheme(ThemeManager.FALLBACK_THEME);
-            }
-        }
-    }
+		if (!this.checkTheme((String) GLOBALS.cfg.get("ThemeDefault"))) {
+			trigger_error(String.format(__("Default theme %s not found!"),
+					htmlspecialchars((String) GLOBALS.cfg.get("ThemeDefault"))), E_USER_ERROR);
+			config_theme_exists = false;
+		} else {
+			this.theme_default = (String) GLOBALS.cfg.get("ThemeDefault");
+		}
+
+		// check if user have a theme cookie
+		String cookie_theme = this.getThemeCookie(req);
+		if (cookie_theme == null || !this.setActiveTheme(cookie_theme)) {
+			if (config_theme_exists) {
+				// otherwise use default theme
+				this.setActiveTheme(this.theme_default);
+			} else {
+				// or fallback theme
+				this.setActiveTheme(ThemeManager.FALLBACK_THEME);
+			}
+		}
+	}
 
 	/**
 	 * Returns the singleton ThemeManager object
@@ -374,6 +370,8 @@ public class ThemeManager {
 	 */
 	public static void initializeTheme(HttpServletRequest request, GLOBALS GLOBALS) {
 		ThemeManager tmanager = new ThemeManager(request, GLOBALS);
+
+		GLOBALS.themeManager = tmanager;
 
 		/**
 		 * the theme object

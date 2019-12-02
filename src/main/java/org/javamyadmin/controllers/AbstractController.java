@@ -1,7 +1,8 @@
 package org.javamyadmin.controllers;
 
+import static org.javamyadmin.php.Php.*;
+
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,10 +10,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Core;
+import org.javamyadmin.helpers.Language;
 import org.javamyadmin.helpers.LanguageManager;
+import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
+import org.javamyadmin.helpers.Scripts;
+import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.ThemeManager;
+import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 import org.jtwig.web.servlet.JtwigRenderer;
@@ -26,7 +32,7 @@ public abstract class AbstractController extends HttpServlet {
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		GLOBALS GLOBALS = new GLOBALS();
-		Response pmaResponse;
+		Response pmaResponse = new Response(request, response, GLOBALS);
 		
 		// cfr. commons.inc.php
 		
@@ -38,7 +44,7 @@ public abstract class AbstractController extends HttpServlet {
 		    // TODO Session.setUp(GLOBALS.PMA_Config, GLOBALS.error_handler);
 		}
 		
-		boolean $token_provided, $token_mismatch;
+		boolean $token_provided = false, $token_mismatch = false;
 		if (request.getMethod().equals("POST")) {
 		    if (Core.isValid(request.getParameter("token"))) {
 		        $token_provided = true;
@@ -104,53 +110,54 @@ public abstract class AbstractController extends HttpServlet {
 		/*
 		 * lang detection is done here
 		 */
-		String $language = LanguageManager.getInstance().selectLanguage();
-		$language.activate();
+		Language $language = LanguageManager.getInstance().selectLanguage(request, response);
+		$language.activate(GLOBALS);
 		
 		/*
 		 * check for errors occurred while loading configuration
 		 * this check is done here after loading language files to present errors in locale
 		 */
 		GLOBALS.PMA_Config.checkPermissions();
-		GLOBALS.PMA_Config.checkErrors();
+		GLOBALS.PMA_Config.checkErrors(request, response, GLOBALS, pmaResponse);
 		
 		/* setup themes                                          LABEL_theme_setup    */
 
 		ThemeManager.initializeTheme(request, GLOBALS);
 		
-		if (! defined("PMA_MINIMUM_COMMON")) {
+		if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
 		    /**
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
 		    GLOBALS.PMA_Config.setCookie("pma_lang", GLOBALS.lang);
-		    ThemeManager.getInstance().setThemeCookie();
-		    if (! empty($cfg["Server"])) {
+		    GLOBALS.themeManager.setThemeCookie(request, response);
+		    if (! empty(GLOBALS.cfg.get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
 		         */
-		        $containerBuilder.set(DatabaseInterface.class, DatabaseInterface.load());
-		        $containerBuilder.setAlias("dbi", DatabaseInterface.class);
+		        // $containerBuilder.set(DatabaseInterface.class, DatabaseInterface.load());
+		        // $containerBuilder.setAlias("dbi", DatabaseInterface.class);
+		    	
 		        // get LoginCookieValidity from preferences cache
 		        // no generic solution for loading preferences from cache as some settings
 		        // need to be kept for processing in
 		        // PhpMyAdmin\Config.loadUserPreferences()
-		        $cache_key = "server_" + GLOBALS.server;
-		        if (isset($_SESSION["cache"][$cache_key]["userprefs"]["LoginCookieValidity"])
+		        
+		    	String $cache_key = "server_" + GLOBALS.server;
+		        if (!empty(request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity"))
 		        ) {
-		            $value
-		                = $_SESSION["cache"][$cache_key]["userprefs"]["LoginCookieValidity"];
+		            String $value
+		                = (String) request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
 		            GLOBALS.PMA_Config.set("LoginCookieValidity", $value);
-		            GLOBALS.cfg.get("LoginCookieValidity") = $value;
-		            unset($value);
+		            GLOBALS.cfg.put("LoginCookieValidity", $value);
 		        }
-		        unset($cache_key);
-		        // Gets the authentication library that fits the $cfg["Server"] settings
+		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
 		        // and run authentication
 		        /**
 		         * the required auth type plugin
 		         */
-		        $auth_class = "PhpMyAdmin\\Plugins\\Auth\\Authentication" . ucfirst(strtolower($cfg["Server"]["auth_type"]));
+		        /* TODO
+		        $auth_class = "PhpMyAdmin\\Plugins\\Auth\\Authentication" . ucfirst(strtolower(GLOBALS.cfg["Server"]["auth_type"]));
 		        if (! @class_exists($auth_class)) {
 		            Core.fatalError(
 		                __("Invalid authentication method set in configuration:")
@@ -161,30 +168,31 @@ public abstract class AbstractController extends HttpServlet {
 		            $_POST["pma_password"] = substr($_POST["pma_password"], 0, 256);
 		        }
 		        $auth_plugin = new $auth_class();
-		        $auth_plugin.authenticate();
+		        $auth_plugin.authenticate();*/
+		        
 		        // Try to connect MySQL with the control user profile (will be used to
 		        // get the privileges list for the current user but the true user link
 		        // must be open after this one so it would be default one for all the
 		        // scripts)
-		        $controllink = false;
-		        if ($cfg["Server"]["controluser"] != "") {
+		        /* TODO
+		        boolean $controllink = false;
+		        if (GLOBALS.cfg.get("Server"]["controluser"] != "") {
 		            $controllink = GLOBALS.dbi.connect(
 		                DatabaseInterface.CONNECT_CONTROL
 		            );
-		        }
+		        }*/
 		        // Connects to the server (validates user"s login)
 		        /** @var DatabaseInterface $userlink */
+		        /* TODO
 		        $userlink = GLOBALS.dbi.connect(DatabaseInterface.CONNECT_USER);
 		        if ($userlink == null) {
 		            $auth_plugin.showFailure("mysql-denied");
 		        }
 		        if (! $controllink) {
-		            /*
-		             * Open separate connection for control queries, this is needed
-		             * to avoid problems with table locking used in main connection
-		             * and phpMyAdmin issuing queries to configuration storage, which
-		             * is not locked by that time.
-		             */
+//		             * Open separate connection for control queries, this is needed
+//		             * to avoid problems with table locking used in main connection
+//		             * and phpMyAdmin issuing queries to configuration storage, which
+//		             * is not locked by that time.
 		            $controllink = GLOBALS.dbi.connect(
 		                DatabaseInterface.CONNECT_USER,
 		                null,
@@ -193,30 +201,30 @@ public abstract class AbstractController extends HttpServlet {
 		        }
 		        $auth_plugin.rememberCredentials();
 		        $auth_plugin.checkTwoFactor();
-		        /* Log success */
+		        
+		        // Log success
 		        Logging.logUser(cfg.get("Server.user"));
 		        if (GLOBALS.dbi.getVersion() < GLOABLS.cfg.get("MysqlMinVersion.internal") {
 		            Core.fatalError(
 		                __("You should upgrade to %s %s or later."),
 		                [
 		                    "MySQL",
-		                    $cfg["MysqlMinVersion"]["human"],
+		                    GLOBALS.cfg["MysqlMinVersion"]["human"],
 		                ]
 		            );
 		        }
 		        // Sets the default delimiter (if specified).
 		        if (! empty(request.getParameter("sql_delimiter"))) {
 		            Lexer.$DEFAULT_DELIMITER = request.getParameter("sql_delimiter");
-		        }
+		        }*/
 		        // TODO: Set SQL modes too.
 		    } else { // end server connecting
-		        $response = Response.getInstance();
-		        $response.getHeader().disableMenuAndConsole();
-		        $response.getFooter().setMinimal();
+		        pmaResponse.getHeader().disableMenuAndConsole();
+		        pmaResponse.getFooter().setMinimal();
 		    }
 		    /**
 		     * check if profiling was requested and remember it
-		     * (note: when $cfg["ServerDefault"] = 0, constant is not defined)
+		     * (note: when GLOBALS.cfg["ServerDefault"] = 0, constant is not defined)
 		     */
 		    if (! empty(request.getParameter("profiling"))
 		        && Util.profilingSupported()
@@ -230,9 +238,8 @@ public abstract class AbstractController extends HttpServlet {
 		     * Inclusion of profiling scripts is needed on various
 		     * pages like sql, tbl_sql, db_sql, tbl_select
 		     */
-		    $response = Response.getInstance();
 		    if (! empty (request.getSession().getAttribute("profiling"))) {
-		        $scripts  = $response.getHeader().getScripts();
+		        Scripts $scripts  = pmaResponse.getHeader().getScripts();
 		        $scripts.addFile("chart.js");
 		        $scripts.addFile("vendor/jqplot/jquery.jqplot.js");
 		        $scripts.addFile("vendor/jqplot/plugins/jqplot.pieRenderer.js");
@@ -243,30 +250,29 @@ public abstract class AbstractController extends HttpServlet {
 		     * There is no point in even attempting to process
 		     * an ajax request if there is a token mismatch
 		     */
-		    if ($response.isAjax() && $_SERVER["REQUEST_METHOD"] == "POST" && $token_mismatch) {
-		        $response.setRequestStatus(false);
-		        $response.addJSON(
+		    if (pmaResponse.isAjax() && request.getMethod().equals("POST") && $token_mismatch) {
+		    	pmaResponse.setRequestStatus(false);
+		    	pmaResponse.addJSON(
 		            "message",
 		            Message.error(__("Error: Token mismatch"))
 		        );
-		        exit();	// FIXME
+		        //exit();	// FIXME
 		    }
-		    $containerBuilder.set("response", Response.getInstance());
+		    //$containerBuilder.set("response", Response.getInstance());
 		}
 		// load user preferences
 		GLOBALS.PMA_Config.loadUserPreferences();
 		
-		
-		this.pmaResponse = new Response(request, response, GLOBALS);
-		
 		// We override standard service request! Always call doGet
-		this.doGet(request, response, pmaResponse, GLOBALS);
+		this.doGet(request, response, pmaResponse, GLOBALS, new Template());
+
+		pmaResponse.response();
 	}
 
 	/**
 	 * GET handler. Must be defined.
 	 */
-	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS)
+	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS, Template template)
 			throws ServletException, IOException;
 
 

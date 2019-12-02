@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
+import org.javamyadmin.helpers.Template;
 import org.javamyadmin.php.GLOBALS;
 
 /**
@@ -34,7 +35,7 @@ public class HomeController extends AbstractController {
 	 * GET handler
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, GLOBALS GLOBALS, Template template)
 			throws ServletException, IOException {
 
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
@@ -111,10 +112,7 @@ public class HomeController extends AbstractController {
 		model.put("phpmyadmin_version", GLOBALS.PMA_VERSION);
 		model.put("config_storage_message", null);
 
-		/*renderer.dispatcherFor("/WEB-INF/templates/home/index.twig") //
-				.with(model) //
-				.render(request, response);*/
-		
-		pmaResponse.response(response);
+		String html = template.render("home/index", model);
+		pmaResponse.addHTML(html);
 	}
 }

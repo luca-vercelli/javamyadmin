@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Theme;
+import org.javamyadmin.helpers.ThemeManager;
 
 /**
  * Mimic PHP GLOBALS. Intended to be stored in Request (in JavaEE this would be
@@ -21,6 +22,7 @@ public class GLOBALS {
 	public Integer server = 0;
 	public static final String ROOT_PATH = "/"; // Is it needed ?!?
 	public static final String LOCALE_PATH = "/"; // Where is it? files *.mo should be there
+	public static final String PMA_MINIMUM_COMMON = "";
 	public boolean IS_TRANSFORMATION_WRAPPER = false;
 	public Theme PMA_Theme;
 	public String pmaThemePath;
@@ -43,6 +45,7 @@ public class GLOBALS {
 	// ?!?
 	public Object reload;
 	public Object focus_querywindow;
+	public ThemeManager themeManager;
 
 	static {
 		cfg = new Properties();
