@@ -76,14 +76,14 @@ public class Response {
     /**
      * Creates a new class instance
      */
-    public Response(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS)
+    public Response(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Map<String, Object> session)
     {
         /*if (! defined("TESTSUITE")) {
             $buffer = OutputBuffering.getInstance();
             $buffer.start();
             register_shutdown_function([this, "response"]);
         }*/
-        this._header = new Header(request, response, GLOBALS);
+        this._header = new Header(request, response, GLOBALS, session);
         this._HTML   = "";
         this._JSON   = new HashMap<>();
         this._footer = new Footer(request, GLOBALS, this);

@@ -128,7 +128,7 @@ public class Header {
     /**
      * Creates a new class instance
      */
-    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS)
+    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Map<String, Object> session)
     {
     	this.request = request;
     	this.response = response;
@@ -145,7 +145,8 @@ public class Header {
         String $table = GLOBALS.table;
         this._menu = new Menu(
             $db,
-            $table
+            $table,
+            session
         );
         this._menuEnabled = true;
         this._warningsEnabled = true;

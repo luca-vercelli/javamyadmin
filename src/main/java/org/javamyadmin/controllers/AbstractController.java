@@ -33,7 +33,8 @@ public abstract class AbstractController extends HttpServlet {
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		GLOBALS GLOBALS = new GLOBALS();
-		Response pmaResponse = new Response(request, response, GLOBALS);
+		Map<String, Object> $_SESSION = $_SESSION(request.getSession());
+		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
 		
 		// cfr. commons.inc.php
 		
@@ -264,7 +265,6 @@ public abstract class AbstractController extends HttpServlet {
 		// load user preferences
 		GLOBALS.PMA_Config.loadUserPreferences();
 		
-		Map $_SESSION = $_SESSION(request.getSession());
 		// We override standard service request! Always call doGet
 		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS, new Template());
 
