@@ -80,7 +80,7 @@ public class Response {
     /**
      * Creates a new class instance
      */
-    public Response(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Map<String, Object> session)
+    public Response(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, SessionMap session)
     {
         /*if (! defined("TESTSUITE")) {
             $buffer = OutputBuffering.getInstance();

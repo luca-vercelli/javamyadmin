@@ -130,7 +130,7 @@ public class Header {
     /**
      * Creates a new class instance
      */
-    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Map<String, Object> session)
+    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, SessionMap session)
     {
     	this.request = request;
     	this.response = response;
