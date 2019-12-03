@@ -40,6 +40,7 @@ public class GLOBALS {
 	public boolean PMA_NO_SESSION = false;
 	public String message;
 	public String buffer_message;
+	public String route;
 	
 	/* Backward compatibility (see Config.enableBc())
 	 * 
@@ -59,6 +60,7 @@ public class GLOBALS {
 	public Object reload;
 	public Object focus_querywindow;
 	public ThemeManager themeManager;
+	
 
 	public GLOBALS() {
 	}
