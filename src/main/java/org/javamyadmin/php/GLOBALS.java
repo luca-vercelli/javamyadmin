@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.javamyadmin.helpers.Config;
+import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Theme;
 import org.javamyadmin.helpers.ThemeManager;
 
@@ -29,10 +30,11 @@ public class GLOBALS {
 	public String pmaThemeImage;
 	public static Config PMA_Config = new Config(null);
 	public static boolean pma_config_loading = false;
+	public static String active_page;
 	public String lang;
 	public String db;
 	public String table;
-	public Object dbi;
+	public DatabaseInterface dbi;
 	public String sql_query;
 	public String error_message;
 	// public Object error_handler; // Unsupported

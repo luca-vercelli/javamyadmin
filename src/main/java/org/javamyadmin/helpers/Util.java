@@ -1,12 +1,18 @@
 package org.javamyadmin.helpers;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 import org.javamyadmin.helpers.Menu.MenuStruct;
+import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
@@ -64,7 +70,7 @@ public class Util {
         boolean $menu_icon /*= false*/,
         String $control_param /*= "ActionLinksMode"*/,
         GLOBALS GLOBALS,
-        M<p<String, Object> session
+        SessionMap session
     ) {
         boolean $include_icon = false;
         boolean $include_text = false;
@@ -107,41 +113,11 @@ public class Util {
      */
     public static String getImage(String $image, String $alternate /*= ""*/, Map<String, Object> $attributes /*= []*/)
     {
-        $alternate = htmlspecialchars($alternate);
-
-        if (isset($attributes["class"])) {
-            $attributes["class"] = "icon ic_$image " + $attributes["class"];
-        } else {
-            $attributes["class"] = "icon ic_$image";
-        }
-
-        // set all other attributes
-        $attr_str = "";
-        foreach ($attributes as $key => $value) {
-            if (! in_array($key, ["alt", "title"])) {
-                $attr_str += " $key=\"$value\"";
-            }
-        }
-
-        // override the alt attribute
-        if (isset($attributes["alt"])) {
-            $alt = $attributes["alt"];
-        } else {
-            $alt = $alternate;
-        }
-
-        // override the title attribute
-        if (isset($attributes["title"])) {
-            $title = $attributes["title"];
-        } else {
-            $title = $alternate;
-        }
-
-        // generate the IMG tag
-        $template = "<img src='themes/dot.gif' title='%s' alt='%s'%s>";
-        return sprintf($template, $title, $alt, $attr_str);
+    	return Generator.getImage($image, $alternate, $attributes);
     }
-
+    public static String getImage(String $image) {
+    	return getImage($image, "", null);
+    }
     /**
      * Returns the formatted maximum size for an upload
      *
@@ -155,8 +131,9 @@ public class Util {
     {
         // I have to reduce the second parameter (sensitiveness) from 6 to 4
         // to avoid weird results like 512 kKib
-        list($max_size, $max_unit) = formatByteDown($max_upload_size, 4);
-        return "(" + sprintf(__("Max: %s%s"), $max_size, $max_unit) + ")";
+    	return null; //TODO
+        /*list($max_size, $max_unit) = formatByteDown($max_upload_size, 4);
+        return "(" + sprintf(__("Max: %s%s"), $max_size, $max_unit) + ")";*/
     }
 
     /**
@@ -188,7 +165,7 @@ public class Util {
      */
     public static String escapeMysqlWildcards(String $name)
     {
-    	return $name.replace("_", "\\_").replace("%", "\\%")
+    	return $name.replace("_", "\\_").replace("%", "\\%");
     } // end of the "escapeMysqlWildcards()" function
 
     /**
@@ -218,7 +195,8 @@ public class Util {
      */
     public static String unQuote(String $quoted_string, String $quote /*= null*/)
     {
-        $quotes = [];
+    	return null; //TODO
+        /*$quotes = [];
 
         if ($quote === null) {
             $quotes[] = "`";
@@ -243,7 +221,7 @@ public class Util {
             }
         }
 
-        return $quoted_string;
+        return $quoted_string;*/
     }
 
     /**
@@ -261,7 +239,8 @@ public class Util {
      */
     public static String formatSql(String $sqlQuery, boolean $truncate /*= false*/)
     {
-        global $cfg;
+    	return null; //TODO
+        /*global $cfg;
 
         if ($truncate
             && mb_strlen($sqlQuery) > $cfg["MaxCharactersInDisplayedSQL"]
@@ -274,7 +253,7 @@ public class Util {
         }
         return "<code class="sql"><pre>" + "\n"
             + htmlspecialchars($sqlQuery) + "\n"
-            + "</pre></code>";
+            + "</pre></code>";*/
     } // end of the "formatSql()" function
 
     /**
@@ -288,7 +267,7 @@ public class Util {
      */
     public static String showCopyToClipboard(String $text)
     {
-        $open_link = "  <a href='#' class='copyQueryBtn' data-text='"
+    	String $open_link = "  <a href='#' class='copyQueryBtn' data-text='"
             + htmlspecialchars($text) + "'>" + __("Copy") + "</a>";
         return $open_link;
     } // end of the "showCopyToClipboard()" function
@@ -311,10 +290,13 @@ public class Util {
         }
 
         return "<a href='" + $link + "' target='" + $target + "'>"
-            + getImage("b_help", __("Documentation"))
+            + getImage("b_help", __("Documentation"), null)
             + "</a>";
     } // end of the "showDocLink()" function
 
+    public static String showDocLink(String $link) {
+    	return showDocLink($link, "documentation", false);
+    }
     /**
      * Get a URL link to the official MySQL documentation
      *
@@ -337,8 +319,8 @@ public class Util {
         }
         $mysql = "5.5";
         $lang = "en";
-        if (isset($GLOBALS["dbi"])) {
-            $serverVersion = $GLOBALS["dbi"].getVersion();
+        if (isset(GLOBALS.dbi)) {
+            $serverVersion = GLOBALS.dbi.getVersion();
             if ($serverVersion >= 50700) {
                 $mysql = "5.7";
             } else if ($serverVersion >= 50600) {
@@ -369,7 +351,8 @@ public class Util {
         boolean $useMariaDB /*= false*/,
         String $text /*= null*/
     ){
-        $html = "";
+    	return null; //Unsupported
+        /*$html = "";
         try {
             $type = KBSearch.MYSQL;
             if ($useMariaDB) {
@@ -385,7 +368,7 @@ public class Util {
         } catch (KBException $e) {
             unset($e);// phpstan workaround
         }
-        return $html;
+        return $html;*/
     }
 
     /**
@@ -451,7 +434,7 @@ public class Util {
      */
     public static String showPHPDocu(String $target)
     {
-        $url = Core.getPHPDocLink($target);
+        String $url = Core.getPHPDocLink($target);
 
         return showDocLink($url);
     } // end of the "showPHPDocu()" function
@@ -467,14 +450,15 @@ public class Util {
      */
     public static String showHint(String $message, GLOBALS GLOBALS)
     {
-        if (GLOBALS.PMA_Config.get("ShowHint")) {
+    	String $classClause;
+        if (!empty(GLOBALS.PMA_Config.get("ShowHint"))) {
             $classClause = " class='pma_hint'";
         } else {
             $classClause = "";
         }
         return "<span" + $classClause + ">"
             + getImage("b_help")
-            + "<span class="hide">" + $message + "</span>"
+            + "<span class='hide'>" + $message + "</span>"
             + "</span>";
     }
 
@@ -504,41 +488,42 @@ public class Util {
         String $back_url /*= ""*/,
         boolean $exit /*= true*/
     ) {
+    	/* TODO. Or not?
         global $table, $db;
 
-        /**
+        /*
          * Error message to be built.
          * @var String $error_msg
-         */
+         *
         $error_msg = "";
 
         // Checking for any server errors.
         if (empty($server_msg)) {
-            $server_msg = $GLOBALS["dbi"].getError();
+            $server_msg = GLOBALS.dbi.getError();
         }
 
         // Finding the query that failed, if not specified.
-        if (empty($sql_query) && ! empty($GLOBALS["sql_query"])) {
-            $sql_query = $GLOBALS["sql_query"];
+        if (empty($sql_query) && ! empty(GLOBALS["sql_query"])) {
+            $sql_query = GLOBALS["sql_query"];
         }
         $sql_query = trim($sql_query);
 
         /**
          * The lexer used for analysis.
          * @var Lexer $lexer
-         */
+         *
         $lexer = new Lexer($sql_query);
 
         /**
          * The parser used for analysis.
          * @var Parser $parser
-         */
+         *
         $parser = new Parser($lexer.list);
 
         /**
          * The errors found by the lexer and the parser.
          * @var array $errors
-         */
+         *
         $errors = ParserError.get([$lexer, $parser]);
 
         if (empty($sql_query)) {
@@ -657,7 +642,7 @@ public class Util {
         /**
          * If this is an AJAX request, there is no "Back" link and
          * `Response()` is used to send the response.
-         */
+         *
         $response = Response.getInstance();
         if ($response.isAjax()) {
             $response.setRequestStatus(false);
@@ -679,7 +664,7 @@ public class Util {
                 + "</fieldset>" + "\n\n";
         }
 
-        exit($error_msg);
+        exit($error_msg);*/
     }
 
     /**
@@ -691,11 +676,11 @@ public class Util {
      * @return int the possibly modified row count
      *
      */
-    private static int _checkRowCount(String $db, Map $table)
+    private static int _checkRowCount(String $db, Map $table, GLOBALS GLOBALS)
     {
-        $rowCount = 0;
+        int $rowCount = 0;
 
-        if ($table["Rows"] === null) {
+        if (empty($table.get("Rows"))) {
             // Do not check exact row count here,
             // if row count is invalid possibly the table is defect
             // and this would break the navigation panel;
@@ -705,11 +690,11 @@ public class Util {
             // in this case.
 
             // set this because Table.countRecords() can use it
-            $tbl_is_view = $table["TABLE_TYPE"] == "VIEW";
+            boolean $tbl_is_view = $table.get("TABLE_TYPE") == "VIEW"; //FIXME
 
-            if ($tbl_is_view || $GLOBALS["dbi"].isSystemSchema($db)) {
-                $rowCount = $GLOBALS["dbi"]
-                    .getTable($db, $table["Name"])
+            if ($tbl_is_view || GLOBALS.dbi.isSystemSchema($db)) {
+                $rowCount = GLOBALS.dbi
+                    .getTable($db, (String) $table.get("Name"))
                     .countRecords();
             }
         }
@@ -732,10 +717,12 @@ public class Util {
         int $limit_offset /*= 0*/,
         boolean $limit_count /*= false*/
     ) {
-        $sep = GLOBALS.PMA_Config["NavigationTreeTableSeparator"];
+    	return null;
+    	/* TODO
+        String $sep = GLOBALS.PMA_Config.get("NavigationTreeTableSeparator");
 
         if ($tables === null) {
-            $tables = $GLOBALS["dbi"].getTablesFull(
+            $tables = GLOBALS.dbi.getTablesFull(
                 $db,
                 "",
                 false,
@@ -813,7 +800,7 @@ public class Util {
             $group[$table_name] = array_merge($default, $table);
         }
 
-        return $table_groups;
+        return $table_groups;*/
     }
 
     /* ----------------------- Set of misc functions ----------------------- */
@@ -839,7 +826,7 @@ public class Util {
      */
     public static Object backquote(Object $a_name, boolean $do_it /*= true*/)
     {
-        return static.backquoteCompat($a_name, "NONE", $do_it);
+        return backquoteCompat($a_name, "NONE", $do_it);
     } // end of the "backquote()" function
 
     /**
@@ -868,6 +855,8 @@ public class Util {
         String $compatibility /*= "MSSQL"*/,
         boolean $do_it /*= true*/
     ) {
+    	return null;
+    	/* TODO
         if (is_array($a_name)) {
             foreach ($a_name as &$data) {
                 $data = backquoteCompat($data, $compatibility, $do_it);
@@ -898,7 +887,7 @@ public class Util {
             return $quote + str_replace($quote, $escapeChar + $quote, $a_name) + $quote;
         }
 
-        return $a_name;
+        return $a_name;*/
     } // end of the "backquoteCompat()" function
 
     /**
@@ -918,17 +907,19 @@ public class Util {
         String $sql_query /*= null*/,
         String $type /*= "notice"*/
     ) {
+    	return null; // TODO
+    	/*
         global $cfg;
         $template = new Template();
         $retval = "";
 
         if (null === $sql_query) {
-            if (! empty($GLOBALS["display_query"])) {
-                $sql_query = $GLOBALS["display_query"];
-            } else if (! empty($GLOBALS["unparsed_sql"])) {
-                $sql_query = $GLOBALS["unparsed_sql"];
-            } else if (! empty($GLOBALS["sql_query"])) {
-                $sql_query = $GLOBALS["sql_query"];
+            if (! empty(GLOBALS["display_query"])) {
+                $sql_query = GLOBALS["display_query"];
+            } else if (! empty(GLOBALS["unparsed_sql"])) {
+                $sql_query = GLOBALS["unparsed_sql"];
+            } else if (! empty(GLOBALS["sql_query"])) {
+                $sql_query = GLOBALS["sql_query"];
             } else {
                 $sql_query = "";
             }
@@ -936,9 +927,9 @@ public class Util {
 
         $render_sql = $cfg["ShowSQL"] == true && ! empty($sql_query) && $sql_query !== ";";
 
-        if (isset($GLOBALS["using_bookmark_message"])) {
-            $retval += $GLOBALS["using_bookmark_message"].getDisplay();
-            unset($GLOBALS["using_bookmark_message"]);
+        if (isset(GLOBALS["using_bookmark_message"])) {
+            $retval += GLOBALS["using_bookmark_message"].getDisplay();
+            unset(GLOBALS["using_bookmark_message"]);
         }
 
         if ($render_sql) {
@@ -946,9 +937,9 @@ public class Util {
         }
 
         if ($message instanceof Message) {
-            if (isset($GLOBALS["special_message"])) {
-                $message.addText($GLOBALS["special_message"]);
-                unset($GLOBALS["special_message"]);
+            if (isset(GLOBALS["special_message"])) {
+                $message.addText(GLOBALS["special_message"]);
+                unset(GLOBALS["special_message"]);
             }
             $retval += $message.getDisplay();
         } else {
@@ -960,9 +951,9 @@ public class Util {
             }
             $retval += "<div class="alert alert-" + $context + "" role="alert">";
             $retval += Sanitize.sanitizeMessage($message);
-            if (isset($GLOBALS["special_message"])) {
-                $retval += Sanitize.sanitizeMessage($GLOBALS["special_message"]);
-                unset($GLOBALS["special_message"]);
+            if (isset(GLOBALS["special_message"])) {
+                $retval += Sanitize.sanitizeMessage(GLOBALS["special_message"]);
+                unset(GLOBALS["special_message"]);
             }
             $retval += "</div>";
         }
@@ -986,9 +977,9 @@ public class Util {
 
             // Html format the query to be displayed
             // If we want to show some sql code it is easiest to create it here
-            /* SQL-Parser-Analyzer */
+            // SQL-Parser-Analyzer
 
-            if (! empty($GLOBALS["show_as_php"])) {
+            if (! empty(GLOBALS["show_as_php"])) {
                 $new_line = "\\n"<br>" + "\n" + "&nbsp;&nbsp;&nbsp;&nbsp;. "";
                 $query_base = htmlspecialchars(addslashes($query_base));
                 $query_base = preg_replace(
@@ -1013,13 +1004,13 @@ public class Util {
 
             // Basic url query part
             $url_params = [];
-            if (! isset($GLOBALS["db"])) {
-                $GLOBALS["db"] = "";
+            if (! isset(GLOBALS["db"])) {
+                GLOBALS["db"] = "";
             }
-            if (strlen($GLOBALS["db"]) > 0) {
-                $url_params["db"] = $GLOBALS["db"];
-                if (strlen($GLOBALS["table"]) > 0) {
-                    $url_params["table"] = $GLOBALS["table"];
+            if (strlen(GLOBALS["db"]) > 0) {
+                $url_params["db"] = GLOBALS["db"];
+                if (strlen(GLOBALS["table"]) > 0) {
+                    $url_params["table"] = GLOBALS["table"];
                     $edit_link = Url.getFromRoute("/table/sql");
                 } else {
                     $edit_link = Url.getFromRoute("/database/sql");
@@ -1030,7 +1021,7 @@ public class Util {
 
             // Want to have the query explained
             // but only explain a SELECT (that has not been explained)
-            /* SQL-Parser-Analyzer */
+            // SQL-Parser-Analyzer
             $explain_link = "";
             $is_select = preg_match("@^SELECT[[:space:]]+@i", $sql_query);
             if (! empty($cfg["SQLQuery"]["Explain"]) && ! $query_too_big) {
@@ -1072,7 +1063,7 @@ public class Util {
             // even if the query is big and was truncated, offer the chance
             // to edit it (unless it"s enormous, see linkOrButton() )
             if (! empty($cfg["SQLQuery"]["Edit"])
-                && empty($GLOBALS["show_as_php"])
+                && empty(GLOBALS["show_as_php"])
             ) {
                 $edit_link += Url.getCommon($url_params);
                 $edit_link = " [&nbsp;"
@@ -1085,7 +1076,7 @@ public class Util {
             // Also we would like to get the SQL formed in some nice
             // php-code
             if (! empty($cfg["SQLQuery"]["ShowAsPHP"]) && ! $query_too_big) {
-                if (! empty($GLOBALS["show_as_php"])) {
+                if (! empty(GLOBALS["show_as_php"])) {
                     $php_link = " [&nbsp;"
                         + linkOrButton(
                             Url.getFromRoute("/import", $url_params),
@@ -1115,7 +1106,7 @@ public class Util {
 
             // Refresh query
             if (! empty($cfg["SQLQuery"]["Refresh"])
-                && ! isset($GLOBALS["show_as_php"]) // "Submit query" does the same
+                && ! isset(GLOBALS["show_as_php"]) // "Submit query" does the same
                 && preg_match("@^(SELECT|SHOW)[[:space:]]+@i", $sql_query)
             ) {
                 $refresh_link = Url.getFromRoute("/import", $url_params);
@@ -1131,7 +1122,7 @@ public class Util {
 
             $retval += "<div class="tools print_ignore">";
             $retval += "<form action='" + Url.getFromRoute("/sql") + "" method="post">";
-            $retval += Url.getHiddenInputs($GLOBALS["db"], $GLOBALS["table"]);
+            $retval += Url.getHiddenInputs(GLOBALS["db"], GLOBALS["table"]);
             $retval += "<input type="hidden" name="sql_query" value='"
                 + htmlspecialchars($sql_query) + "'>";
 
@@ -1149,12 +1140,11 @@ public class Util {
             }
             $retval += "</form>";
 
-            /**
-             * TODO: Should we have $cfg["SQLQuery"]["InlineEdit"]?
-             */
+            // TODO: Should we have $cfg["SQLQuery"]["InlineEdit"]?
+             
             if (! empty($cfg["SQLQuery"]["Edit"])
                 && ! $query_too_big
-                && empty($GLOBALS["show_as_php"])
+                && empty(GLOBALS["show_as_php"])
             ) {
                 $inline_edit_link = " ["
                     + linkOrButton(
@@ -1173,7 +1163,7 @@ public class Util {
             $retval += "</div>";
         }
 
-        return $retval;
+        return $retval;*/
     } // end of the "getMessage()" function
 
     public static String getMessage(
@@ -1191,12 +1181,13 @@ public class Util {
      */
     private static String _generateRowQueryOutput(String $sqlQuery)
     {
-        $ret = "";
-        $result = $GLOBALS["dbi"].query($sqlQuery);
+    	return null; //TODO
+        /*$ret = "";
+        $result = GLOBALS.dbi.query($sqlQuery);
         if ($result) {
             $devider = "+";
             $columnNames = "|";
-            $fieldsMeta = $GLOBALS["dbi"].getFieldsMeta($result);
+            $fieldsMeta = GLOBALS.dbi.getFieldsMeta($result);
             foreach ($fieldsMeta as $meta) {
                 $devider += "---+";
                 $columnNames += " " + $meta.name + " |";
@@ -1204,7 +1195,7 @@ public class Util {
             $devider += "\n";
 
             $ret += $devider + $columnNames + "\n" + $devider;
-            while ($row = $GLOBALS["dbi"].fetchRow($result)) {
+            while ($row = GLOBALS.dbi.fetchRow($result)) {
                 $values = "|";
                 foreach ($row as $value) {
                     if ($value === null) {
@@ -1216,7 +1207,7 @@ public class Util {
             }
             $ret += $devider;
         }
-        return $ret;
+        return $ret;*/
     }
 
     /**
@@ -1226,21 +1217,21 @@ public class Util {
      *
      * @return boolean whether profiling is supported
      */
-    public static boolean profilingSupported()
+    public static boolean profilingSupported(GLOBALS GLOBALS, SessionMap session)
     {
-        if (! cacheExists("profiling_supported")) {
+        if (! cacheExists("profiling_supported", session)) {
             // 5.0.37 has profiling but for example, 5.1.20 does not
             // (avoid a trip to the server for MySQL before 5.0.37)
             // and do not set a constant as we might be switching servers
-            if ($GLOBALS["dbi"].fetchValue("SELECT @@have_profiling")
+            if (GLOBALS.dbi.fetchValue("SELECT @@have_profiling")
             ) {
-                cacheSet("profiling_supported", true);
+                cacheSet("profiling_supported", true, session);
             } else {
-                cacheSet("profiling_supported", false);
+                cacheSet("profiling_supported", false, session);
             }
         }
 
-        return cacheGet("profiling_supported");
+        return (Boolean) cacheGet("profiling_supported", null, session);
     }
 
     /**
@@ -1250,17 +1241,17 @@ public class Util {
      * @param int        $limes the sensitiveness
      * @param int        $comma the number of decimals to retain
      *
-     * @return array|null the formatted value and its unit
+     * @return String[2]|null the formatted value and its unit
      *
      * @access  public
      */
-    public static Map formatByteDown(double $value, in $limes /*= 6*/, int $comma /*= 0*/)
+    public static String[] formatByteDown(Double $value, int $limes /*= 6*/, int $comma /*= 0*/)
     {
-        if ($value === null) {
+        if ($value == null) {
             return null;
         }
 
-        $byteUnits = [
+        String[] $byteUnits = new String[] {
             /* l10n: shortcuts for Byte */
             __("B"),
             /* l10n: shortcuts for Kilobyte */
@@ -1275,23 +1266,25 @@ public class Util {
             __("PiB"),
             /* l10n: shortcuts for Exabyte */
             __("EiB"),
-        ];
+        };
 
-        $dh = pow(10, $comma);
-        $li = pow(10, $limes);
-        $unit = $byteUnits[0];
+        long $dh = (long) Math.pow(10, $comma);
+        long $li = (long) Math.pow(10, $limes);
+        String $unit = $byteUnits[0];
 
+        int $d, $ex;
         for ($d = 6, $ex = 15; $d >= 1; $d--, $ex -= 3) {
-            $unitSize = $li * pow(10, $ex);
-            if (isset($byteUnits[$d]) && $value >= $unitSize) {
+        	long $unitSize = (long) ($li * Math.pow(10, $ex));
+            if ($byteUnits.length < $d && $value >= $unitSize) {
                 // use 1024.0 to avoid integer overflow on 64-bit machines
-                $value = round($value / (pow(1024, $d) / $dh)) / $dh;
+                $value = (double) (Math.round($value / (Math.pow(1024, $d) / $dh)) / $dh);
                 $unit = $byteUnits[$d];
-                break 1;
+                break;
             } // end if
         } // end for
 
-        if ($unit != $byteUnits[0]) {
+        String $return_value;
+        if (!$unit.equals($byteUnits[0])) {
             // if the unit is not bytes (as represented in current language)
             // reformat with max length of 5
             // 4th parameter=true means do not reformat if value < 1
@@ -1301,13 +1294,34 @@ public class Util {
             $return_value = formatNumber($value, 0);
         }
 
-        return [
-            trim($return_value),
+        return new String[] {
+            $return_value.trim(),
             $unit,
-        ];
+        };
     } // end of the "formatByteDown" function
 
-
+    // this units needs no translation, ISO
+    private static Map<Integer, String> units;
+    static {
+    	units = new HashMap<>();
+    	units.put(-8, "y");
+        units.put(-7, "z");
+		units.put(-6, "a");
+		units.put(-5, "f");
+		units.put(-4, "p");
+		units.put(-3, "n");
+		units.put(-2, "µ");
+		units.put(-1, "m");
+		units.put(0, " ");
+		units.put(1, "k");
+		units.put(2, "M");
+		units.put(3, "G");
+		units.put(4, "T");
+		units.put(5, "P");
+		units.put(6, "E");
+		units.put(7, "Z");
+		units.put(8, "Y");
+    }
     /**
      * Formats $value to the given length and appends SI prefixes
      * with a $length of 0 no truncation occurs, number is only formatted
@@ -1345,10 +1359,10 @@ public class Util {
             return "0";
         }
 
-        $originalValue = $value;
+        double $originalValue = $value;
         //number_format is not multibyte safe, str_replace is safe
-        if ($digits_left === 0) {
-            $value = number_format(
+        if ($digits_left == 0) {
+            String $str_value = number_format(
                 (float) $value,
                 $digits_right,
                 /* l10n: Decimal separator */
@@ -1357,33 +1371,13 @@ public class Util {
                 __(",")
             );
             if (($originalValue != 0) && (floatval($value) == 0)) {
-                $value = " <" + (1 / pow(10, $digits_right));
+            	$str_value = " <" + (1 / Math.pow(10, $digits_right));
             }
-            return $value;
+            return $str_value;
         }
 
-        // this units needs no translation, ISO
-        $units = [
-            -8 => "y",
-            -7 => "z",
-            -6 => "a",
-            -5 => "f",
-            -4 => "p",
-            -3 => "n",
-            -2 => "Âµ",
-            -1 => "m",
-            0 => " ",
-            1 => "k",
-            2 => "M",
-            3 => "G",
-            4 => "T",
-            5 => "P",
-            6 => "E",
-            7 => "Z",
-            8 => "Y",
-        ];
         /* l10n: Decimal separator */
-        $decimal_sep = __(".");
+        String $decimal_sep = __(".");
         /* l10n: Thousands separator */
         $thousands_sep = __(",");
 
@@ -1427,7 +1421,7 @@ public class Util {
             $thousands_sep
         );
         // If we don"t want any zeros, remove them now
-        if ($noTrailingZero && strpos($formattedValue, $decimal_sep) !== false) {
+        if ($noTrailingZero && $formattedValue.contains( $decimal_sep) ) {
             $formattedValue = preg_replace("/" + preg_quote($decimal_sep, "/") + "?0+$/", "", $formattedValue);
         }
 
@@ -1444,6 +1438,12 @@ public class Util {
         return $sign + $formattedValue + " " + $unit;
     } // end of the "formatNumber" function
 
+    public static String formatNumber(
+            double $value,
+            int $digits_left
+        ) {
+    	return formatNumber($value, $digits_left, 0, false, true);
+    }
     /**
      * Returns the number of bytes when a formatted size is given
      *
@@ -1453,28 +1453,28 @@ public class Util {
      */
     public static int extractValueFromFormattedSize(String $formatted_size)
     {
-        $return_value = -1;
+    	int $return_value = -1;
 
         $formatted_size = (String) $formatted_size;
 
-        if (preg_match("/^[0-9]+GB$/", $formatted_size)) {
-            $return_value = (int) mb_substr(
-                $formatted_size,
+        if ($formatted_size.matches("/^[0-9]+GB$/")) {
+            $return_value = new Integer(
+                $formatted_size.substring(
                 0,
                 -2
-            ) * pow(1024, 3);
-        } else if (preg_match("/^[0-9]+MB$/", $formatted_size)) {
-            $return_value = (int) mb_substr(
-                $formatted_size,
+            )) * (int)Math.pow(1024, 3);
+        } else if ($formatted_size.matches("/^[0-9]+MB$/")) {
+            $return_value = new Integer(
+                $formatted_size.substring(
                 0,
                 -2
-            ) * pow(1024, 2);
-        } else if (preg_match("/^[0-9]+K$/", $formatted_size)) {
-            $return_value = (int) mb_substr(
-                $formatted_size,
+            )) * (int)Math.pow(1024, 2);
+        } else if ($formatted_size.matches("/^[0-9]+K$/")) {
+            $return_value = new Integer(
+                $formatted_size.substring(
                 0,
                 -1
-            ) * pow(1024, 1);
+            )) * (int)Math.pow(1024, 1);
         }
         return $return_value;
     }
@@ -1491,86 +1491,10 @@ public class Util {
      */
     public static String localisedDate(long $timestamp /*= -1*/, String $format /*= ""*/)
     {
-        $month = [
-            /* l10n: Short month name */
-            __("Jan"),
-            /* l10n: Short month name */
-            __("Feb"),
-            /* l10n: Short month name */
-            __("Mar"),
-            /* l10n: Short month name */
-            __("Apr"),
-            /* l10n: Short month name */
-            _pgettext("Short month name", "May"),
-            /* l10n: Short month name */
-            __("Jun"),
-            /* l10n: Short month name */
-            __("Jul"),
-            /* l10n: Short month name */
-            __("Aug"),
-            /* l10n: Short month name */
-            __("Sep"),
-            /* l10n: Short month name */
-            __("Oct"),
-            /* l10n: Short month name */
-            __("Nov"),
-            /* l10n: Short month name */
-            __("Dec"),
-        ];
-        $day_of_week = [
-            /* l10n: Short week day name for Sunday */
-            _pgettext("Short week day name for Sunday", "Sun"),
-            /* l10n: Short week day name for Monday */
-            __("Mon"),
-            /* l10n: Short week day name for Tuesday */
-            __("Tue"),
-            /* l10n: Short week day name for Wednesday */
-            __("Wed"),
-            /* l10n: Short week day name for Thursday */
-            __("Thu"),
-            /* l10n: Short week day name for Friday */
-            __("Fri"),
-            /* l10n: Short week day name for Saturday */
-            __("Sat"),
-        ];
-
-        if ($format == "") {
-            /* l10n: See https://secure.php.net/manual/en/function.strftime.php */
-            $format = __("%B %d, %Y at %I:%M %p");
-        }
-
-        if ($timestamp == -1) {
-            $timestamp = time();
-        }
-
-        $date = preg_replace(
-            "@%[aA]@",
-            $day_of_week[(int) strftime("%w", (int) $timestamp)],
-            $format
-        );
-        $date = preg_replace(
-            "@%[bB]@",
-            $month[(int) strftime("%m", (int) $timestamp) - 1],
-            $date
-        );
-
-        /* Fill in AM/PM */
-        $hours = (int) date("H", (int) $timestamp);
-        if ($hours >= 12) {
-            $am_pm = _pgettext("AM/PM indication in time", "PM");
-        } else {
-            $am_pm = _pgettext("AM/PM indication in time", "AM");
-        }
-        $date = preg_replace("@%[pP]@", $am_pm, $date);
-
-        $ret = strftime($date, (int) $timestamp);
-        // Some OSes such as Win8.1 Traditional Chinese version did not produce UTF-8
-        // output here. See https://github.com/phpmyadmin/phpmyadmin/issues/10598
-        if (mb_detect_encoding($ret, "UTF-8", true) != "UTF-8") {
-            $ret = date("Y-m-d H:i:s", (int) $timestamp);
-        }
-
-        return $ret;
+    	if (empty($format)) {
+    		$format = "yyyy-MM-dd HH:mm:SS";
+    	}
+    	return new SimpleDateFormat($format).format(new Date($timestamp));
     } // end of the "localisedDate()" function
 
     /**
@@ -1586,52 +1510,51 @@ public class Util {
      */
     public static String getHtmlTab(Map $tab, Map $url_params /*= []*/)
     {
-        $template = new Template();
+        //$template = new Template();
         // default values
-        $defaults = [
-            "text"      => "",
-            "class"     => "",
-            "active"    => null,
-            "link"      => "",
-            "sep"       => "?",
-            "attr"      => "",
-            "args"      => "",
-            "warning"   => "",
-            "fragment"  => "",
-            "id"        => "",
-        ];
+		Map $defaults = new HashMap();
+		$defaults.put("text", "");
+		$defaults.put("class", "");
+		$defaults.put("active", null);
+		$defaults.put("link", "");
+		$defaults.put("sep", "?");
+		$defaults.put("attr", "");
+		$defaults.put("args", "");
+		$defaults.put("warning", "");
+		$defaults.put("fragment", "");
+		$defaults.put("id", "");
 
         $tab = array_merge($defaults, $tab);
 
         // determine additional style-class
-        if (empty($tab["class"])) {
-            if (! empty($tab["active"])
-                || Core.isValid($GLOBALS["active_page"], "identical", $tab["link"])
+        if (empty($tab.get("class"))) {
+            if (! empty($tab.get("active"))
+                || Core.isValid(GLOBALS.active_page, "identical", $tab.get("link"))
             ) {
-                $tab["class"] = "active";
-            } else if ($tab["active"] === null && empty($GLOBALS["active_page"])
-                && (basename($GLOBALS["PMA_PHP_SELF"]) == $tab["link"])
+                $tab.put("class", "active");
+            } else if ($tab.get("active") == null && empty(GLOBALS.active_page)
+                /*&& (basename(GLOBALS.PMA_PHP_SELF).equals($tab.get("link")))*/
             ) {
-                $tab["class"] = "active";
+            	$tab.put("class", "active");
             }
         }
 
         // build the link
-        if (! empty($tab["link"])) {
+        if (! empty($tab.get("link"))) {
             // If there are any tab specific URL parameters, merge those with
             // the general URL parameters
-            if (! empty($tab["args"]) && is_array($tab["args"])) {
-                $url_params = array_merge($url_params, $tab["args"]);
+            if (! empty($tab.get("args")) && is_array($tab.get("args"))) {
+                $url_params = array_merge($url_params, (Map)$tab.get("args"));
             }
-            if (strpos($tab["link"], "?") === false) {
-                $tab["link"] = htmlentities($tab["link"]) + Url.getCommon($url_params);
+            if (!(((String)$tab.get("link")).contains( "?") )) {
+                $tab.put("link", htmlentities($tab.get("link")) + Url.getCommon($url_params));
             } else {
-                $tab["link"] = htmlentities($tab["link"]) + Url.getCommon($url_params, "&");
+                $tab.put("link", htmlentities($tab.get("link")) + Url.getCommon($url_params, "&"));
             }
         }
 
-        if (! empty($tab["fragment"])) {
-            $tab["link"] += $tab["fragment"];
+        if (! empty($tab.get("fragment"))) {
+            $tab.put("link", $tab.get("link") + $tab.get("fragment"));
         }
 
         // display icon
@@ -1639,16 +1562,16 @@ public class Util {
             // avoid generating an alt tag, because it only illustrates
             // the text that follows and if browser does not display
             // images, the text is duplicated
-            $tab["text"] = getIcon(
+            $tab.get("text") = getIcon(
                 $tab["icon"],
-                $tab["text"],
+                $tab.get("text"),
                 false,
                 true,
                 "TabsMode"
             );
-        } else if (empty($tab["text"])) {
+        } else if (empty($tab.get("text"))) {
             // check to not display an empty link-text
-            $tab["text"] = "?";
+            $tab.get("text") = "?";
             trigger_error(
                 "empty linktext in function " + __FUNCTION__ + "()",
                 E_USER_NOTICE
@@ -1658,24 +1581,20 @@ public class Util {
         //Set the id for the tab, if set in the params
         $tabId = (empty($tab["id"]) ? null : $tab["id"]);
 
-        $item = [];
-        if (! empty($tab["link"])) {
-            $item = [
-                "content" => $tab["text"],
-                "url" => [
-                    "href" => empty($tab["link"]) ? null : $tab["link"],
-                    "id" => $tabId,
-                    "class" => "tab" + htmlentities($tab["class"]),
-                ],
-            ];
+        Map $item = new HashMap();
+        if (! empty($tab.get("link"))) {
+            $item.put("content", $tab.get("text"));
+            multiput($item, "url", "href", empty($tab.get("link")) ? null : $tab.get("link"));
+            multiput($item, "url", "id", $tabId);
+            multiput($item, "url", "class", "tab" + htmlentities($tab.get("class")));
         } else {
-            $item["content"] = "<span class="tab" + htmlentities($tab["class"]) + "'"
-                + $tabId + ">" + $tab["text"] + "</span>";
+            $item.put("content", "<span class='tab" + htmlentities($tab.get("class")) + "'"
+                + $tabId + ">" + $tab.get("text") + "</span>");
         }
 
-        $item["class"] = $tab["class"] == "active" ? "active" : "";
+        $item.put("class", "active".equals($tab.get("class")) ? "active" : "");
 
-        return $template.render("list/item", $item);
+        return JtwigFactory.render("list/item", $item);
     }
 
     /**
@@ -1689,30 +1608,30 @@ public class Util {
      * @return String  html-code for tab-navigation
      */
     public static String getHtmlTabs(
-        Map<String, MenuStruct> $tabs,
+        Map<String, Map> $tabs,
         Map<String, String> $url_params,
         String $menu_id,
         boolean $resizable /*= false*/
     ) {
-        $class = "";
+        String $class = "";
         if ($resizable) {
-            $class = " class="resizable-menu"";
+            $class = " class='resizable-menu'";
         }
 
-        $tab_navigation = "<div id='" + htmlentities($menu_id)
+        String $tab_navigation = "<div id='" + htmlentities($menu_id)
             + "container' class='menucontainer'>"
             + "<i class='scrollindicator scrollindicator--left'><a href='#' class='tab'></a></i>"
             + "<div class='navigationbar'><ul id='" + htmlentities($menu_id) + "' " + $class + ">";
 
-        for ($tab : $tabs) {
+        for (String $tab : $tabs) {
             $tab_navigation += getHtmlTab($tab, $url_params);
         }
         $tab_navigation += "";
 
         $tab_navigation +=
-              "<div class="clearfloat"></div>"
+              "<div class='clearfloat'></div>"
             + "</ul></div>" + "\n"
-            + "<i class="scrollindicator scrollindicator--right"><a href="#" class="tab"></a></i>"
+            + "<i class='scrollindicator scrollindicator--right'><a href='#' class='tab'></a></i>"
             + "</div>" + "\n";
 
         return $tab_navigation;
@@ -1820,15 +1739,16 @@ public class Util {
      */
     public static Map<String, String> splitURLQuery(String $url)
     {
-        // decode encoded url separators
+    	return null; //TODO
+        /*// decode encoded url separators
         $separator = Url.getArgSeparator();
         // on most places separator is still hard coded ...
-        if ($separator !== "&") {
+        if (!$separator.equals( "&")) {
             // ... so always replace & with $separator
             $url = str_replace([htmlentities("&"), "&"], [$separator, $separator], $url);
         }
 
-        $url = str_replace(htmlentities($separator), $separator, $url);
+        $url = $url.replace(htmlentities($separator), $separator);
         // end decode
 
         $url_parts = parse_url($url);
@@ -1837,7 +1757,7 @@ public class Util {
             return explode($separator, $url_parts["query"]);
         }
 
-        return [];
+        return [];*/
     }
 
     /**
@@ -1888,13 +1808,13 @@ public class Util {
      */
     public static void checkParameters(String[] $params, boolean $request /*= false*/)
     {
-        $reported_script_name = basename($GLOBALS["PMA_PHP_SELF"]);
+        $reported_script_name = basename(GLOBALS["PMA_PHP_SELF"]);
         $found_error = false;
         $error_message = "";
         if ($request) {
             $array = $_REQUEST;
         } else {
-            $array = $GLOBALS;
+            $array = GLOBALS;
         }
 
         foreach ($params as $param) {
@@ -1950,7 +1870,7 @@ public class Util {
 
         for ($i = 0; $i < $fields_cnt; ++$i) {
             $con_val     = "";
-            $field_flags = $GLOBALS["dbi"].fieldFlags($handle, $i);
+            $field_flags = GLOBALS.dbi.fieldFlags($handle, $i);
             $meta        = $fields_meta[$i];
 
             // do not use a column alias in a condition
@@ -1983,7 +1903,7 @@ public class Util {
             // because there is some caching in the function).
             if (isset($meta.orgtable)
                 && ($meta.table != $meta.orgtable)
-                && ! $GLOBALS["dbi"].getTable($GLOBALS["db"], $meta.table).isView()
+                && ! GLOBALS.dbi.getTable(GLOBALS["db"], $meta.table).isView()
             ) {
                 $meta.table = $meta.orgtable;
             }
@@ -2052,7 +1972,7 @@ public class Util {
                         + printableBitValue((int) $row[$i], (int) $meta.length) + "'";
                 } else {
                     $con_val = "= \""
-                        + $GLOBALS["dbi"].escapeString($row[$i]) + "\"";
+                        + GLOBALS.dbi.escapeString($row[$i]) + "\"";
                 }
             }
 
@@ -2462,10 +2382,10 @@ public class Util {
     public static String getDbLink(String $database /*= ""*/)
     {
         if (strlen((String) $database) == 0) {
-            if (strlen((String) $GLOBALS["db"]) === 0) {
+            if (strlen((String) GLOBALS["db"]) === 0) {
                 return "";
             }
-            $database = $GLOBALS["db"];
+            $database = GLOBALS["db"];
         } else {
             $database = unescapeMysqlWildcards($database);
         }
@@ -2505,7 +2425,7 @@ public class Util {
     		String $bugref
     ) {
         $ext_but_html = "";
-        if (($component == "mysql") && ($GLOBALS["dbi"].getVersion() < $minimum_version)) {
+        if (($component == "mysql") && (GLOBALS.dbi.getVersion() < $minimum_version)) {
             $ext_but_html += showHint(
                 sprintf(
                     __("The %s functionality is affected by a known bug, see %s"),
@@ -2670,8 +2590,8 @@ public class Util {
         }
 
         return $template.render("toggle_button", [
-            "pma_theme_image" => $GLOBALS["pmaThemeImage"],
-            "text_dir" => $GLOBALS["text_dir"],
+            "pma_theme_image" => GLOBALS["pmaThemeImage"],
+            "text_dir" => GLOBALS["text_dir"],
             "link_on" => $link_on,
             "link_off" => $link_off,
             "toggle_on" => $options[1]["label"],
@@ -2704,7 +2624,7 @@ public class Util {
             return "server_" + GLOBALS.server + "_" + GLOBALS.PMA_Config.get("Server").get("user");
         }
 
-        return "server_" + $GLOBALS["server"];
+        return "server_" + GLOBALS["server"];
     }
 
     /**
@@ -2714,9 +2634,9 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean cacheExists(String $var, Map<String, Object> session)
+    public static boolean cacheExists(String $var, SessionMap session)
     {
-        return !empty(multiget(session, "cache", cacheKey(), $var);
+        return !empty(multiget(session, "cache", cacheKey(), $var));
     }
 
     /**
@@ -2727,7 +2647,7 @@ public class Util {
      *
      * @return mixed
      */
-    public static Object cacheGet(String $var, Function $callback /*= null*/, Map<String, Object> session)
+    public static Object cacheGet(String $var, Function $callback /*= null*/, SessionMap session)
     {
         if (cacheExists($var, session)) {
             return (Function) multiget(session, "cache", cacheKey(), $var);
@@ -2749,7 +2669,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheSet(String $var, Object $val /*= null*/, Map<String, Object> session)
+    public static void cacheSet(String $var, Object $val /*= null*/, SessionMap session)
     {
     	multiput(session, $val, "cache", cacheKey(), $var);
     }
@@ -2761,7 +2681,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheUnset(String $var, Map<String, Object> session)
+    public static void cacheUnset(String $var, SessionMap session)
     {
     	multiremove(session, "cache", cacheKey(), $var);
     }
@@ -2961,7 +2881,7 @@ public class Util {
             return true;
         } else if ($engine == "NDBCLUSTER" || $engine == "NDB") {
             $ndbver = strtolower(
-                $GLOBALS["dbi"].fetchValue("SELECT @@ndb_version_string")
+                GLOBALS.dbi.fetchValue("SELECT @@ndb_version_string")
             );
             if (substr($ndbver, 0, 4) == "ndb-") {
                 $ndbver = substr($ndbver, 4);
@@ -2984,7 +2904,7 @@ public class Util {
         } else if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "disable") {
             return false;
         }
-        return ($GLOBALS["dbi"].getVariable("FOREIGN_KEY_CHECKS") == "ON");
+        return (GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON");
     }
 
     /**
@@ -3008,14 +2928,14 @@ public class Util {
     public static boolean handleDisableFKCheckInit()
     {
         $default_fk_check_value
-            = $GLOBALS["dbi"].getVariable("FOREIGN_KEY_CHECKS") == "ON";
+            = GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON";
         if (isset($_REQUEST["fk_checks"])) {
             if (empty($_REQUEST["fk_checks"])) {
                 // Disable foreign key checks
-                $GLOBALS["dbi"].setVariable("FOREIGN_KEY_CHECKS", "OFF");
+                GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "OFF");
             } else {
                 // Enable foreign key checks
-                $GLOBALS["dbi"].setVariable("FOREIGN_KEY_CHECKS", "ON");
+                GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "ON");
             }
         } // else do nothing, go with default
         return $default_fk_check_value;
@@ -3030,7 +2950,7 @@ public class Util {
      */
     public static void handleDisableFKCheckCleanup(boolean $default_fk_check_value)
     {
-        $GLOBALS["dbi"].setVariable(
+        GLOBALS.dbi.setVariable(
             "FOREIGN_KEY_CHECKS",
             $default_fk_check_value ? "ON" : "OFF"
         );
@@ -3050,7 +2970,7 @@ public class Util {
         $hex = bin2hex($data);
         $spatialAsText = "ASTEXT";
         $spatialSrid = "SRID";
-        if ($GLOBALS["dbi"].getVersion() >= 50600) {
+        if (GLOBALS.dbi.getVersion() >= 50600) {
             $spatialAsText = "ST_ASTEXT";
             $spatialSrid = "ST_SRID";
         }
@@ -3059,17 +2979,17 @@ public class Util {
             $wktsql += ", $spatialSrid(x'" + $hex + "')";
         }
 
-        $wktresult  = $GLOBALS["dbi"].tryQuery(
+        $wktresult  = GLOBALS.dbi.tryQuery(
             $wktsql
         );
-        $wktarr     = $GLOBALS["dbi"].fetchRow($wktresult, 0);
+        $wktarr     = GLOBALS.dbi.fetchRow($wktresult, 0);
         $wktval     = $wktarr[0] ?? null;
 
         if ($includeSRID) {
             $srid = $wktarr[1] ?? null;
             $wktval = "'" + $wktval + ""," + $srid;
         }
-        @$GLOBALS["dbi"].freeResult($wktresult);
+        @GLOBALS.dbi.freeResult($wktresult);
 
         return $wktval;
     }
@@ -3126,33 +3046,33 @@ public class Util {
      *
      * @return String script name corresponding to the config word
      */
-    public static String getScriptNameForOption(String $target, String $location)
+    public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, GLOBALS GLOBALS)
     {
         if ($location == "server") {
             // Values for $cfg["DefaultTabServer"]
             switch ($target) {
                 case "welcome":
-                    return Url.getFromRoute("/");
+                    return Url.getFromRoute("/", req, GLOBALS);
                 case "databases":
-                    return Url.getFromRoute("/server/databases");
+                    return Url.getFromRoute("/server/databases", req, GLOBALS);
                 case "status":
-                    return Url.getFromRoute("/server/status");
+                    return Url.getFromRoute("/server/status", req, GLOBALS);
                 case "variables":
-                    return Url.getFromRoute("/server/variables");
+                    return Url.getFromRoute("/server/variables", req, GLOBALS);
                 case "privileges":
-                    return Url.getFromRoute("/server/privileges");
+                    return Url.getFromRoute("/server/privileges", req, GLOBALS);
             }
         } else if ($location == "database") {
             // Values for $cfg["DefaultTabDatabase"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/database/structure");
+                    return Url.getFromRoute("/database/structure", req, GLOBALS);
                 case "sql":
-                    return Url.getFromRoute("/database/sql");
+                    return Url.getFromRoute("/database/sql", req, GLOBALS);
                 case "search":
-                    return Url.getFromRoute("/database/search");
+                    return Url.getFromRoute("/database/search", req, GLOBALS);
                 case "operations":
-                    return Url.getFromRoute("/database/operations");
+                    return Url.getFromRoute("/database/operations", req, GLOBALS);
             }
         } else if ($location == "table") {
             // Values for $cfg["DefaultTabTable"],
@@ -3160,15 +3080,15 @@ public class Util {
             // $cfg["NavigationTreeDefaultTabTable2"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/table/structure");
+                    return Url.getFromRoute("/table/structure", req, GLOBALS);
                 case "sql":
-                    return Url.getFromRoute("/table/sql");
+                    return Url.getFromRoute("/table/sql", req, GLOBALS);
                 case "search":
-                    return Url.getFromRoute("/table/search");
+                    return Url.getFromRoute("/table/search", req, GLOBALS);
                 case "insert":
-                    return Url.getFromRoute("/table/change");
+                    return Url.getFromRoute("/table/change", req, GLOBALS);
                 case "browse":
-                    return Url.getFromRoute("/sql");
+                    return Url.getFromRoute("/sql", req, GLOBALS);
             }
         }
 
@@ -3207,8 +3127,8 @@ public class Util {
             $vars["server_verbose_or_name"] = GLOBALS.PMA_Config["Server"]["verbose"];
         }
 
-        $vars["database"] = $GLOBALS["db"];
-        $vars["table"] = $GLOBALS["table"];
+        $vars["database"] = GLOBALS["db"];
+        $vars["table"] = GLOBALS["table"];
         $vars["phpmyadmin_version"] = "phpMyAdmin " + PMA_VERSION;
 
         /* Update forced variables */
@@ -3258,9 +3178,9 @@ public class Util {
 
         /* Fetch columns list if required */
         if (mb_strpos($String, "@COLUMNS@") !== false) {
-            $columns_list = $GLOBALS["dbi"].getColumns(
-                $GLOBALS["db"],
-                $GLOBALS["table"]
+            $columns_list = GLOBALS.dbi.getColumns(
+                GLOBALS["db"],
+                GLOBALS["table"]
             );
 
             // sometimes the table no longer exists at this point
@@ -3300,7 +3220,7 @@ public class Util {
     {
         $block_html = "";
 
-        if ($GLOBALS["is_upload"] && ! empty(GLOBALS.PMA_Config["UploadDir"])) {
+        if (GLOBALS["is_upload"] && ! empty(GLOBALS.PMA_Config["UploadDir"])) {
             $block_html += "<label for="radio_import_file">";
         } else {
             $block_html += "<label for="input_import_file">";
@@ -3349,8 +3269,8 @@ public class Util {
         $matcher = "@\.(" + $extensions + ")(\.("
             + $fileListing.supportedDecompressions() + "))?$@";
 
-        $active = (isset($GLOBALS["timeout_passed"], $GLOBALS["local_import_file"]) && $GLOBALS["timeout_passed"])
-            ? $GLOBALS["local_import_file"]
+        $active = (isset(GLOBALS["timeout_passed"], GLOBALS["local_import_file"]) && GLOBALS["timeout_passed"])
+            ? GLOBALS["local_import_file"]
             : "";
 
         $files = $fileListing.getFileSelectOptions(
@@ -3429,14 +3349,14 @@ public class Util {
             // NOTE: the SELECT tag in not included in this snippet.
             $retval = "";
 
-            foreach ($GLOBALS["dbi"].types.getColumns() as $key => $value) {
+            foreach (GLOBALS.dbi.types.getColumns() as $key => $value) {
                 if (is_array($value)) {
                     $retval += "<optgroup label='" + htmlspecialchars($key) + "'>";
                     foreach ($value as $subvalue) {
                         if ($subvalue == $selected) {
                             $retval += sprintf(
                                 "<option selected="selected" title="%s">%s</option>",
-                                $GLOBALS["dbi"].types.getTypeDescription($subvalue),
+                                GLOBALS.dbi.types.getTypeDescription($subvalue),
                                 $subvalue
                             );
                         } else if ($subvalue === "-") {
@@ -3446,7 +3366,7 @@ public class Util {
                         } else {
                             $retval += sprintf(
                                 "<option title="%s">%s</option>",
-                                $GLOBALS["dbi"].types.getTypeDescription($subvalue),
+                                GLOBALS.dbi.types.getTypeDescription($subvalue),
                                 $subvalue
                             );
                         }
@@ -3456,13 +3376,13 @@ public class Util {
                     if ($selected == $value) {
                         $retval += sprintf(
                             "<option selected="selected" title="%s">%s</option>",
-                            $GLOBALS["dbi"].types.getTypeDescription($value),
+                            GLOBALS.dbi.types.getTypeDescription($value),
                             $value
                         );
                     } else {
                         $retval += sprintf(
                             "<option title="%s">%s</option>",
-                            $GLOBALS["dbi"].types.getTypeDescription($value),
+                            GLOBALS.dbi.types.getTypeDescription($value),
                             $value
                         );
                     }
@@ -3470,7 +3390,7 @@ public class Util {
             }
         } else {
             $retval = [];
-            foreach ($GLOBALS["dbi"].types.getColumns() as $value) {
+            foreach (GLOBALS.dbi.types.getColumns() as $value) {
                 if (is_array($value)) {
                     foreach ($value as $subvalue) {
                         if ($subvalue !== "-") {
@@ -3680,7 +3600,7 @@ public class Util {
                 $funcs[] = ["display" => "--------"];
             }
 
-            if ($GLOBALS["dbi"].getVersion() < 50601) {
+            if (GLOBALS.dbi.getVersion() < 50601) {
                 $funcs["Crosses"]    = [
                     "params" => 2,
                     "type" => "int",
@@ -3811,7 +3731,7 @@ public class Util {
         $default_function   = "";
 
         // Can we get field class based values?
-        $current_class = $GLOBALS["dbi"].types.getTypeClass($field["True_Type"]);
+        $current_class = GLOBALS.dbi.types.getTypeClass($field["True_Type"]);
         if (! empty($current_class)) {
             if (isset($cfg["DefaultFunctions"]["FUNC_" + $current_class])) {
                 $default_function
@@ -3868,7 +3788,7 @@ public class Util {
         $retval = "<option></option>" + "\n";
         // loop on the dropdown array and print all available options for that
         // field.
-        $functions = $GLOBALS["dbi"].types.getFunctions($field["True_Type"]);
+        $functions = GLOBALS.dbi.types.getFunctions($field["True_Type"]);
         foreach ($functions as $function) {
             $retval += "<option";
             if (isset($foreignData["foreign_link"]) && $foreignData["foreign_link"] !== false && $default_function === $function) {
@@ -3887,7 +3807,7 @@ public class Util {
         // For compatibility"s sake, do not let out all other functions. Instead
         // print a separator (blank) and then show ALL functions which weren"t
         // shown yet.
-        $functions = $GLOBALS["dbi"].types.getAllFunctions();
+        $functions = GLOBALS.dbi.types.getAllFunctions();
         foreach ($functions as $function) {
             // Skip already included functions
             if (isset($dropdown_built[$function])) {
@@ -3926,7 +3846,7 @@ public class Util {
     {
         // Get the username for the current user in the format
         // required to use in the information schema database.
-        list($user, $host) = $GLOBALS["dbi"].getCurrentUserAndHost();
+        list($user, $host) = GLOBALS.dbi.getCurrentUserAndHost();
 
         if ($user === "") { // MySQL is started with --skip-grant-tables
             return true;
@@ -3943,7 +3863,7 @@ public class Util {
                + "WHERE GRANTEE="%s" AND PRIVILEGE_TYPE="%s"";
 
         // Check global privileges first.
-        $user_privileges = $GLOBALS["dbi"].fetchValue(
+        $user_privileges = GLOBALS.dbi.fetchValue(
             sprintf(
                 $query,
                 "USER_PRIVILEGES",
@@ -3958,13 +3878,13 @@ public class Util {
         // required global privilege, try database-wise permissions.
         if ($db !== null) {
             $query += " AND "%s" LIKE `TABLE_SCHEMA`";
-            $schema_privileges = $GLOBALS["dbi"].fetchValue(
+            $schema_privileges = GLOBALS.dbi.fetchValue(
                 sprintf(
                     $query,
                     "SCHEMA_PRIVILEGES",
                     $username,
                     $priv,
-                    $GLOBALS["dbi"].escapeString($db)
+                    GLOBALS.dbi.escapeString($db)
                 )
             );
             if ($schema_privileges) {
@@ -3981,14 +3901,14 @@ public class Util {
             // need to escape wildcards in db and table names, see bug #3518484
             $tbl = str_replace(["%", "_"], ["\%", "\_"], $tbl);
             $query += " AND TABLE_NAME="%s"";
-            $table_privileges = $GLOBALS["dbi"].fetchValue(
+            $table_privileges = GLOBALS.dbi.fetchValue(
                 sprintf(
                     $query,
                     "TABLE_PRIVILEGES",
                     $username,
                     $priv,
-                    $GLOBALS["dbi"].escapeString($db),
-                    $GLOBALS["dbi"].escapeString($tbl)
+                    GLOBALS.dbi.escapeString($db),
+                    GLOBALS.dbi.escapeString($tbl)
                 )
             );
             if ($table_privileges) {
@@ -4009,11 +3929,11 @@ public class Util {
      */
     public static String getServerType()
     {
-        if ($GLOBALS["dbi"].isMariaDB()) {
+        if (GLOBALS.dbi.isMariaDB()) {
             return "MariaDB";
         }
 
-        if ($GLOBALS["dbi"].isPercona()) {
+        if (GLOBALS.dbi.isPercona()) {
             return "Percona Server";
         }
 
@@ -4315,7 +4235,7 @@ public class Util {
      */
     public static String getCollateForIS()
     {
-        $names = $GLOBALS["dbi"].getLowerCaseNames();
+        $names = GLOBALS.dbi.getLowerCaseNames();
         if ($names === "0") {
             return "COLLATE utf8_bin";
         } else if ($names === "2") {
@@ -4426,7 +4346,7 @@ public class Util {
     public static boolean isVirtualColumnsSupported()
     {
         $serverType = getServerType();
-        $serverVersion = $GLOBALS["dbi"].getVersion();
+        $serverVersion = GLOBALS.dbi.getVersion();
         return in_array($serverType, ["MySQL", "Percona Server"]) && $serverVersion >= 50705
              || ($serverType == "MariaDB" && $serverVersion >= 50200);
     }
@@ -4469,7 +4389,7 @@ public class Util {
          */
         $db_is_system_schema = false;
 
-        if ($GLOBALS["dbi"].isSystemSchema($db)) {
+        if (GLOBALS.dbi.isSystemSchema($db)) {
             $is_show_stats = false;
             $db_is_system_schema = true;
         }
@@ -4484,15 +4404,15 @@ public class Util {
 
         // Special speedup for newer MySQL Versions (in 4.0 format changed)
         if (true === $cfg["SkipLockedTables"]) {
-            $db_info_result = $GLOBALS["dbi"].query(
+            $db_info_result = GLOBALS.dbi.query(
                 "SHOW OPEN TABLES FROM " + backquote($db) + " WHERE In_use > 0;"
             );
 
             // Blending out tables in use
-            if ($db_info_result && $GLOBALS["dbi"].numRows($db_info_result) > 0) {
+            if ($db_info_result && GLOBALS.dbi.numRows($db_info_result) > 0) {
                 $tables = getTablesWhenOpen($db, $db_info_result);
             } else if ($db_info_result) {
-                $GLOBALS["dbi"].freeResult($db_info_result);
+                GLOBALS.dbi.freeResult($db_info_result);
             }
         }
 
@@ -4540,7 +4460,7 @@ public class Util {
                     $tbl_group = $_REQUEST["tbl_group"];
                     // include the table with the exact name of the group if such
                     // exists
-                    $groupTable = $GLOBALS["dbi"].getTablesFull(
+                    $groupTable = GLOBALS.dbi.getTablesFull(
                         $db,
                         $tbl_group,
                         false,
@@ -4557,7 +4477,7 @@ public class Util {
                 // all tables in db
                 // - get the total number of tables
                 //  (needed for proper working of the MaxTableList feature)
-                $tables = $GLOBALS["dbi"].getTables($db);
+                $tables = GLOBALS.dbi.getTables($db);
                 $total_num_tables = count($tables);
                 if (! (isset($sub_part) && $sub_part == "_export")) {
                     // fetch the details for a possible limited subset
@@ -4567,7 +4487,7 @@ public class Util {
             }
             $tables = array_merge(
                 $groupTable,
-                $GLOBALS["dbi"].getTablesFull(
+                GLOBALS.dbi.getTablesFull(
                     $db,
                     $groupWithSeparator,
                     $groupWithSeparator !== false,
@@ -4622,10 +4542,10 @@ public class Util {
         $sot_cache = [];
         $tables = [];
 
-        while ($tmp = $GLOBALS["dbi"].fetchAssoc($db_info_result)) {
+        while ($tmp = GLOBALS.dbi.fetchAssoc($db_info_result)) {
             $sot_cache[$tmp["Table"]] = true;
         }
-        $GLOBALS["dbi"].freeResult($db_info_result);
+        GLOBALS.dbi.freeResult($db_info_result);
 
         // is there at least one "in use" table?
         if (count($sot_cache) > 0) {
@@ -4653,16 +4573,16 @@ public class Util {
                     $tblGroupSql += " `Table_type` IN ("BASE TABLE", "SYSTEM VERSIONED")";
                 }
             }
-            $db_info_result = $GLOBALS["dbi"].query(
+            $db_info_result = GLOBALS.dbi.query(
                 "SHOW FULL TABLES FROM " + backquote($db) + $tblGroupSql,
                 DatabaseInterface.CONNECT_USER,
                 DatabaseInterface.QUERY_STORE
             );
             unset($tblGroupSql, $whereAdded);
 
-            if ($db_info_result && $GLOBALS["dbi"].numRows($db_info_result) > 0) {
+            if ($db_info_result && GLOBALS.dbi.numRows($db_info_result) > 0) {
                 $names = [];
-                while ($tmp = $GLOBALS["dbi"].fetchRow($db_info_result)) {
+                while ($tmp = GLOBALS.dbi.fetchRow($db_info_result)) {
                     if (! isset($sot_cache[$tmp[0]])) {
                         $names[] = $tmp[0];
                     } else { // table in use
@@ -4678,14 +4598,14 @@ public class Util {
                 if (count($names) > 0) {
                     $tables = array_merge(
                         $tables,
-                        $GLOBALS["dbi"].getTablesFull($db, $names)
+                        GLOBALS.dbi.getTablesFull($db, $names)
                     );
                 }
                 if (GLOBALS.PMA_Config["NaturalOrder"]) {
                     uksort($tables, "strnatcasecmp");
                 }
             } else if ($db_info_result) {
-                $GLOBALS["dbi"].freeResult($db_info_result);
+                GLOBALS.dbi.freeResult($db_info_result);
             }
             unset($sot_cache);
         }

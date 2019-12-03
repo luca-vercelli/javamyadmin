@@ -2,21 +2,19 @@ package org.javamyadmin.helpers;
 
 import static org.javamyadmin.php.Php.*;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Php.SessionMap;
 
 /**
  * Generates and renders the top menu
@@ -66,11 +64,12 @@ public class Menu {
 	 *
 	 */
     public static class MenuStruct {
-    	public String icon;
-    	public String text;
-    	public String link;
-    	public Map args;
-    	public boolean active;
+    	private String icon;
+    	private String text;
+    	private String link;
+    	private String warnings;
+    	private Map args;
+    	private boolean active;
 
     	public MenuStruct(String icon, String link, String text, boolean active) {
     		this(icon, text, link, active, null);
@@ -82,6 +81,42 @@ public class Menu {
     		this.args = (args != null) ? args : new HashMap<>();
     		this.active = active;
     	}
+		public String getIcon() {
+			return icon;
+		}
+		public void setIcon(String icon) {
+			this.icon = icon;
+		}
+		public String getText() {
+			return text;
+		}
+		public void setText(String text) {
+			this.text = text;
+		}
+		public String getLink() {
+			return link;
+		}
+		public void setLink(String link) {
+			this.link = link;
+		}
+		public String getWarnings() {
+			return warnings;
+		}
+		public void setWarnings(String warnings) {
+			this.warnings = warnings;
+		}
+		public Map getArgs() {
+			return args;
+		}
+		public void setArgs(Map args) {
+			this.args = args;
+		}
+		public boolean isActive() {
+			return active;
+		}
+		public void setActive(boolean active) {
+			this.active = active;
+		}
     }
     
     /**
@@ -149,7 +184,7 @@ public class Menu {
     {
         Map<String, String> $url_params = new HashMap<>();
         String $level;
-        Map<String, MenuStruct> $tabs;
+        Map $tabs;
         if (!empty(this._table)) {
             $tabs = this._getTableTabs();
             $url_params.put("db", this._db);
@@ -165,7 +200,8 @@ public class Menu {
         }
 
         Map<String, Map<String, String>> $allowedTabs = this._getAllowedTabs($level);
-        for (Entry<String, MenuStruct> $entry : $tabs.entrySet()) {
+        Set<Entry> entries = $tabs.entrySet();
+        for (Entry $entry : entries) {
             if (! $allowedTabs.containsKey($entry.getKey())) {
                 $tabs.remove($entry.getKey());
             }
@@ -259,7 +295,7 @@ public class Menu {
         }
         String $scriptName = Util.getScriptNameForOption(
             (String) cfg.get("DefaultTabServer"),
-            "server"
+            "server", request, GLOBALS
         );
         $retval += String.format(
             $item,
@@ -643,9 +679,10 @@ public class Menu {
     	boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
             || GLOBALS.dbi.isUserType("create");
         
+    	/* MYSQL Specific!!!
     	Map $binary_logs;
-    	if (Util.cacheExists("binary_logs")) {
-            $binary_logs = Util.cacheGet("binary_logs");
+    	if (Util.cacheExists("binary_logs", session)) {
+            $binary_logs = (Map) Util.cacheGet("binary_logs", null, session);
         } else {
             $binary_logs = GLOBALS.dbi.fetchResult(
                 "SHOW MASTER LOGS",
@@ -654,10 +691,12 @@ public class Menu {
                 DatabaseInterface.CONNECT_USER,
                 DatabaseInterface.QUERY_STORE
             );
-            Util.cacheSet("binary_logs", $binary_logs);
-        }
+            Util.cacheSet("binary_logs", $binary_logs, session);
+        }*/
 
         Map $tabs = new HashMap();
+        $tabs.putAll((Map)menuProperties.get("server"));
+        
         /*
         $tabs.put("databases", new MenuStruct("s_db",
 				Url.getFromRoute("/server/databases",
@@ -759,11 +798,5 @@ public class Menu {
     {
         this._table = $table;
         return this;
-    }
-    
-    Map<String, MenuStruct> allTabs = new HashMap<>();
-    	
-    static {
-    }
     }
 }

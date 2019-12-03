@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -125,7 +126,8 @@ public class Header {
     private GLOBALS GLOBALS;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
-    private Config cfg;
+	private SessionMap session;
+    private Properties cfg;
     
     /**
      * Creates a new class instance
@@ -135,7 +137,8 @@ public class Header {
     	this.request = request;
     	this.response = response;
     	this.GLOBALS = GLOBALS;
-    	this.cfg = GLOBALS.PMA_Config;
+    	this.session = session;
+    	this.cfg = GLOBALS.PMA_Config.settings;
     	
         //this.template = new Template();
 
@@ -146,13 +149,13 @@ public class Header {
         // TODO this._console = new Console();
         String $db = GLOBALS.db; // FIXME col xxx che sono globali
         String $table = GLOBALS.table;
-        this._menu = new Menu(
+        /* TODO this._menu = new Menu(
             $db,
             $table,
             request,
             GLOBALS,
             session
-        );
+        );*/
         this._menuEnabled = true;
         this._warningsEnabled = true;
         this._isPrintView = false;
@@ -244,55 +247,52 @@ public class Header {
      */
     public Map<String, Object> getJsParams()
     {
-    	Map<String, Object> params = new HashMap<String, Object>();
+    	Map<String, Object> $params = new HashMap<String, Object>();
     	
-    	throw new IllegalStateException("serve la request qui");
-        /*$db = strlen(GLOBALS["db"]) ? GLOBALS["db"] : "";
-        $table = strlen(GLOBALS["table"]) ? GLOBALS["table"] : "";
-        $pftext = isset($_SESSION["tmpval"]["pftext"])
-            ? $_SESSION["tmpval"]["pftext"] : "";
+    	String $db = !empty(GLOBALS.db) ? GLOBALS.db : "";
+    	String $table = !empty(GLOBALS.table) ? GLOBALS.table : "";
+        String $pftext = (String) multiget(session, "tmpval", "pftext");
 
-        $params = [
-            "common_query" => Url.getCommonRaw(),
-            "opendb_url" => Util.getScriptNameForOption(
-                cfg["DefaultTabDatabase"],
-                "database"
-            ),
-            "lang" => GLOBALS["lang"],
-            "server" => GLOBALS["server"],
-            "table" => $table,
-            "db" => $db,
-            "token" => $_SESSION[" PMA_token "],
-            "text_dir" => GLOBALS["text_dir"],
-            "show_databases_navigation_as_tree" => cfg["ShowDatabasesNavigationAsTree"],
-            "pma_text_default_tab" => Util.getTitleForTarget(
-                cfg["DefaultTabTable"]
-            ),
-            "pma_text_left_default_tab" => Util.getTitleForTarget(
-                cfg["NavigationTreeDefaultTabTable"]
-            ),
-            "pma_text_left_default_tab2" => Util.getTitleForTarget(
-                cfg["NavigationTreeDefaultTabTable2"]
-            ),
-            "LimitChars" => cfg["LimitChars"],
-            "pftext" => $pftext,
-            "confirm" => cfg["Confirm"],
-            "LoginCookieValidity" => cfg["LoginCookieValidity"],
-            "session_gc_maxlifetime" => (int) ini_get("session.gc_maxlifetime"),
-            "logged_in" => isset(GLOBALS["dbi"]) ? GLOBALS["dbi"].isUserType("logged") : false,
-            "is_https" => GLOBALS["PMA_Config"].isHttps(),
-            "rootPath" => GLOBALS["PMA_Config"].getRootPath(),
-            "arg_separator" => Url.getArgSeparator(),
-            "PMA_VERSION" => PMA_VERSION,
-        ];
-        if (isset(cfg["Server"], cfg["Server"]["auth_type"])) {
-            $params["auth_type"] = cfg["Server"]["auth_type"];
-            if (isset(cfg["Server"]["user"])) {
-                $params["user"] = cfg["Server"]["user"];
-            }
-        }
+        $params.put("common_query", Url.getCommonRaw(request, GLOBALS));
+        $params.put("opendb_url", Util.getScriptNameForOption(
+                (String) cfg.get("DefaultTabDatabase"),
+                "database", request, GLOBALS
+            ));
+        $params.put("lang", GLOBALS.lang);
+        $params.put("table", $table);
+        $params.put("db", $db);
+        $params.put("token", session.get(" PMA_token "));
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("show_databases_navigation_as_tree", cfg.get("ShowDatabasesNavigationAsTree"));
+        $params.put("pma_text_default_tab", Util.getTitleForTarget(
+                (String) cfg.get("DefaultTabTable")
+            ));
+        $params.put("pma_text_left_default_tab", Util.getTitleForTarget(
+                (String) cfg.get("NavigationTreeDefaultTabTable")
+            ));
+        $params.put("pma_text_left_default_tab2", Util.getTitleForTarget(
+                (String) cfg.get("NavigationTreeDefaultTabTable2")
+            ));
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("LimitChars", cfg.get("LimitChars"));
+        $params.put("pftext", $pftext);
+        $params.put("confirm", cfg.get("Confirm"));
+        $params.put("LoginCookieValidity", cfg.get("LoginCookieValidity"));
+        $params.put("session_gc_maxlifetime", -1); // Java Unsupported
+        $params.put("logged_in", GLOBALS.dbi != null && GLOBALS.dbi.isUserType("logged"));
+        $params.put("is_https", GLOBALS.PMA_Config.isHttps());
+        $params.put("rootPath", GLOBALS.PMA_Config.getRootPath(request));
+        $params.put("arg_separator", Url.getArgSeparator());
+        $params.put("PMA_VERSION", GLOBALS.PMA_VERSION);
+        
+        $params.put("auth_type", multiget(cfg, "Server", "auth_type"));
+        $params.put("user", multiget(cfg, "Server", "user"));
 
-        return $params;*/
+        return $params;
     }
 
     /**

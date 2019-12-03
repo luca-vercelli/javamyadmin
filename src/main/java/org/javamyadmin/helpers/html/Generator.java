@@ -20,7 +20,7 @@ public class Generator {
      *
      * @return string an html IMG tag
      */
-    public static String getImage(String image, String alternate /*= ""*/, Map<String, String> attributes /*= []*/)
+    public static String getImage(String image, String alternate /*= ""*/, Map<String, Object> attributes /*= []*/)
     {
     	if (alternate == null) alternate = "";
     	if (attributes == null) attributes = new HashMap<>();
@@ -35,7 +35,7 @@ public class Generator {
 
         // set all other attributes
         String attr_str = "";
-        for (Entry<String, String> entry: attributes.entrySet()) {
+        for (Entry<String, Object> entry: attributes.entrySet()) {
             if (!entry.getKey().equals("alt") && ! entry.getKey().equals("title")) {
                 attr_str += " " + entry.getKey() + "='" + entry.getValue() + "'";
             }
@@ -44,7 +44,7 @@ public class Generator {
         // override the alt attribute
         String alt;
         if (attributes.containsKey("alt")) {
-            alt = attributes.get("alt");
+            alt = (String) attributes.get("alt");
         } else {
             alt = alternate;
         }
@@ -52,7 +52,7 @@ public class Generator {
         // override the title attribute
         String title;
         if (attributes.containsKey("title")) {
-            title = attributes.get("title");
+            title = (String) attributes.get("title");
         } else {
             title = alternate;
         }

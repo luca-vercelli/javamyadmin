@@ -276,6 +276,20 @@ public class Php {
 	}
 
 	/**
+	 * Merge one or more arrays
+	 * @param map
+	 * @return
+	 */
+	public static Map array_merge(Map... maps) {
+		Map result = new HashMap();
+		for (Map map:maps) {
+			result.putAll(map);
+		}
+		return result;
+		
+	}
+	
+	/**
 	 * Return true if string represents a number
 	 * 
 	 * @param x

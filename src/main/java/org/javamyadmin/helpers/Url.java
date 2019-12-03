@@ -241,6 +241,10 @@ public class Url {
         return "";
     }
     
+    public static String getCommonRaw(HttpServletRequest req, GLOBALS GLOBALS) {
+    	return getCommonRaw(null, "?", req, GLOBALS);
+    }
+    
 	/**
      * Returns url separator
      *
@@ -283,6 +287,10 @@ public class Url {
         }*/
     }
 
+    public static String getArgSeparator() {
+    	return getArgSeparator(null);
+    }
+    
     /**
      * @param req 
      * @param string route                Route to use
@@ -292,5 +300,10 @@ public class Url {
     public static String getFromRoute(String route, Map<String, Object> additionalParameters /* = [] */, HttpServletRequest req, GLOBALS GLOBALS)
     {
         return "index.php?route=" + route + getCommon(additionalParameters, "&", req, GLOBALS);
+    }
+    
+    public static String getFromRoute(String route, HttpServletRequest req, GLOBALS GLOBALS)
+    {
+        return getFromRoute(route, null, req, GLOBALS);
     }
 }

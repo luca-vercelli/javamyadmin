@@ -228,7 +228,7 @@ public abstract class AbstractController extends HttpServlet {
 		     * (note: when GLOBALS.cfg["ServerDefault"] = 0, constant is not defined)
 		     */
 		    if (! empty(request.getParameter("profiling"))
-		        && Util.profilingSupported()
+		        && Util.profilingSupported(GLOBALS, $_SESSION)
 		    ) {
 		    	request.getSession().setAttribute("profiling", true);
 		    } else if (! empty(request.getParameter("profiling_form"))) {
