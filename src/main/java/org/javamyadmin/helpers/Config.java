@@ -10,11 +10,14 @@ import static org.javamyadmin.php.Php.md5;
 import static org.javamyadmin.php.Php.trigger_error;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -32,17 +35,17 @@ public class Config {
     /**
      * @var array   default configuration settings
      */
-    public Map<String, Object> defaults =new HashMap<>();
+    public Properties defaults = new Properties();
 
     /**
      * @var array   configuration settings, without user preferences applied
      */
-    public Map<String, Object> base_settings =new HashMap<>();
+    public Properties base_settings = new Properties();
 
     /**
      * @var array   configuration settings
      */
-    public Map<String, Object> settings =new HashMap<>();
+    public Properties settings = new Properties();
 
     /**
      * @var String  config source
@@ -86,7 +89,7 @@ public class Config {
     public Config(String source /* may be null */)
     {
     	
-    	this.default_source = GLOBALS.ROOT_PATH + "libraries/config.default.php";
+    	this.default_source = "/global.properties";
     			
         this.settings.put("is_setup" , false);
 
@@ -338,19 +341,30 @@ public class Config {
      */
     public boolean loadDefaults()
     {
-        Map<String, Object> cfg = new HashMap<>();
         if (! new File(this.default_source).exists()) {
             this.error_config_default_file = true;
             return false;
         }
        
         GLOBALS.pma_config_loading = true;
-        String eval_result = "";
-        // eval_result = include this.default_source; TODO
+        Properties cfg = new Properties();
+        try {
+			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream(default_source);
+			cfg.load(is);
+		} catch (NullPointerException e) {
+			System.out.println("File " + default_source + " not found!"); //FIXME
+			this.error_config_default_file = true;
+            return false;
+		} catch (IOException e) {
+			System.out.println("Error reading " + default_source + "!"); //FIXME
+			this.error_config_default_file = true;
+            return false;
+		}
+		
         GLOBALS.pma_config_loading = false;
        
 
-        if ( empty(eval_result )) {
+        if ( cfg.isEmpty()) {
             this.error_config_default_file = true;
             return false;
         }
@@ -361,7 +375,10 @@ public class Config {
         cfg.remove("Servers");
 
         this.defaults = cfg;
-        this.settings = array_replace_recursive(this.settings, cfg);
+        
+        Map tmpMap = array_replace_recursive(this.settings, cfg);
+        this.settings = new Properties();
+        this.settings.putAll(tmpMap);
 
         this.error_config_default_file = false;
 
@@ -372,7 +389,7 @@ public class Config {
      * loads configuration from source, usually the config file
      * should be called on object creation
      *
-     * @param String source config file
+     * @param String source config file (may be null)
      *
      * @return boolean
      */
@@ -380,12 +397,12 @@ public class Config {
     {
         this.loadDefaults();
 
-        if (null != source) {
+        if (source != null) {
             this.setSource(source);
         }
-
-        if (! this.checkConfigSource()) {
-            return false;
+        
+        if (empty(getSource())) {
+        	return false;
         }
 
         /**
@@ -393,18 +410,25 @@ public class Config {
          * output.
          */
         GLOBALS.pma_config_loading = true;
-        String eval_result = "";
-        //eval_result = include this.getSource(); TODO
+        Properties cfg = new Properties(defaults);
+        try {
+			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream(this.getSource());
+			cfg.load(is);
+		} catch (NullPointerException e) {
+			System.out.println("File " + default_source + " not found!"); //FIXME
+			this.error_config_file = true;
+            return false;
+		} catch (IOException e) {
+			System.out.println("Error reading " + default_source + "!"); //FIXME
+			this.error_config_file = true;
+            return false;
+		}
         GLOBALS.pma_config_loading = false;
         
         //error_reporting(old_error_reporting);
 
-        if (empty (eval_result ) ) {
-            this.error_config_file = true;
-        } else {
-            this.error_config_file = false;
-            this.source_mtime = new File(this.getSource()).lastModified();
-        }
+        this.source_mtime = 0; // FIXME File is a resource....new File(this.getSource()).lastModified();
+        
 
         /**
          * Ignore keys with / as we do not use these
@@ -420,23 +444,17 @@ public class Config {
          * It could use array_filter(...ARRAY_FILTER_USE_KEY), but it"s not
          * supported on PHP 5.5 and HHVM.
          */
-        /*matched_keys = array_filter(
-            array_keys(cfg),
-            void (key) {
-                return strpos(key, "/") === false;
-            }
-        );
-
-        cfg = array_intersect_key(cfg, array_flip(matched_keys));*/
         
-        for (Object key: GLOBALS.cfg.keySet()) {
+        for (Object key: cfg.keySet()) {
         	if (key instanceof String && ((String)key).contains("/")) {
-        		GLOBALS.cfg.remove(key);
+        		cfg.remove(key);
         	}
         }
 
-        this.settings = array_replace_recursive(this.settings, (Map)GLOBALS.cfg);
-
+        Map tmpMap = array_replace_recursive(this.settings, cfg);
+        this.settings = new Properties();
+        this.settings.putAll(tmpMap);
+        
         return true;
     }
 
@@ -606,7 +624,6 @@ public class Config {
             }
             this.setCookie(cookie_name, new_cfg_value, default_value, null, false, null, null);
         }
-        Core.arrayWrite(cfg_path, GLOBALS.cfg, new_cfg_value);
         Core.arrayWrite(cfg_path, this.settings, new_cfg_value);
         return result;
     }
@@ -942,7 +959,7 @@ public class Config {
      */
     public void enableBc()
     {
-    	// unsupported
+        // Unsupported
     }
 
     /**

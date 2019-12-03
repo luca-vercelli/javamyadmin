@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.Language;
 import org.javamyadmin.helpers.LanguageManager;
@@ -34,7 +35,9 @@ public abstract class AbstractController extends HttpServlet {
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		GLOBALS GLOBALS = new GLOBALS();
 		Map<String, Object> $_SESSION = $_SESSION(request.getSession());
-		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
+		
+		GLOBALS.PMA_Config = new Config(null);
+		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);  // Requires PMA_Config
 		
 		// cfr. commons.inc.php
 		

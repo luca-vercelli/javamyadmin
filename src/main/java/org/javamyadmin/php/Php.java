@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -250,8 +251,9 @@ public class Php {
 	 * @param src
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T, U> Map<T, U> array_replace_recursive(Map<T, U> dest, Map<T, U> src) {
-		for (Entry<T, U> entry : src.entrySet()) {
+	public static Map array_replace_recursive(Map dest, Map src) {
+		Set<Entry> entries = src.entrySet();
+		for (Entry entry : entries) {
 			if (!dest.containsKey(entry.getKey())) {
 				dest.put(entry.getKey(), entry.getValue());
 				continue;
@@ -262,8 +264,8 @@ public class Php {
 
 			if (orig instanceof Map) {
 				if (entry.getValue() instanceof Map) {
-					Map<T, U> m1 = (Map<T, U>) orig;
-					Map<T, U> m2 = (Map<T, U>) entry.getValue();
+					Map m1 = (Map) orig;
+					Map m2 = (Map) entry.getValue();
 					array_replace_recursive(m1, m2);
 				} else {
 					dest.put(entry.getKey(), entry.getValue());

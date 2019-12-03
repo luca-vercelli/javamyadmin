@@ -27,9 +27,8 @@ public class GLOBALS {
 	public Theme PMA_Theme;
 	public String pmaThemePath;
 	public String pmaThemeImage;
-	public static Config PMA_Config;
+	public static Config PMA_Config = new Config(null);
 	public static boolean pma_config_loading = false;
-	public static Properties cfg;
 	public String lang;
 	public String db;
 	public String table;
@@ -41,23 +40,25 @@ public class GLOBALS {
 	public boolean PMA_NO_SESSION = false;
 	public String message;
 	public String buffer_message;
+	
+	/* Backward compatibility (see Config.enableBc())
+	 * 
+	 * cfg -> PMA_Config.settings
+	 * 
+	 * default_server -> PMA_Config.default_server
+	 * 
+	 * is_upload -> PMA_Config.get("enable_upload")
+	 * 
+	 * max_upload_size -> PMA_Config.get("max_upload_size")
+	 * 
+	 * is_https -> PMA_Config.get("is_https")
+	 * 
+	 */
 
 	// ?!?
 	public Object reload;
 	public Object focus_querywindow;
 	public ThemeManager themeManager;
-
-	static {
-		cfg = new Properties();
-		try {
-			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/global.properties");
-			cfg.load(is);
-		} catch (NullPointerException e) {
-			throw new IllegalStateException("File global.properties not found!", e);
-		} catch (IOException e) {
-			throw new IllegalStateException("Error reading global.properties!", e);
-		}
-	}
 
 	public GLOBALS() {
 	}

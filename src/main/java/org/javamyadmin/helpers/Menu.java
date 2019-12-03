@@ -35,7 +35,8 @@ public class Menu {
      */
     private String _table;
 	private Map<String, Object> session;
-
+	private Config cfg;
+	
     /**
      * @var Relation
      */
@@ -47,12 +48,13 @@ public class Menu {
      * @param string $db    Database name
      * @param string $table Table name
      */
-    public Menu(String $db, String $table, Map<String, Object> session)
+    public Menu(String $db, String $table, HttpServletRequest request, GLOBALS GLOBALS, Map<String, Object> session)
     {
         this._db = $db;
         this._table = $table;
         //this.relation = new Relation(GLOBALS.dbi);
         this.session = session;
+        this.cfg = GLOBALS.PMA_Config;
     }
 
     /**
@@ -86,7 +88,7 @@ public class Menu {
     public String getHash()
     {
         return 
-            md5(this._getMenu() + this._getBreadcrumbs()).substring(0,8);
+            md5(this._getMenu() + this._getBreadcrumbs(request, GLOBALS)).substring(0,8);
     }
 
     /**
@@ -151,7 +153,7 @@ public class Menu {
                 + " AND `tab` LIKE '" + $level + "%'"
                 + " AND `usergroup` = (SELECT usergroup FROM "
                 + $userTable + " WHERE `username` = '"
-                + GLOBALS["dbi"].escapeString(GLOBALS.cfg.get("Server")["user"]) + "')";
+                + GLOBALS["dbi"].escapeString(cfg.get("Server")["user"]) + "')";
 
             $result = this.relation.queryAsControlUser($sql_query, false);
             if ($result) {
@@ -178,15 +180,15 @@ public class Menu {
         String $retval = "";
         boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)
             .isView();
-        if (empty(multiget(GLOBALS.cfg, "Server", "host"))) {
-            multiput(GLOBALS.cfg, "", "Server", "host");
+        if (empty(multiget(cfg, "Server", "host"))) {
+            multiput(cfg, "", "Server", "host");
         }
-        String $server_info = ! empty(multiget(GLOBALS.cfg, "Server", "verbose"))
-            ? (String) multiget(GLOBALS.cfg, "Server", "verbose")
-            : (String) multiget(GLOBALS.cfg, "Server", "host");
-        $server_info += empty(multiget(GLOBALS.cfg, "Server", "port"))
+        String $server_info = ! empty(multiget(cfg, "Server", "verbose"))
+            ? (String) multiget(cfg, "Server", "verbose")
+            : (String) multiget(cfg, "Server", "host");
+        $server_info += empty(multiget(cfg, "Server", "port"))
             ? ""
-            : ":" + multiget(GLOBALS.cfg, "Server", "port");
+            : ":" + multiget(cfg, "Server", "port");
 
         String $separator = "<span class='separator item'>&nbsp;Â»</span>";
         String $item = "<a href='%1$s%2$s' class='item'>";
@@ -207,7 +209,7 @@ public class Menu {
             );
         }
         String $scriptName = Util.getScriptNameForOption(
-            (String) GLOBALS.cfg.get("DefaultTabServer"),
+            (String) cfg.get("DefaultTabServer"),
             "server"
         );
         $retval += String.format(
@@ -228,7 +230,7 @@ public class Menu {
                 );
             }
             $scriptName = Util.getScriptNameForOption(
-                (String) GLOBALS.cfg.get("DefaultTabDatabase"),
+                (String) cfg.get("DefaultTabDatabase"),
                 "database"
             );
             Map<String, Object> paramsDb = new HashMap<>();
@@ -266,7 +268,7 @@ public class Menu {
                     );
                 }
                 $scriptName = Util.getScriptNameForOption(
-                    (String) GLOBALS.cfg.get("DefaultTabTable"),
+                    (String) cfg.get("DefaultTabTable"),
                     "table"
                 );
                 paramsDb.put("table", this._table);

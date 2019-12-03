@@ -124,6 +124,7 @@ public class Header {
     private GLOBALS GLOBALS;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
+    private Config cfg;
     
     /**
      * Creates a new class instance
@@ -133,6 +134,7 @@ public class Header {
     	this.request = request;
     	this.response = response;
     	this.GLOBALS = GLOBALS;
+    	this.cfg = GLOBALS.PMA_Config;
     	
         this.template = new Template();
 
@@ -158,7 +160,7 @@ public class Header {
         // offer to load exported settings from localStorage
         // (detection will be done in JavaScript)
         this._userprefsOfferImport = false;
-        if ("session".equals(GLOBALS.PMA_Config.get("user_preferences"))
+        if ("session".equals(cfg.get("user_preferences"))
             && ! empty(request.getSession().getAttribute("userprefs_autoload"))
         ) {
             this._userprefsOfferImport = true;
@@ -199,12 +201,12 @@ public class Header {
         this._scripts.addFile("menu_resizer.js");
 
         // Cross-framing protection
-        if ("false".equals(GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
+        if ("false".equals(cfg.get("AllowThirdPartyFraming"))) {
             this._scripts.addFile("cross_framing_protection.js");
         }
 
         this._scripts.addFile("rte.js");
-        if (!"never".equals(GLOBALS.cfg.get("SendErrorReports"))) {
+        if (!"never".equals(cfg.get("SendErrorReports"))) {
             this._scripts.addFile("vendor/tracekit.js");
             this._scripts.addFile("error_report.js");
         }
@@ -222,7 +224,7 @@ public class Header {
         this._scripts.addFile("indexes.js");
         this._scripts.addFile("common.js");
         this._scripts.addFile("page_settings.js");
-        if ("true".equals(GLOBALS.cfg.get("enable_drag_drop_import"))) {
+        if ("true".equals(cfg.get("enable_drag_drop_import"))) {
             this._scripts.addFile("drag_drop_import.js");
         }
         if (empty(GLOBALS.PMA_Config.get("DisableShortcutKeys"))) {
@@ -250,7 +252,7 @@ public class Header {
         $params = [
             "common_query" => Url.getCommonRaw(),
             "opendb_url" => Util.getScriptNameForOption(
-                GLOBALS.cfg["DefaultTabDatabase"],
+                cfg["DefaultTabDatabase"],
                 "database"
             ),
             "lang" => GLOBALS["lang"],
@@ -259,20 +261,20 @@ public class Header {
             "db" => $db,
             "token" => $_SESSION[" PMA_token "],
             "text_dir" => GLOBALS["text_dir"],
-            "show_databases_navigation_as_tree" => GLOBALS.cfg["ShowDatabasesNavigationAsTree"],
+            "show_databases_navigation_as_tree" => cfg["ShowDatabasesNavigationAsTree"],
             "pma_text_default_tab" => Util.getTitleForTarget(
-                GLOBALS.cfg["DefaultTabTable"]
+                cfg["DefaultTabTable"]
             ),
             "pma_text_left_default_tab" => Util.getTitleForTarget(
-                GLOBALS.cfg["NavigationTreeDefaultTabTable"]
+                cfg["NavigationTreeDefaultTabTable"]
             ),
             "pma_text_left_default_tab2" => Util.getTitleForTarget(
-                GLOBALS.cfg["NavigationTreeDefaultTabTable2"]
+                cfg["NavigationTreeDefaultTabTable2"]
             ),
-            "LimitChars" => GLOBALS.cfg["LimitChars"],
+            "LimitChars" => cfg["LimitChars"],
             "pftext" => $pftext,
-            "confirm" => GLOBALS.cfg["Confirm"],
-            "LoginCookieValidity" => GLOBALS.cfg["LoginCookieValidity"],
+            "confirm" => cfg["Confirm"],
+            "LoginCookieValidity" => cfg["LoginCookieValidity"],
             "session_gc_maxlifetime" => (int) ini_get("session.gc_maxlifetime"),
             "logged_in" => isset(GLOBALS["dbi"]) ? GLOBALS["dbi"].isUserType("logged") : false,
             "is_https" => GLOBALS["PMA_Config"].isHttps(),
@@ -280,10 +282,10 @@ public class Header {
             "arg_separator" => Url.getArgSeparator(),
             "PMA_VERSION" => PMA_VERSION,
         ];
-        if (isset(GLOBALS.cfg["Server"], GLOBALS.cfg["Server"]["auth_type"])) {
-            $params["auth_type"] = GLOBALS.cfg["Server"]["auth_type"];
-            if (isset(GLOBALS.cfg["Server"]["user"])) {
-                $params["user"] = GLOBALS.cfg["Server"]["user"];
+        if (isset(cfg["Server"], cfg["Server"]["auth_type"])) {
+            $params["auth_type"] = cfg["Server"]["auth_type"];
+            if (isset(cfg["Server"]["user"])) {
+                $params["user"] = cfg["Server"]["user"];
             }
         }
 
@@ -440,13 +442,13 @@ public class Header {
 
                 // The user preferences have been merged at this point
                 // so we can conditionally add CodeMirror
-                if (!empty(GLOBALS.cfg.get("CodemirrorEnable"))) {
+                if (!empty(cfg.get("CodemirrorEnable"))) {
                     this._scripts.addFile("vendor/codemirror/lib/codemirror.js");
                     this._scripts.addFile("vendor/codemirror/mode/sql/sql.js");
                     this._scripts.addFile("vendor/codemirror/addon/runmode/runmode.js");
                     this._scripts.addFile("vendor/codemirror/addon/hint/show-hint.js");
                     this._scripts.addFile("vendor/codemirror/addon/hint/sql-hint.js");
-                    if (!empty(GLOBALS.cfg.get("LintEnable"))) {
+                    if (!empty(cfg.get("LintEnable"))) {
                         this._scripts.addFile("vendor/codemirror/addon/lint/lint.js");
                         this._scripts.addFile(
                             "codemirror/addon/lint/sql-lint.js"
@@ -455,7 +457,7 @@ public class Header {
                 }
                 this._scripts.addCode(
                     "ConsoleEnterExecutes="
-                    + GLOBALS.cfg.get("ConsoleEnterExecutes")
+                    + cfg.get("ConsoleEnterExecutes")
                 );
                 // TODO this._scripts.addFiles(this._console.getScripts());
                 if (this._userprefsOfferImport) {
@@ -490,7 +492,7 @@ public class Header {
             model.put("is_ajax", this._isAjax);
             model.put("is_enabled", this._isEnabled);
             model.put("lang", GLOBALS.lang);
-            model.put("allow_third_party_framing", GLOBALS.cfg.get("AllowThirdPartyFraming"));
+            model.put("allow_third_party_framing", cfg.get("AllowThirdPartyFraming"));
             model.put("is_print_view" , this._isPrintView);
 			model.put("base_dir", $baseDir);
 			model.put("unique_value", $uniqueValue);
@@ -504,7 +506,7 @@ public class Header {
 			model.put("navigation", $navigation);
 			model.put("custom_header", $customHeader);
 			model.put("load_user_preferences", $loadUserPreferences);
-			model.put("show_hint", GLOBALS.cfg.get("ShowHint"));
+			model.put("show_hint", cfg.get("ShowHint"));
 			model.put("is_warnings_enabled", this._warningsEnabled);
 			model.put("is_menu_enabled", this._menuEnabled);
 			model.put("menu", $menu);
@@ -564,8 +566,8 @@ public class Header {
         String $captcha_url;
         
         String now = gmdate.format(new Date());
-        if (! empty(GLOBALS.cfg.get("CaptchaLoginPrivateKey"))
-            && ! empty(GLOBALS.cfg.get("CaptchaLoginPublicKey"))
+        if (! empty(cfg.get("CaptchaLoginPrivateKey"))
+            && ! empty(cfg.get("CaptchaLoginPublicKey"))
         ) {
             $captcha_url
                 = " https://apis.google.com https://www.google.com/recaptcha/"
@@ -574,11 +576,11 @@ public class Header {
             $captcha_url = "";
         }
         /* Prevent against ClickJacking by disabling framing */
-        if ("sameorigin".equalsIgnoreCase((String) GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
+        if ("sameorigin".equalsIgnoreCase((String) cfg.get("AllowThirdPartyFraming"))) {
             response.addHeader(
                 "X-Frame-Options", "SAMEORIGIN"
             );
-        } else if (!"true".equals(GLOBALS.cfg.get("AllowThirdPartyFraming"))) {
+        } else if (!"true".equals(cfg.get("AllowThirdPartyFraming"))) {
             response.addHeader(
                 "X-Frame-Options", "DENY"
             );
@@ -589,16 +591,16 @@ public class Header {
         response.addHeader(
             "Content-Security-Policy", "default-src \"self\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + cfg.get("CSPAllow") + ";"
             + "script-src \"self\" \"unsafe-inline\" \"unsafe-eval\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + cfg.get("CSPAllow") + ";"
             + "style-src \"self\" \"unsafe-inline\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow")
+            + cfg.get("CSPAllow")
             + ";"
             + "img-src \"self\" data: "
-            + GLOBALS.cfg.get("CSPAllow")
+            + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
@@ -607,11 +609,11 @@ public class Header {
         response.addHeader(
             "X-Content-Security-Policy", "default-src \"self\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + cfg.get("CSPAllow") + ";"
             + "options inline-script eval-script;"
             + "referrer no-referrer;"
             + "img-src \"self\" data: "
-            + GLOBALS.cfg.get("CSPAllow")
+            + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
@@ -620,17 +622,17 @@ public class Header {
         response.addHeader(
             "X-WebKit-CSP", "default-src \"self\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow") + ";"
+            + cfg.get("CSPAllow") + ";"
             + "script-src \"self\" "
             + $captcha_url
-            + GLOBALS.cfg.get("CSPAllow")
+            + cfg.get("CSPAllow")
             + " \"unsafe-inline\" \"unsafe-eval\";"
             + "referrer no-referrer;"
             + "style-src \"self\" \"unsafe-inline\" "
             + $captcha_url
             + ";"
             + "img-src \"self\" data: "
-            + GLOBALS.cfg.get("CSPAllow")
+            + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
@@ -677,13 +679,13 @@ public class Header {
             if (GLOBALS.server > 0) {
             	String $temp_title;
                 if (! empty(GLOBALS.table)) {
-                    $temp_title = (String) GLOBALS.cfg.get("TitleTable");
+                    $temp_title = (String) cfg.get("TitleTable");
                 } else if (!empty(GLOBALS.db)) {
-                    $temp_title = (String) GLOBALS.cfg.get("TitleDatabase");
-                } else if (!empty(((Map<String,Object>) GLOBALS.cfg.get("Server")).get("host"))) {
-                    $temp_title = (String) GLOBALS.cfg.get("TitleServer");
+                    $temp_title = (String) cfg.get("TitleDatabase");
+                } else if (!empty(((Map<String,Object>) cfg.get("Server")).get("host"))) {
+                    $temp_title = (String) cfg.get("TitleServer");
                 } else {
-                    $temp_title = (String) GLOBALS.cfg.get("TitleDefault");
+                    $temp_title = (String) cfg.get("TitleDefault");
                 }
                 this._title = htmlspecialchars(
                     Util.expandUserString($temp_title)
@@ -710,7 +712,7 @@ public class Header {
         String $retval = "";
         if (this._menuEnabled
             && !empty($table)
-            && (new Integer((String) GLOBALS.cfg.get("NumRecentTables")) > 0)
+            && (new Integer((String) cfg.get("NumRecentTables")) > 0)
         ) {
             String $tmp_result = RecentFavoriteTable.getInstance("recent").add(
                 $db,
