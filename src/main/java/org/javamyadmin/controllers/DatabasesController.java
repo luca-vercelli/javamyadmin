@@ -1,26 +1,19 @@
 package org.javamyadmin.controllers;
 
-import static org.javamyadmin.php.Php.__;
-import static org.javamyadmin.php.Php.empty;
+import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
-import org.javamyadmin.helpers.Template;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
-import org.jtwig.web.servlet.JtwigRenderer;
 
 @WebServlet(urlPatterns = "/databases", name = "DatabasesController")
 public class DatabasesController extends AbstractController {
@@ -30,7 +23,7 @@ public class DatabasesController extends AbstractController {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			Map $_SESSION, GLOBALS GLOBALS, Template template) throws ServletException, IOException {
+			SessionMap $_SESSION, GLOBALS GLOBALS) throws ServletException, IOException {
 		
 		Map<String, Object> model = new HashMap<>();
 //	      'is_create_database_shown' => $cfg['ShowCreateDb'],
@@ -51,7 +44,7 @@ public class DatabasesController extends AbstractController {
 //	      'pma_theme_image' => $pmaThemeImage,
 //	      'text_dir' => $text_dir,
 
-		String html = template.render("databases/index", model);
+		String html = JtwigFactory.render("databases/index", model);
 		pmaResponse.addHTML(html);
 	}
 }

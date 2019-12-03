@@ -3,13 +3,16 @@ package org.javamyadmin.helpers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 import org.javamyadmin.php.GLOBALS;
 
@@ -35,7 +38,9 @@ public class Menu {
      */
     private String _table;
 	private Map<String, Object> session;
-	private Config cfg;
+	private Properties cfg;
+	private HttpServletRequest request;
+	private GLOBALS GLOBALS;
 	
     /**
      * @var Relation
@@ -54,7 +59,9 @@ public class Menu {
         this._table = $table;
         //this.relation = new Relation(GLOBALS.dbi);
         this.session = session;
-        this.cfg = GLOBALS.PMA_Config;
+        this.cfg = GLOBALS.PMA_Config.settings;
+        this.request = request;
+        this.GLOBALS = GLOBALS;
     }
 
     /**
@@ -63,9 +70,9 @@ public class Menu {
      * @return void
      * @throws IOException 
      */
-    public void display(HttpServletResponse response) throws IOException
+    public void display(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS) throws IOException
     {
-        response.getWriter().write(this.getDisplay());
+        response.getWriter().write(this.getDisplay(request, GLOBALS));
     }
 
     /**
@@ -73,9 +80,9 @@ public class Menu {
      *
      * @return string
      */
-    public String getDisplay()
+    public String getDisplay(HttpServletRequest request, GLOBALS GLOBALS)
     {
-        String  $retval  = this._getBreadcrumbs();
+        String  $retval  = this._getBreadcrumbs(request, GLOBALS);
         $retval += this._getMenu();
         return $retval;
     }
@@ -181,7 +188,7 @@ public class Menu {
         boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)
             .isView();
         if (empty(multiget(cfg, "Server", "host"))) {
-            multiput(cfg, "", "Server", "host");
+            multiput(cfg, "Server", "host", "");
         }
         String $server_info = ! empty(multiget(cfg, "Server", "verbose"))
             ? (String) multiget(cfg, "Server", "verbose")
@@ -220,6 +227,7 @@ public class Menu {
             __("Server")
         );
 
+        /* TODO
         if (!empty(this._db)) {
             $retval += $separator;
             if (Util.showIcons("TabsMode", GLOBALS)) {
@@ -280,9 +288,8 @@ public class Menu {
                     $tbl_is_view ? __("View") : __("Table")
                 );
 
-                /*
-                 * Displays table comment
-                 */
+                // Displays table comment
+                 
                 if (! empty($show_comment)
                     && ! isset(GLOBALS.avoid_show_comment)
                 ) {
@@ -309,9 +316,7 @@ public class Menu {
                 // in Util.getDbInfo() only once
                 if ($cfgRelation["commwork"]) {
                     String $comment = this.relation.getDbComment(this._db);
-                    /**
-                     * Displays table comment
-                     */
+                    // Displays table comment
                     if (! empty($comment)) {
                         $retval += "<span class='table_comment'"
                             + " id='span_table_comment'>"
@@ -323,7 +328,7 @@ public class Menu {
                     } // end if
                 }
             }
-        }
+        }*/
         $retval += "<div class='clearfloat'></div>";
         $retval += "</div>";
         return $retval;
@@ -335,6 +340,17 @@ public class Menu {
     	public String link;
     	public Map args;
     	public boolean active;
+
+    	public MenuStruct(String icon, String text, String link, boolean active) {
+    		this(icon, text, link, active, null);
+    	}
+    	public MenuStruct(String icon, String text, String link, boolean active, Map args) {
+    		this.icon = icon;
+    		this.text = text;
+    		this.link = link;
+    		this.args = (args != null) ? args : new HashMap<>();
+    		this.active = active;
+    	}
     }
     
     /**
@@ -344,6 +360,7 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getTableTabs()
     {
+    	
         global $route;
 
         $db_is_system_schema = GLOBALS["dbi"].isSystemSchema(this._db);
@@ -489,12 +506,12 @@ public class Menu {
         $tabs["structure"]["link"] = Url.getFromRoute("/database/structure");
         $tabs["structure"]["text"] = __("Structure");
         $tabs["structure"]["icon"] = "b_props";
-        $tabs["structure"]["active"] = $route === "/database/structure";
+        $tabs["structure"]["active"] = $route == "/database/structure";
 
         $tabs["sql"]["link"] = Url.getFromRoute("/database/sql");
         $tabs["sql"]["text"] = __("SQL");
         $tabs["sql"]["icon"] = "b_sql";
-        $tabs["sql"]["active"] = $route === "/database/sql";
+        $tabs["sql"]["active"] = $route == "/database/sql";
 
         $tabs["search"]["text"] = __("Search");
         $tabs["search"]["icon"] = "b_search";
@@ -587,6 +604,20 @@ public class Menu {
         return $tabs;
     }
 
+    private static List<String> statusRoutes = Arrays.asList(new String[] {
+            "/server/status",
+            "/server/status/advisor",
+            "/server/status/monitor",
+            "/server/status/processes",
+            "/server/status/queries",
+            "/server/status/variables",
+    });
+    
+    private static List<String> privilegesRoutes = Arrays.asList(new String[] {
+            "/server/privileges",
+            "/server/user_groups",
+    });
+    
     /**
      * Returns the server tabs as an array
      *
@@ -594,7 +625,7 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getServerTabs()
     {
-        global $route;
+        GLOBAL $route;
 
         $is_superuser = GLOBALS["dbi"].isSuperuser();
         $isCreateOrGrantUser = GLOBALS["dbi"].isUserType("grant")
@@ -612,39 +643,30 @@ public class Menu {
             Util.cacheSet("binary_logs", $binary_logs);
         }
 
-        $tabs = [];
-
-        $tabs["databases"]["icon"] = "s_db";
-        $tabs["databases"]["link"] = Url.getFromRoute("/server/databases");
-        $tabs["databases"]["text"] = __("Databases");
-        $tabs["databases"]["active"] = $route === "/server/databases";
-
-        $tabs["sql"]["icon"] = "b_sql";
-        $tabs["sql"]["link"] = Url.getFromRoute("/server/sql");
-        $tabs["sql"]["text"] = __("SQL");
-        $tabs["sql"]["active"] = $route === "/server/sql";
-
-        $tabs["status"]["icon"] = "s_status";
-        $tabs["status"]["link"] = Url.getFromRoute("/server/status");
-        $tabs["status"]["text"] = __("Status");
-        $tabs["status"]["active"] = in_array($route, [
-            "/server/status",
-            "/server/status/advisor",
-            "/server/status/monitor",
-            "/server/status/processes",
-            "/server/status/queries",
-            "/server/status/variables",
-        ]);
-
+        Map<String, MenuStruct> $tabs = new HashMap<>();
+        $tabs.put("databases", new MenuStruct("s_db",
+				Url.getFromRoute("/server/databases",
+				__("Databases")
+				$route.equals("/server/databases")
+				)));
+        $tabs.put("sql", new MenuStruct("b_sql",
+				Url.getFromRoute("/server/sql",
+				__("SQL")
+				$route.equals("/server/sql")
+				)));
+        $tabs.put("status", new MenuStruct("s_status",
+				Url.getFromRoute("/server/status",
+				__("Status")
+				statusRoutes.contains($route)
+				)));
+        
         if ($is_superuser || $isCreateOrGrantUser) {
-            $tabs["rights"]["icon"] = "s_rights";
-            $tabs["rights"]["link"] = Url.getFromRoute("/server/privileges");
-            $tabs["rights"]["text"] = __("User accounts");
-            $tabs["rights"]["active"] = in_array($route, [
-                "/server/privileges",
-                "/server/user_groups",
-            ]);
-            $tabs["rights"]["args"]["viewing_mode"] = "server";
+        	$tabs.put("rights", new MenuStruct("s_rights",
+    				Url.getFromRoute("/server/privileges",
+    				__("User accounts")
+    				privilegesRoutes.contains($route)
+    				)));
+        	$tabs["rights"]["args"]["viewing_mode"] = "server";
         }
 
         $tabs["export"]["icon"] = "b_export";

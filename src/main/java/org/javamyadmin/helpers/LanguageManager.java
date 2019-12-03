@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 
 /**
@@ -380,7 +381,7 @@ public class LanguageManager {
 	 *
 	 * @access public
 	 */
-	public String getSelectorDisplay(Template $template, boolean $use_fieldset /* = false */,
+	public String getSelectorDisplay(boolean $use_fieldset /* = false */,
 			boolean $show_doc /* = true */, GLOBALS GLOBALS) {
 		Map<String, String> $_form_params = new HashMap<String, String>();
 		$_form_params.put("db", GLOBALS.db);
@@ -404,6 +405,6 @@ public class LanguageManager {
 		model.put("available_languages", $available_languages);
 		model.put("_form_params", $_form_params);
 
-		return $template.render("select_lang", model);
+		return JtwigFactory.render("select_lang", model);
 	}
 }

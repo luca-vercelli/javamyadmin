@@ -4,10 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.javamyadmin.helpers.Scripts.FStruct2;
 import org.javamyadmin.helpers.html.Generator;
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 import static org.javamyadmin.php.Php.*;
 
@@ -55,25 +54,22 @@ public class Footer {
     /**
      * @var Template
      */
-    private Template template;
+    //private Template template;
 
     private GLOBALS GLOBALS;
-    private HttpServletRequest request;
 	private Response pmaResponse;
     
     /**
      * Creates a new class instance
      */
-    public Footer(HttpServletRequest request, GLOBALS GLOBALS, Response pmaResponse)
+    public Footer(GLOBALS GLOBALS, Response pmaResponse)
     {
-        this.template = new Template();
         this._isEnabled = true;
         this._scripts = new Scripts(GLOBALS);
         this._isMinimal = false;
         // TODO this.relation = new Relation(GLOBALS.dbi);
         
         this.GLOBALS = GLOBALS;
-        this.request = request;
         this.pmaResponse = pmaResponse;
     }
 
@@ -84,7 +80,7 @@ public class Footer {
      */
     private String _getDemoMessage()
     {
-    	return ""; // not supported
+    	return ""; // TODO
         /*String $message = "<a href="/">" + __("phpMyAdmin Demo Server") + "</a>: ";
         if (@file_exists(ROOT_PATH + "revision-info.php")) {
             $revision = "";
@@ -372,7 +368,7 @@ public class Footer {
                 $errorMessages = this.getErrorMessages();
                 $scripts = this._scripts.getDisplay();
 
-                if ((Boolean)GLOBALS.cfg.get("DBG.demo")) {
+                if ("true".equals(multiget(GLOBALS.PMA_Config.settings, "DBG" , "demo"))) {
                     $demoMessage = this._getDemoMessage();
                 }
 
@@ -384,12 +380,12 @@ public class Footer {
             model.put("self_link", $selfLink);
             model.put("error_messages",  $errorMessages);
             model.put("scripts", $scripts);
-            model.put("is_demo", GLOBALS.cfg.get("DBG.demo"));
+            model.put("is_demo", multiget(GLOBALS.PMA_Config.settings, "DBG", "demo"));
             model.put("demo_message", $demoMessage);
             model.put("footer", $footer);
             
         }
-        return this.template.render("footer", model);
+        return JtwigFactory.render("footer", model);
     }
 
 }

@@ -3,7 +3,10 @@ package org.javamyadmin.jtwig;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.jtwig.JtwigModel;
+import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.EnvironmentConfiguration;
 import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.model.expression.Expression;
@@ -37,7 +40,10 @@ import org.parboiled.Rule;
  */
 public class JtwigFactory {
 
+	public static final String BASE_PATH = "WEB-INF/templates/";
+
 	private static JtwigRenderer rendererInstance;
+	private static EnvironmentConfiguration configuration;
 
 	/**
 	 * 'trans' node rendering stuff. This class represents the syntax tree node.
@@ -171,23 +177,23 @@ public class JtwigFactory {
 			return 29;
 		}
 	};
-	
+
 	/**
 	 * Twig '?' operator is different from JTwig's one
 	 * 
 	 * (x ? y) means (x ? y : null)
 	 */
 	public static class IfCalculator implements BinaryOperationCalculator {
-		
+
 		@Override
 		public Object calculate(Request request) {
-			CalculateExpressionService calculateExpressionService = request.getEnvironment()
-					.getRenderEnvironment().getCalculateExpressionService();
+			CalculateExpressionService calculateExpressionService = request.getEnvironment().getRenderEnvironment()
+					.getCalculateExpressionService();
 			Object leftValue = calculateExpressionService.calculate(request, request.getLeftOperand());
 			Object rightValue = calculateExpressionService.calculate(request, request.getRightOperand());
 
-			if (leftValue != null && !leftValue.equals("") && !leftValue.equals(false)
-					&& !leftValue.equals(0) && !leftValue.equals(Collections.emptyList())) {
+			if (leftValue != null && !leftValue.equals("") && !leftValue.equals(false) && !leftValue.equals(0)
+					&& !leftValue.equals(Collections.emptyList())) {
 				return rightValue; // to be rendered yet ?!?
 			} else {
 				return "";
@@ -196,44 +202,35 @@ public class JtwigFactory {
 	}
 
 	private static EnvironmentConfiguration createConfiguration() {
-		return EnvironmentConfigurationBuilder.configuration()
-			.functions()
-				.add(new EmptyFunction())
-				.add(Functions.getFunctions())
-				.and()
-			.parser()
-				.addonParserProviders()
-					.add(new AddonParserProvider() {
-	
-						@Override
-						public Class<? extends AddonParser> parser() {
-							return TransParser.class;
-						}
-	
-						@Override
-						public Collection<String> keywords() {
-							return Collections.emptyList();
-						}
-					})
-					.and()
-				.binaryOperators()
-					.add(new IfOperator())
-					.and()
-				.withoutTemplateCache()
-				.and()
-			.render()
-				.nodeRenders()
-					.add(TransNode.class, new TransNodeRender())
-					.and()
-				.binaryExpressionCalculators()
-					.add(IfOperator.class, new IfCalculator())
-					.and()
-				.and()
-			.build();
+		return EnvironmentConfigurationBuilder.configuration().functions().add(new EmptyFunction())
+				.add(Functions.getFunctions()).and().parser().addonParserProviders().add(new AddonParserProvider() {
+
+					@Override
+					public Class<? extends AddonParser> parser() {
+						return TransParser.class;
+					}
+
+					@Override
+					public Collection<String> keywords() {
+						return Collections.emptyList();
+					}
+				}).and().binaryOperators().add(new IfOperator()).and().withoutTemplateCache().and().render()
+				.nodeRenders().add(TransNode.class, new TransNodeRender()).and().binaryExpressionCalculators()
+				.add(IfOperator.class, new IfCalculator()).and().and().build();
+	}
+
+	/**
+	 * Provider
+	 */
+	public static EnvironmentConfiguration getConfiguration() {
+		if (configuration == null) {
+			configuration = createConfiguration();
+		}
+		return configuration;
 	}
 
 	private static JtwigRenderer createRenderer() {
-		return new JtwigRenderer(createConfiguration());
+		return new JtwigRenderer(getConfiguration());
 	}
 
 	/**
@@ -244,5 +241,30 @@ public class JtwigFactory {
 			rendererInstance = createRenderer();
 		}
 		return rendererInstance;
+	}
+
+	/**
+	 * Load a template from a file in classpath.
+	 * 
+	 * @see https://github.com/phpmyadmin/phpmyadmin/blob/master/libraries/classes/Template.php
+	 */
+	public static JtwigTemplate getTemplate(String templateName) {
+		return JtwigTemplate.fileTemplate(BASE_PATH + templateName + ".twig", getConfiguration());
+	}
+
+	/**
+	 * Load a template from a file in classpath, then render it.
+	 * 
+	 * @see https://github.com/phpmyadmin/phpmyadmin/blob/master/libraries/classes/Template.php
+	 * @param templateName
+	 * @param model
+	 * @return
+	 */
+	public static String render(String templateName, Map<String, Object> model) {
+		JtwigModel tmodel = JtwigModel.newModel();
+		for (Entry<String, Object> entry : model.entrySet()) {
+			tmodel.with(entry.getKey(), entry.getValue());
+		}
+		return getTemplate(templateName).render(tmodel);
 	}
 }

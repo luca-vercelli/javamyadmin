@@ -92,7 +92,7 @@ public class ThemeManager {
 			return;
 		}
 
-		this.setThemePerServer((Boolean) GLOBALS.cfg.get("ThemePerServer"));
+		this.setThemePerServer((Boolean) GLOBALS.PMA_Config.get("ThemePerServer"));
 
 		this.loadThemes();
 
@@ -100,12 +100,12 @@ public class ThemeManager {
 
 		boolean config_theme_exists = true;
 
-		if (!this.checkTheme((String) GLOBALS.cfg.get("ThemeDefault"))) {
+		if (!this.checkTheme((String) GLOBALS.PMA_Config.get("ThemeDefault"))) {
 			trigger_error(String.format(__("Default theme %s not found!"),
-					htmlspecialchars((String) GLOBALS.cfg.get("ThemeDefault"))), E_USER_ERROR);
+					htmlspecialchars((String) GLOBALS.PMA_Config.get("ThemeDefault"))), E_USER_ERROR);
 			config_theme_exists = false;
 		} else {
-			this.theme_default = (String) GLOBALS.cfg.get("ThemeDefault");
+			this.theme_default = (String) GLOBALS.PMA_Config.get("ThemeDefault");
 		}
 
 		// check if user have a theme cookie

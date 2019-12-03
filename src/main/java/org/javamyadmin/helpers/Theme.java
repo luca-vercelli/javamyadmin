@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.javamyadmin.jtwig.JtwigFactory;
+
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -81,7 +83,7 @@ public class Theme {
     /**
      * @var Template
      */
-    public Template template = new Template();
+    //public Template template = new Template();
 
     /**
      * Theme constructor.
@@ -377,7 +379,7 @@ public class Theme {
         data.put("screen", screen);
         
         
-        return this.template.render("theme_preview", data);
+        return JtwigFactory.render("theme_preview", data);
     }
 
 }

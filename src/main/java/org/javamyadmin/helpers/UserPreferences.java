@@ -1,5 +1,7 @@
 package org.javamyadmin.helpers;
 
+import org.javamyadmin.jtwig.JtwigFactory;
+
 /**
  * Functions for displaying user preferences pages
  *
@@ -14,7 +16,7 @@ public class UserPreferences {
     /**
      * @var Template
      */
-    public Template template;
+    // public Template template;
 
     /**
      * Constructor
@@ -22,7 +24,7 @@ public class UserPreferences {
     public UserPreferences()
     {
         //this.relation = new Relation($GLOBALS["dbi"]);
-        this.template = new Template();
+        // this.template = new Template();
     }
 
     /**
@@ -43,7 +45,7 @@ public class UserPreferences {
                 "Server/only_db" => "Servers/1/only_db",
             ]
         );
-        $cf.updateWithGlobalConfig(GLOBALS.cfg);
+        $cf.updateWithGlobalConfig(GLOBALS.PMA_Config);
     }
 
     /**
@@ -102,7 +104,7 @@ public class UserPreferences {
         $cfgRelation = this.relation.getRelationsParam();
         $server = isset($GLOBALS["server"])
             ? $GLOBALS["server"]
-            : GLOBALS.cfg["ServerDefault"];
+            : GLOBALS.PMA_Config["ServerDefault"];
         $cache_key = "server_" + $server;
         if (! $cfgRelation["userconfigwork"]) {
             // no pmadb table, use session storage
@@ -173,7 +175,7 @@ public class UserPreferences {
     public function apply(array $config_data)
     {
         $cfg = [];
-        $blacklist = array_flip(GLOBALS.cfg["UserprefsDisallow"]);
+        $blacklist = array_flip(GLOBALS.PMA_Config["UserprefsDisallow"]);
         $whitelist = array_flip(UserFormList.getFields());
         // whitelist some additional fields which are custom handled
         $whitelist["ThemeDefault"] = true;
@@ -260,7 +262,7 @@ public class UserPreferences {
         $script_name = basename(basename($GLOBALS["PMA_PHP_SELF"]));
         $return_url = $script_name + "?" + http_build_query($_GET, "", "&");
 
-        return this.template.render("preferences/autoload", [
+        return JtwigFactory.render("preferences/autoload", [
             "hidden_inputs" => Url.getHiddenInputs(),
             "return_url" => $return_url,
         ]);

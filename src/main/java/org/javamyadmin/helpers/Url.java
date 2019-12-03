@@ -62,7 +62,7 @@ public class Url {
         }
 
         if (GLOBALS.server != null
-            && GLOBALS.server != GLOBALS.cfg.get("ServerDefault")
+            && GLOBALS.server != GLOBALS.PMA_Config.get("ServerDefault")
         ) {
             params.put("server", GLOBALS.server);
         }
@@ -221,7 +221,7 @@ public class Url {
 
         // avoid overwriting when creating navi panel links to servers
         if (GLOBALS.server != null
-            && GLOBALS.server != GLOBALS.cfg.get("ServerDefault")
+            && GLOBALS.server != GLOBALS.PMA_Config.get("ServerDefault")
             && ! params.containsKey("server")
             && GLOBALS.PMA_Config.get("is_setup").equals(false)
         ) {

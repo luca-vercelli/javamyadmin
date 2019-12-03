@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.javamyadmin.php.GLOBALS;
+import static org.javamyadmin.php.Php.*;
 
 public class Core {
     /**
@@ -29,15 +30,15 @@ public class Core {
      * echo Core.ifSetOr($_REQUEST["db"], ""); // ""
      * // $_POST["sql_query"] not set
      * echo Core.ifSetOr($_POST["sql_query"]); // null
-     * // $cfg["EnableFoo"] not set
-     * echo Core.ifSetOr($cfg["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr($cfg["EnableFoo"]); // null
-     * // $cfg["EnableFoo"] set to 1
-     * echo Core.ifSetOr($cfg["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr($cfg["EnableFoo"], false, "similar"); // 1
-     * echo Core.ifSetOr($cfg["EnableFoo"], false); // 1
-     * // $cfg["EnableFoo"] set to true
-     * echo Core.ifSetOr($cfg["EnableFoo"], false, "boolean"); // true
+     * // GLOBALS.PMA_Config["EnableFoo"] not set
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"]); // null
+     * // GLOBALS.PMA_Config["EnableFoo"] set to 1
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "similar"); // 1
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false); // 1
+     * // GLOBALS.PMA_Config["EnableFoo"] set to true
+     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // true
      * </code>
      *
      * @param mixed $var     param to check
@@ -104,7 +105,7 @@ public class Core {
      * @todo add some more var types like hex, bin, ...?
      * @see https://secure.php.net/gettype
      */
-    public static boolean isValid(Object $var, String $type /*= "length"*/, Object $compare /*= null*/)
+    public static boolean isValid(Object $var, Object $type /*= "length"*/, Object $compare /*= null*/)
     {
         if ($var == null) {
             // var is not even set
@@ -118,11 +119,11 @@ public class Core {
             return ((List)$type).contains($var);
         }
         if ($type instanceof Map) {
-        	return ((Map)$type).containsValu($var);
+        	return ((Map)$type).containsValue($var);
         }
         // allow some aliases of var types
-        $type = strtolower($type);
-        switch ($type) {
+        $type = ((String)$type).toLowerCase();
+        switch ((String)$type) {
             case "identic":
                 $type = "identical";
                 break;
@@ -164,7 +165,7 @@ public class Core {
         }
         // do the check
         if ($type.equals("length") || $type.equals("scalar")) {
-            $is_scalar = is_scalar($var);
+            boolean $is_scalar = is_scalar($var);
             if ($is_scalar && $type.equals("length")) {
                 return ((String) $var).length() > 0;
             }
@@ -192,7 +193,7 @@ public class Core {
     public static String securePath(String $path)
     {
         // change .. to .
-        return $path.replaceAll(("@\\.\\.*@", ".");
+        return $path.replace("..", ".");
     } // end function
     
     public static class ErrorBean {
@@ -237,14 +238,14 @@ public class Core {
         } else if (! empty(req.getParameter("ajax_request"))) {
             // Generate JSON manually
             headerJSON(resp);
-            echo(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()));
+            resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()))
             );
         } else {
             $error_message = $error_message.replace("<br>", "[br]");
             String $error_header = __("Error");
             String $lang = GLOBALS.lang != null ? GLOBALS.lang : "en";
             String $dir = GLOBALS.text_dir != null ? GLOBALS.text_dir : "ltr";
-            echo(DisplayError.display(new Template(), $lang, $dir, $error_header, $error_message));
+            /* TODO echo(DisplayError.display(new Template(), $lang, $dir, $error_header, $error_message));*/
         }
     }
     
@@ -286,7 +287,7 @@ public class Core {
         if (in_array(GLOBALS["lang"], $php_doc_languages)) {
             $lang = GLOBALS["lang"];
         }
-        return linkURL("https://secure.php.net/manual/" . $lang . "/" . $target);*/
+        return linkURL("https://secure.php.net/manual/" + $lang + "/" + $target);*/
     }
     /**
      * Warn or fail on missing extension.
@@ -317,7 +318,7 @@ public class Core {
     	return -1;
     	// see https://stackoverflow.com/questions/2780284/how-to-get-all-table-names-from-a-database
         /*$tables = GLOBALS["dbi"].tryQuery(
-            "SHOW TABLES FROM " . Util.backquote($db) . ";",
+            "SHOW TABLES FROM " + Util.backquote($db) + ";",
             DatabaseInterface.CONNECT_USER,
             DatabaseInterface.QUERY_STORE
         );
@@ -369,7 +370,7 @@ public class Core {
      *
      * @return boolean whether $page is valid or not (in $whitelist or not)
      */
-    public static boolean checkPageValidity(&$page, array $whitelist = [], $include = false)
+    public static boolean checkPageValidity(String $page, List $whitelist /*= []*/, boolean $include /*= false*/)
     {
         if (empty($whitelist)) {
             $whitelist = $goto_whitelist;
@@ -434,7 +435,7 @@ public class Core {
     {
         if (GLOBALS.PMA_Config.get("PMA_IS_IIS") && mb_strlen($uri) > 600) {
             Response.getInstance().disable();
-            $template = new Template();
+            //$template = new Template();
             echo $template.render("header_location", ["uri" => $uri]);
             return;
         }
@@ -443,7 +444,7 @@ public class Core {
          * like /phpmyadmin/index.php/ which some web servers happily accept.
          */
         if ($uri[0] == ".") {
-            $uri = GLOBALS.PMA_Config.getRootPath() . substr($uri, 2);
+            $uri = GLOBALS.PMA_Config.getRootPath() + substr($uri, 2);
         }
         $response = Response.getInstance();
         session_write_close();
@@ -492,7 +493,7 @@ public class Core {
             return;
         }
         // rfc2616 - Section 14.21
-        header("Expires: " . gmdate(DATE_RFC1123));
+        header("Expires: " + gmdate(DATE_RFC1123));
         // HTTP/1.1
         header(
             "Cache-Control: no-store, no-cache, must-revalidate,"
@@ -502,7 +503,7 @@ public class Core {
         // test case: exporting a database into a .gz file with Safari
         // would produce files not having the current time
         // (added this header for Safari but should not harm other browsers)
-        header("Last-Modified: " . gmdate(DATE_RFC1123));
+        header("Last-Modified: " + gmdate(DATE_RFC1123));
     }
     /**
      * Sends header indicating file download.
@@ -528,9 +529,9 @@ public class Core {
         $filename = Sanitize.sanitizeFilename($filename);
         if (! empty($filename)) {
             header("Content-Description: File Transfer");
-            header("Content-Disposition: attachment; filename="" . $filename . """);
+            header("Content-Disposition: attachment; filename="" + $filename + """);
         }
-        header("Content-Type: " . $mimetype);
+        header("Content-Type: " + $mimetype);
         // inform the server that compression has been done,
         // to avoid a double compression (for example with Apache + mod_deflate)
         $notChromeOrLessThan43 = PMA_USR_BROWSER_AGENT != "CHROME" // see bug #4942
@@ -540,7 +541,7 @@ public class Core {
         }
         header("Content-Transfer-Encoding: binary");
         if ($length > 0) {
-            header("Content-Length: " . $length);
+            header("Content-Length: " + $length);
         }
     }
     /**
@@ -821,7 +822,7 @@ public class Core {
      *
      * @return void
      */
-    public static function cleanupPathInfo(): void
+    public static void cleanupPathInfo()
     {
         global $PMA_PHP_SELF;
         $PMA_PHP_SELF = getenv("PHP_SELF");
@@ -858,7 +859,7 @@ public class Core {
             // Here we intentionall ignore case where we go too up
             // as there is nothing sane to do
         }
-        $PMA_PHP_SELF = htmlspecialchars("/" . implode("/", $path));
+        $PMA_PHP_SELF = htmlspecialchars("/" + implode("/", $path));
     }
     /**
      * Checks that required PHP extensions are there.
@@ -922,7 +923,7 @@ public class Core {
          * X-Forwarded-For: client, proxy1, proxy2
          */
         // Get header content
-        $value = getenv(GLOBALS.cfg.get("TrustedProxies").get($direct_ip));
+        $value = getenv(GLOBALS.PMA_Config.get("TrustedProxies").get($direct_ip));
         // Grab first element what is client adddress
         $value = explode(",", $value)[0];
         // checks that the header contains only one IP address,
@@ -943,7 +944,7 @@ public class Core {
      *
      * @return String
      */
-    public static function sanitizeMySQLHost(String $name): String
+    public static String sanitizeMySQLHost(String $name)
     {
         while (strtolower(substr($name, 0, 2)) == "p:") {
             $name = substr($name, 2);
@@ -959,7 +960,7 @@ public class Core {
      *
      * @return String
      */
-    public static function sanitizeMySQLUser(String $name): String
+    public static String sanitizeMySQLUser(String $name) 
     {
         $position = strpos($name, chr(0));
         if ($position !== false) {
@@ -976,7 +977,7 @@ public class Core {
      *
      * @return mixed
      */
-    public static function safeUnserialize(String $data)
+    public static mixed safeUnserialize(String $data)
     {
         if (! is_string($data)) {
             return null;
@@ -1053,7 +1054,7 @@ public class Core {
      *
      * @return void
      */
-    public static function configure(): void
+    public static void configure()
     {
         /**
          * Set utf-8 encoding for PHP
@@ -1078,7 +1079,7 @@ public class Core {
      *
      * @return void
      */
-    public static function checkConfiguration(): void
+    public static void checkConfiguration()
     {
         /**
          * As we try to handle charsets by ourself, mbstring overloads just
@@ -1091,8 +1092,8 @@ public class Core {
             fatalError(
                 __(
                     "You have enabled mbstring.func_overload in your PHP "
-                    . "configuration. This option is incompatible with phpMyAdmin "
-                    . "and might cause some data to be corrupted!"
+                    + "configuration. This option is incompatible with phpMyAdmin "
+                    + "and might cause some data to be corrupted!"
                 )
             );
         }
@@ -1104,7 +1105,7 @@ public class Core {
             fatalError(
                 __(
                     "The ini_get and/or ini_set functions are disabled in php.ini. "
-                    . "phpMyAdmin requires these functions!"
+                    + "phpMyAdmin requires these functions!"
                 )
             );
         }
@@ -1114,7 +1115,7 @@ public class Core {
      *
      * @return void
      */
-    public static function checkRequest(): void
+    public static void checkRequest()
     {
         if (isset($_REQUEST["GLOBALS"]) || isset($_FILES["GLOBALS"])) {
             fatalError(__("GLOBALS overwrite attempt"));
@@ -1132,11 +1133,9 @@ public class Core {
      * @param String $sqlQuery The sql query
      * @return String
      */
-    public static function signSqlQuery($sqlQuery)
+    public static String signSqlQuery(String $sqlQuery, SessionMap session)
     {
-        /** @var array $cfg */
-        global $cfg;
-        return hash_hmac("sha256", $sqlQuery, $_SESSION[" HMAC_secret "] . $cfg["blowfish_secret"]);
+        return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
     }
     /**
      * Check that the sql query has a valid hmac signature
@@ -1145,11 +1144,9 @@ public class Core {
      * @param String $signature The Signature to check
      * @return boolean
      */
-    public static function checkSqlQuerySignature($sqlQuery, $signature)
+    public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
     {
-        /** @var array $cfg */
-        global $cfg;
-        $hmac = hash_hmac("sha256", $sqlQuery, $_SESSION[" HMAC_secret "] . $cfg["blowfish_secret"]);
+        String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
         return hash_equals($hmac, $signature);
     }
 }

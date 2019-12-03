@@ -18,7 +18,6 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Scripts;
-import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
@@ -34,10 +33,8 @@ public abstract class AbstractController extends HttpServlet {
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		GLOBALS GLOBALS = new GLOBALS();
-		Map<String, Object> $_SESSION = $_SESSION(request.getSession());
-		
-		GLOBALS.PMA_Config = new Config(null);
-		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);  // Requires PMA_Config
+		SessionMap $_SESSION = $_SESSION(request.getSession());
+		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
 		
 		// cfr. commons.inc.php
 		
@@ -136,7 +133,7 @@ public abstract class AbstractController extends HttpServlet {
 		     */
 		    GLOBALS.PMA_Config.setCookie("pma_lang", GLOBALS.lang);
 		    GLOBALS.themeManager.setThemeCookie(request, response);
-		    if (! empty(GLOBALS.cfg.get("Server"))) {
+		    if (! empty(GLOBALS.PMA_Config.get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
 		         */
@@ -154,7 +151,6 @@ public abstract class AbstractController extends HttpServlet {
 		            String $value
 		                = (String) request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
 		            GLOBALS.PMA_Config.set("LoginCookieValidity", $value);
-		            GLOBALS.cfg.put("LoginCookieValidity", $value);
 		        }
 		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
 		        // and run authentication
@@ -269,7 +265,7 @@ public abstract class AbstractController extends HttpServlet {
 		GLOBALS.PMA_Config.loadUserPreferences();
 		
 		// We override standard service request! Always call doGet
-		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS, new Template());
+		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS);
 
 		pmaResponse.response();
 	}
@@ -277,7 +273,7 @@ public abstract class AbstractController extends HttpServlet {
 	/**
 	 * GET handler. Must be defined.
 	 */
-	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, Map $_SESSION, GLOBALS GLOBALS, Template template)
+	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, GLOBALS GLOBALS)
 			throws ServletException, IOException;
 
 

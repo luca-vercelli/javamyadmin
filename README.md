@@ -29,8 +29,6 @@ Trivial conversions:
 
 More PHP functions have been defined in Php class.
 
-Please notice that a "Singleton" or a "global variable" in PHP are not global at all in Java.
-
 Less trivial conversions:
 
 |  PHP     |   Java   |
@@ -64,4 +62,12 @@ In the second case:
 | in_array(x,y)         | y.valuesSet().contains(x) |
 | x[y] = z              | x.put(y, z)               |
 | x[y]                  | x.get(y)                  |
+
+
+#Conversion of PMA classes
+
+Please notice that a "Singleton" in PHP is not a singleton in Java, and a "global variable" in PHP is not global (nor static) in Java.
+
+
+՝Template՝ class has been merged into ՝JtwigFactory՝.
 

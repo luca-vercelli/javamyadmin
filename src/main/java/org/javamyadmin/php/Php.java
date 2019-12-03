@@ -342,13 +342,11 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str
-	 *            The string to be escaped
-	 * @param charlist
-	 *            A list of characters to be escaped. If charlist contains
-	 *            characters \n, \r etc., they are converted in C-like style, while
-	 *            other non-alphanumeric characters with ASCII codes lower than 32
-	 *            and higher than 126 converted to octal representation.
+	 * @param str The string to be escaped
+	 * @param charlist A list of characters to be escaped. If charlist contains
+	 * characters \n, \r etc., they are converted in C-like style, while other
+	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
+	 * 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -412,7 +410,7 @@ public class Php {
 	 * 
 	 * array[k1][k2][k3]
 	 */
-	public static Object multiget(Map map, String... keys) {
+	public static Object multiget(Map map, Object... keys) {
 
 		if (keys.length < 1) {
 			throw new IllegalArgumentException("At least one key required");
@@ -420,7 +418,7 @@ public class Php {
 
 		// Hashmaps part
 		for (int i = 0; i < keys.length - 1; ++i) {
-			String key = keys[i];
+			Object key = keys[i];
 			if (map.containsKey(key)) {
 				map = (Map) map.get(key);
 			} else {
@@ -437,7 +435,7 @@ public class Php {
 	 * 
 	 * unset(array[k1][k2][k3])
 	 */
-	public static void multiremove(Map map, String... keys) {
+	public static void multiremove(Map map, Object... keys) {
 
 		if (keys.length < 1) {
 			throw new IllegalArgumentException("At least one key required");
@@ -445,7 +443,7 @@ public class Php {
 
 		// Hashmaps part
 		for (int i = 0; i < keys.length - 1; ++i) {
-			String key = keys[i];
+			Object key = keys[i];
 			if (map.containsKey(key)) {
 				map = (Map) map.get(key);
 			} else {
@@ -462,15 +460,15 @@ public class Php {
 	 * 
 	 * array[k1][k2][k3] = val
 	 */
-	public static void multiput(Map map, Object value, String... keys) {
+	public static void multiput(Map map, Object... keysAndValue) {
 
-		if (keys.length < 1) {
-			throw new IllegalArgumentException("At least one key required");
+		if (keysAndValue.length < 2) {
+			throw new IllegalArgumentException("At least one key and one value required");
 		}
 
 		// Hashmaps part
-		for (int i = 0; i < keys.length - 1; ++i) {
-			String key = keys[i];
+		for (int i = 0; i < keysAndValue.length - 2; ++i) {
+			Object key = keysAndValue[i];
 			if (map.containsKey(key)) {
 				map = (Map) map.get(key);
 			} else {
@@ -481,7 +479,7 @@ public class Php {
 		}
 
 		// value part
-		map.put(keys[keys.length - 1], value);
+		map.put(keysAndValue[keysAndValue.length - 2], keysAndValue[keysAndValue.length - 1]);
 	}
 
 	/**
@@ -501,6 +499,10 @@ public class Php {
 	}
 
 	/**
+	 * Map of session attributes.
+	 * 
+	 * The map is connected with the underlying HttpSession object.
+	 * 
 	 * @see $_SESSION
 	 * @author lucav
 	 *

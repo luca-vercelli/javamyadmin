@@ -26,7 +26,7 @@ public class Util {
      */
     public static boolean showIcons(String $value, GLOBALS GLOBALS)
     {
-    	String type = (String) GLOBALS.cfg.get($value);
+    	String type = (String) GLOBALS.PMA_Config.get($value);
     	return "icons".equals(type) || "both".equals(type);
     }
 
@@ -39,7 +39,7 @@ public class Util {
      */
     public static boolean showText(String $value, GLOBALS GLOBALS)
     {
-    	String type = (String) GLOBALS.cfg.get($value);
+    	String type = (String) GLOBALS.PMA_Config.get($value);
     	return "text".equals(type) || "both".equals(type);
     }
 
@@ -467,7 +467,7 @@ public class Util {
      */
     public static String showHint(String $message, GLOBALS GLOBALS)
     {
-        if (GLOBALS.cfg.get("ShowHint")) {
+        if (GLOBALS.PMA_Config.get("ShowHint")) {
             $classClause = " class='pma_hint'";
         } else {
             $classClause = "";
@@ -732,7 +732,7 @@ public class Util {
         int $limit_offset /*= 0*/,
         boolean $limit_count /*= false*/
     ) {
-        $sep = GLOBALS.cfg["NavigationTreeTableSeparator"];
+        $sep = GLOBALS.PMA_Config["NavigationTreeTableSeparator"];
 
         if ($tables === null) {
             $tables = $GLOBALS["dbi"].getTablesFull(
@@ -742,7 +742,7 @@ public class Util {
                 $limit_offset,
                 $limit_count
             );
-            if (GLOBALS.cfg["NaturalOrder"]) {
+            if (GLOBALS.PMA_Config["NaturalOrder"]) {
                 uksort($tables, "strnatcasecmp");
             }
         }
@@ -765,7 +765,7 @@ public class Util {
 
             // in $group we save the reference to the place in $table_groups
             // where to store the table info
-            if (GLOBALS.cfg["NavigationTreeEnableGrouping"]
+            if (GLOBALS.PMA_Config["NavigationTreeEnableGrouping"]
                 && $sep && mb_strstr($table_name, $sep)
             ) {
                 $parts = explode($sep, $table_name);
@@ -776,7 +776,7 @@ public class Util {
                 $parts_cnt = count($parts) - 1;
 
                 while (($i < $parts_cnt)
-                    && ($i < GLOBALS.cfg["NavigationTreeTableLevel"])
+                    && ($i < GLOBALS.PMA_Config["NavigationTreeTableLevel"])
                 ) {
                     $group_name = $parts[$i] + $sep;
                     $group_name_full += $group_name;
@@ -1761,7 +1761,7 @@ public class Util {
 
         // Suhosin: Check that each query parameter is not above maximum
         $in_suhosin_limits = true;
-        if ($url_length <= GLOBALS.cfg["LinkLengthLimit"]) {
+        if ($url_length <= GLOBALS.PMA_Config["LinkLengthLimit"]) {
             $suhosin_get_MaxValueLength = ini_get("suhosin.get.max_value_length");
             if ($suhosin_get_MaxValueLength) {
                 $query_parts = splitURLQuery($url);
@@ -1781,7 +1781,7 @@ public class Util {
         }
 
         $tag_params_strings = [];
-        if (($url_length > GLOBALS.cfg["LinkLengthLimit"])
+        if (($url_length > GLOBALS.PMA_Config["LinkLengthLimit"])
             || ! $in_suhosin_limits
             // Has as sql_query without a signature
             || ( strpos($url, "sql_query=") !== false && strpos($url, "sql_signature=") === false)
@@ -2140,7 +2140,7 @@ public class Util {
         if ($value == "") {
             $value = $text;
         }
-        if (GLOBALS.cfg["ActionLinksMode"] == "text") {
+        if (GLOBALS.PMA_Config["ActionLinksMode"] == "text") {
             return " <input class='btn btn-link' type='submit' name='" + $button_name + "'"
                 + " value='" + htmlspecialchars($value) + "'"
                 + " title='" + htmlspecialchars($text) + "'>" + "\n";
@@ -2449,7 +2449,7 @@ public class Util {
             $dir += "/";
         }
 
-        return str_replace("%u", Core.securePath(GLOBALS.cfg["Server"]["user"]), $dir);
+        return str_replace("%u", Core.securePath(GLOBALS.PMA_Config["Server"]["user"]), $dir);
     }
 
     /**
@@ -2471,7 +2471,7 @@ public class Util {
         }
 
         $scriptName = getScriptNameForOption(
-            GLOBALS.cfg["DefaultTabDatabase"],
+            GLOBALS.PMA_Config["DefaultTabDatabase"],
             "database"
         );
         return "<a href='"
@@ -2636,7 +2636,7 @@ public class Util {
         $template = new Template();
         return $template.render("div_for_slider_effect", [
             "id" => $id,
-            "initial_sliders_state" => ($overrideDefault != null) ? $overrideDefault : GLOBALS.cfg["InitialSlidersState"],
+            "initial_sliders_state" => ($overrideDefault != null) ? $overrideDefault : GLOBALS.PMA_Config["InitialSlidersState"],
             "message" => $message,
         ]);
     }
@@ -2700,8 +2700,8 @@ public class Util {
      */
     public static String cacheKey()
     {
-        if (!empty(GLOBALS.cfg.get("Server").get("user"))) {
-            return "server_" + GLOBALS.server + "_" + GLOBALS.cfg.get("Server").get("user");
+        if (!empty(GLOBALS.PMA_Config.get("Server").get("user"))) {
+            return "server_" + GLOBALS.server + "_" + GLOBALS.PMA_Config.get("Server").get("user");
         }
 
         return "server_" + $GLOBALS["server"];
@@ -2921,13 +2921,13 @@ public class Util {
 
         // for the case ENUM("&#8211;","&ldquo;")
         $displayed_type = htmlspecialchars($printtype);
-        if (mb_strlen($printtype) > GLOBALS.cfg["LimitChars"]) {
+        if (mb_strlen($printtype) > GLOBALS.PMA_Config["LimitChars"]) {
             $displayed_type  = "<abbr title='" + htmlspecialchars($printtype) + "'>";
             $displayed_type += htmlspecialchars(
                 mb_substr(
                     $printtype,
                     0,
-                    GLOBALS.cfg["LimitChars"]
+                    GLOBALS.PMA_Config["LimitChars"]
                 ) + "..."
             );
             $displayed_type += "</abbr>";
@@ -2979,9 +2979,9 @@ public class Util {
      */
     public static boolean isForeignKeyCheck()
     {
-        if (GLOBALS.cfg["DefaultForeignKeyChecks"] === "enable") {
+        if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "enable") {
             return true;
-        } else if (GLOBALS.cfg["DefaultForeignKeyChecks"] === "disable") {
+        } else if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "disable") {
             return false;
         }
         return ($GLOBALS["dbi"].getVariable("FOREIGN_KEY_CHECKS") == "ON");
@@ -3198,13 +3198,13 @@ public class Util {
         /* Content */
         $vars = [];
         $vars["http_host"] = Core.getenv("HTTP_HOST");
-        $vars["server_name"] = GLOBALS.cfg["Server"]["host"];
-        $vars["server_verbose"] = GLOBALS.cfg["Server"]["verbose"];
+        $vars["server_name"] = GLOBALS.PMA_Config["Server"]["host"];
+        $vars["server_verbose"] = GLOBALS.PMA_Config["Server"]["verbose"];
 
-        if (empty(GLOBALS.cfg["Server"]["verbose"])) {
-            $vars["server_verbose_or_name"] = GLOBALS.cfg["Server"]["host"];
+        if (empty(GLOBALS.PMA_Config["Server"]["verbose"])) {
+            $vars["server_verbose_or_name"] = GLOBALS.PMA_Config["Server"]["host"];
         } else {
-            $vars["server_verbose_or_name"] = GLOBALS.cfg["Server"]["verbose"];
+            $vars["server_verbose_or_name"] = GLOBALS.PMA_Config["Server"]["verbose"];
         }
 
         $vars["database"] = $GLOBALS["db"];
@@ -3300,7 +3300,7 @@ public class Util {
     {
         $block_html = "";
 
-        if ($GLOBALS["is_upload"] && ! empty(GLOBALS.cfg["UploadDir"])) {
+        if ($GLOBALS["is_upload"] && ! empty(GLOBALS.PMA_Config["UploadDir"])) {
             $block_html += "<label for="radio_import_file">";
         } else {
             $block_html += "<label for="input_import_file">";
@@ -4027,7 +4027,7 @@ public class Util {
      */
     public static String getServerSSL()
     {
-        $server = GLOBALS.cfg["Server"];
+        $server = GLOBALS.PMA_Config["Server"];
         $class = "caution";
         if (! $server["ssl"]) {
             $message = __("SSL is not being used");
@@ -4396,7 +4396,7 @@ public class Util {
         ) {
             $rows = $_SESSION["tmpval"]["max_rows"];
         } else {
-            $rows = GLOBALS.cfg["MaxRows"];
+            $rows = GLOBALS.PMA_Config["MaxRows"];
             $_SESSION["tmpval"]["max_rows"] = $rows;
         }
 
@@ -4551,7 +4551,7 @@ public class Util {
                         $tbl_type
                     );
                     $groupWithSeparator = $tbl_group
-                        + GLOBALS.cfg["NavigationTreeTableSeparator"];
+                        + GLOBALS.PMA_Config["NavigationTreeTableSeparator"];
                 }
             } else {
                 // all tables in db
@@ -4635,7 +4635,7 @@ public class Util {
                 $group = escapeMysqlWildcards($_REQUEST["tbl_group"]);
                 $groupWithSeparator = escapeMysqlWildcards(
                     $_REQUEST["tbl_group"]
-                    + GLOBALS.cfg["NavigationTreeTableSeparator"]
+                    + GLOBALS.PMA_Config["NavigationTreeTableSeparator"]
                 );
                 $tblGroupSql += " WHERE ("
                     + backquote("Tables_in_" + $db)
@@ -4681,7 +4681,7 @@ public class Util {
                         $GLOBALS["dbi"].getTablesFull($db, $names)
                     );
                 }
-                if (GLOBALS.cfg["NaturalOrder"]) {
+                if (GLOBALS.PMA_Config["NaturalOrder"]) {
                     uksort($tables, "strnatcasecmp");
                 }
             } else if ($db_info_result) {
@@ -4773,7 +4773,7 @@ public class Util {
     	//Unsupported
         // The function can be disabled in php.ini
         /*if (function_exists("set_time_limit")) {
-            @set_time_limit(GLOBALS.cfg["ExecTimeLimit"]);
+            @set_time_limit(GLOBALS.PMA_Config["ExecTimeLimit"]);
         }*/
     }
 

@@ -850,6 +850,7 @@ public class Config {
      */
     public void checkUploadSize()
     {
+    	//Not supported by Java ?
         /*if (! filesize = ini_get("upload_max_filesize")) {
             filesize = "5M";
         }
@@ -911,6 +912,7 @@ public class Config {
      */
     public String getRootPath(HttpServletRequest req)
     {
+    	// TODO
         /*String cookie_path = null;
 
         if (null != cookie_path && ! defined("TESTSUITE")) {
