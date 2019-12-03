@@ -2,7 +2,9 @@ package org.javamyadmin.helpers;
 
 import static org.javamyadmin.php.Php.*;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,9 @@ import org.javamyadmin.php.GLOBALS;
 /**
  * Generates and renders the top menu
  *
+ * Notice: in PhpMyAdmin, menus are rendered programmatically.
+ * We don't like this approach, we store most data in a properties file.
+ * 
  * @package PhpMyAdmin
  */
 public class Menu {
@@ -43,6 +48,19 @@ public class Menu {
 	private HttpServletRequest request;
 	private GLOBALS GLOBALS;
 
+	private static Properties menuProperties;
+	static {
+		menuProperties = new Properties();
+        try {
+			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("menu.properties");
+			menuProperties.load(is);
+		} catch (NullPointerException e) {
+			throw new IllegalStateException("File menu.properties not found!");
+		} catch (IOException e) {
+			throw new IllegalStateException("Error reading menu.properties!");
+		}
+	}
+	
 	/**
 	 * Bean containing Menu properties
 	 *
@@ -363,7 +381,7 @@ public class Menu {
      *
      * @return array Data for generating table tabs
      */
-    private Map<String, MenuStruct> _getTableTabs()
+    private Map _getTableTabs()
     {
 
         boolean $db_is_system_schema = GLOBALS.dbi.isSystemSchema(this._db);
@@ -378,8 +396,9 @@ public class Menu {
         boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
             || GLOBALS.dbi.isUserType("create");
 
-        Map<String, MenuStruct> $tabs = new HashMap<>();
+        Map $tabs = new HashMap<>();
 
+/*        $tabs.put(key, value)
         Map params = new HashMap();
         params.put("pos", 0);
         
@@ -432,9 +451,8 @@ public class Menu {
         $tabs["export"]["text"] = __("Export");
         $tabs["export"]["active"] = GLOBALS.route.equals("/table/export";
 
-        /**
-         * Don"t display "Import" for views and information_schema
-         */
+        // Don"t display "Import" for views and information_schema
+        
         if (! $tbl_is_view && ! $db_is_system_schema) {
             $tabs["import"]["icon"] = "b_tblimport";
             $tabs["import"]["link"] = Url.getFromRoute("/table/import");
@@ -453,18 +471,15 @@ public class Menu {
             $tabs["privileges"]["icon"] = "s_rights";
             $tabs["privileges"]["active"] = GLOBALS.route.equals("/server/privileges";
         }
-        /**
-         * Don"t display "Operations" for views and information_schema
-         */
+        // Don"t display "Operations" for views and information_schema
+       
         if (! $tbl_is_view && ! $db_is_system_schema) {
             $tabs["operation"]["icon"] = "b_tblops";
             $tabs["operation"]["link"] = Url.getFromRoute("/table/operations");
             $tabs["operation"]["text"] = __("Operations");
             $tabs["operation"]["active"] = GLOBALS.route.equals("/table/operations";
         }
-        /**
-         * Views support a limited number of operations
-         */
+        // Views support a limited number of operations
         if ($tbl_is_view && ! $db_is_system_schema) {
             $tabs["operation"]["icon"] = "b_tblops";
             $tabs["operation"]["link"] = Url.getFromRoute("/view/operations");
@@ -490,7 +505,7 @@ public class Menu {
             $tabs["triggers"]["text"] = __("Triggers");
             $tabs["triggers"]["icon"] = "b_triggers";
             $tabs["triggers"]["active"] = GLOBALS.route.equals("/table/triggers";
-        }
+        }*/
 
         return $tabs;
     }
@@ -502,21 +517,20 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getDbTabs()
     {
-        global GLOBALS.route;
-
-        $db_is_system_schema = GLOBALS.dbi.isSystemSchema(this._db);
-        $num_tables = count(GLOBALS.dbi.getTables(this._db));
-        $is_superuser = GLOBALS.dbi.isSuperuser();
-        $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
+        boolean $db_is_system_schema = GLOBALS.dbi.isSystemSchema(this._db);
+        int $num_tables = GLOBALS.dbi.getTables(this._db).size();
+        boolean $is_superuser = GLOBALS.dbi.isSuperuser();
+        boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
             || GLOBALS.dbi.isUserType("create");
 
         /**
          * Gets the relation settings
          */
-        $cfgRelation = this.relation.getRelationsParam();
+        //TODO $cfgRelation = this.relation.getRelationsParam();
 
-        Map<String, MenuStruct> $tabs = new HashMap<>();
+        Map $tabs = new HashMap();
 
+        /*
         $tabs["structure"]["link"] = Url.getFromRoute("/database/structure");
         $tabs["structure"]["text"] = __("Structure");
         $tabs["structure"]["icon"] = "b_props";
@@ -614,23 +628,9 @@ public class Menu {
             $tabs["central_columns"]["icon"] = "centralColumns";
             $tabs["central_columns"]["link"] = Url.getFromRoute("/database/central_columns");
             $tabs["central_columns"]["active"] = GLOBALS.route.equals("/database/central_columns";
-        }
+        }*/
         return $tabs;
     }
-
-    private static List<String> statusRoutes = Arrays.asList(new String[] {
-            "/server/status",
-            "/server/status/advisor",
-            "/server/status/monitor",
-            "/server/status/processes",
-            "/server/status/queries",
-            "/server/status/variables",
-    });
-    
-    private static List<String> privilegesRoutes = Arrays.asList(new String[] {
-            "/server/privileges",
-            "/server/user_groups",
-    });
     
     /**
      * Returns the server tabs as an array
@@ -639,12 +639,12 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getServerTabs()
     {
-        GLOBAL GLOBALS.route;
-
-        $is_superuser = GLOBALS.dbi.isSuperuser();
-        $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
+    	boolean $is_superuser = GLOBALS.dbi.isSuperuser();
+    	boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
             || GLOBALS.dbi.isUserType("create");
-        if (Util.cacheExists("binary_logs")) {
+        
+    	Map $binary_logs;
+    	if (Util.cacheExists("binary_logs")) {
             $binary_logs = Util.cacheGet("binary_logs");
         } else {
             $binary_logs = GLOBALS.dbi.fetchResult(
@@ -657,7 +657,8 @@ public class Menu {
             Util.cacheSet("binary_logs", $binary_logs);
         }
 
-        Map<String, MenuStruct> $tabs = new HashMap<>();
+        Map $tabs = new HashMap();
+        /*
         $tabs.put("databases", new MenuStruct("s_db",
 				Url.getFromRoute("/server/databases",
 				__("Databases"),
@@ -743,7 +744,7 @@ public class Menu {
         $tabs["plugins"]["link"] = Url.getFromRoute("/server/plugins");
         $tabs["plugins"]["text"] = __("Plugins");
         $tabs["plugins"]["active"] = GLOBALS.route.equals("/server/plugins");
-
+		*/
         return $tabs;
     }
 
