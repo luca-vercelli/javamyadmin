@@ -664,7 +664,7 @@ public class Header {
         response.addHeader(
             "X-Robots-Tag", "noindex, nofollow"
         );
-        Core.noCacheHeader();
+        Core.noCacheHeader(response);
         if (!GLOBALS.IS_TRANSFORMATION_WRAPPER) {
             // Define the charset to be used
             response.addHeader("Content-Type", "text/html; charset=utf-8");

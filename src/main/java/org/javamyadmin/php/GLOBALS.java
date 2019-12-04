@@ -64,6 +64,9 @@ public class GLOBALS {
 	public Object focus_querywindow;
 	public ThemeManager themeManager;
 	
+	public String PMA_USR_BROWSER_AGENT;
+	public int PMA_USR_BROWSER_VER;
+	
 
 	public GLOBALS() {
 	}

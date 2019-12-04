@@ -1,6 +1,7 @@
 package org.javamyadmin.helpers;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -498,28 +499,30 @@ public class Core {
         String $filename,
         String $mimetype,
         int $length /*= 0*/,
-        boolean $no_cache /*= true*/
+        boolean $no_cache, /*= true*/
+        HttpServletResponse response,
+        GLOBALS GLOBALS
     ) {
         if ($no_cache) {
-            noCacheHeader();
+            noCacheHeader(response);
         }
         /* Replace all possibly dangerous chars in filename */
         $filename = Sanitize.sanitizeFilename($filename);
         if (! empty($filename)) {
-            header("Content-Description: File Transfer");
-            header("Content-Disposition: attachment; filename="" + $filename + """);
+        	response.addHeader("Content-Description", "File Transfer");
+        	response.addHeader("Content-Disposition", "attachment; filename=\"" + $filename + "\"");
         }
-        header("Content-Type: " + $mimetype);
+        response.addHeader("Content-Type", $mimetype);
         // inform the server that compression has been done,
         // to avoid a double compression (for example with Apache + mod_deflate)
-        $notChromeOrLessThan43 = PMA_USR_BROWSER_AGENT != "CHROME" // see bug #4942
-            || (PMA_USR_BROWSER_AGENT == "CHROME" && PMA_USR_BROWSER_VER < 43);
-        if (strpos($mimetype, "gzip") !== false && $notChromeOrLessThan43) {
-            header("Content-Encoding: gzip");
+        boolean $notChromeOrLessThan43 = !"CHROME".equals(GLOBALS.PMA_USR_BROWSER_AGENT)  // see bug #4942
+            || ("CHROME".equals(GLOBALS.PMA_USR_BROWSER_AGENT) && GLOBALS.PMA_USR_BROWSER_VER < 43);
+        if ($mimetype.contains("gzip") && $notChromeOrLessThan43) {
+        	response.addHeader("Content-Encoding", "gzip");
         }
-        header("Content-Transfer-Encoding: binary");
+        response.addHeader("Content-Transfer-Encoding", "binary");
         if ($length > 0) {
-            header("Content-Length: " + $length);
+        	response.addHeader("Content-Length", Integer.toString($length));
         }
     }
     /**
@@ -624,6 +627,7 @@ public class Core {
         if (! $url.matches("#^https?://#")) {
             return $url;
         }
+        /* TODO
         Map $params = new HashMap();
         $params.put("url", $url);
         $url = Url.getCommon($params, req, GLOBALS);
@@ -632,11 +636,12 @@ public class Core {
         parse_str($arr["query"], $vars);
         Map<String, Object> map = new HashMap<>();
         map.put("url", $vars.get("url"));
-        $query = http_build_query(map);
-        if (GLOBALS.PMA_Config != null && GLOBALS.PMA_Config.get("is_setup") == true) {
-            $url = "../url.php?" + $query;
+        String $query = http_build_query(map);
+        */
+        if (GLOBALS.PMA_Config != null && "true".equals(GLOBALS.PMA_Config.get("is_setup"))) {
+            $url = "../url.php?" + $url;
         } else {
-            $url = "./url.php?" + $query;
+            $url = "./url.php?" + $url;
         }
         return $url;
     }
@@ -704,38 +709,37 @@ public class Core {
     }
     /**
      * Displays SQL query before executing.
+     * @param pmaResponse 
      *
      * @param array|String $query_data Array containing queries or query itself
      *
      * @return void
      */
-    public static void previewSQL(String $query_data)
+    public static void previewSQL(String $query_data, Response pmaResponse)
     {
-        $retval = "<div class='preview_sql'>";
+        String $retval = "<div class='preview_sql'>";
         if (empty($query_data)) {
             $retval += __("No change");
         } else {
-            $retval += Util.formatSql($query_data);
+            $retval += Util.formatSql($query_data, false);
         }
         $retval += "</div>";
-        $response = Response.getInstance();
-        $response.addJSON("sql_data", $retval);
+        pmaResponse.addJSON("sql_data", $retval);
         //exit();  //FIXME
     }
 
-    public static void previewSQL(List<String> $query_data)
+    public static void previewSQL(List<String> $query_data, Response pmaResponse)
     {
-        $retval = "<div class='preview_sql'>";
+        String $retval = "<div class='preview_sql'>";
         if (empty($query_data)) {
             $retval += __("No change");
         } else {
             for (String $query : $query_data ) {
-                $retval += Util.formatSql($query);
+                $retval += Util.formatSql($query, false);
             }
         }
         $retval += "</div>";
-        $response = Response.getInstance();
-        $response.addJSON("sql_data", $retval);
+        pmaResponse.addJSON("sql_data", $retval);
         //exit();  //FIXME
     }
     /**
@@ -750,8 +754,8 @@ public class Core {
         boolean $empty = true;
         if ($value instanceof Map) {
         	Map map = (Map)$value;
-        	for (Entry<K, V> entry: ((Map) $value).entrySet()) {
-        		if (!emptyRecursive(entry.getValue())) {
+        	for (Object value: map.values()) {
+        		if (!emptyRecursive(value)) {
         			$empty = false;
         			break;
         		}
@@ -770,13 +774,14 @@ public class Core {
      */
     public static void setPostAsGlobal(array $post_patterns)
     {
+    	/* TODO
         foreach (array_keys($_POST) as $post_key) {
             foreach ($post_patterns as $one_post_pattern) {
                 if (preg_match($one_post_pattern, $post_key)) {
                     Migration.getInstance().setGlobal($post_key, $_POST[$post_key]);
                 }
             }
-        }
+        }*/
     }
     /**
      * Creates some globals from $_REQUEST
@@ -787,12 +792,14 @@ public class Core {
      */
     public static void setGlobalDbOrTable(String $param)
     {
+    	/* TODO
         $value = "";
         if (isValid($_REQUEST[$param])) {
             $value = $_REQUEST[$param];
         }
         Migration.getInstance().setGlobal($param, $value);
         Migration.getInstance().setGlobal("url_params", [$param => $value] + GLOBALS["url_params"]);
+        */
     }
     /**
      * PATH_INFO could be compromised if set, so remove it from PHP_SELF
@@ -802,6 +809,7 @@ public class Core {
      */
     public static void cleanupPathInfo()
     {
+    	/* TODO
         global $PMA_PHP_SELF;
         $PMA_PHP_SELF = getenv("PHP_SELF");
         if (empty($PMA_PHP_SELF)) {
@@ -837,7 +845,7 @@ public class Core {
             // Here we intentionall ignore case where we go too up
             // as there is nothing sane to do
         }
-        $PMA_PHP_SELF = htmlspecialchars("/" + implode("/", $path));
+        $PMA_PHP_SELF = htmlspecialchars("/" + implode("/", $path));*/
     }
     /**
      * Checks that required PHP extensions are there.
@@ -845,36 +853,7 @@ public class Core {
      */
     public static void checkExtensions()
     {
-        /**
-         * Warning about mbstring.
-         */
-        if (! function_exists("mb_detect_encoding")) {
-            warnMissingExtension("mbstring");
-        }
-        /**
-         * We really need this one!
-         */
-        if (! function_exists("preg_replace")) {
-            warnMissingExtension("pcre", true);
-        }
-        /**
-         * JSON is required in several places.
-         */
-        if (! function_exists("json_encode")) {
-            warnMissingExtension("json", true);
-        }
-        /**
-         * ctype is required for Twig.
-         */
-        if (! function_exists("ctype_alpha")) {
-            warnMissingExtension("ctype", true);
-        }
-        /**
-         * hash is required for cookie authentication.
-         */
-        if (! function_exists("hash_hmac")) {
-            warnMissingExtension("hash", true);
-        }
+    	// Unsupported
     }
     /**
      * Gets the "true" IP address of the current user
@@ -883,16 +862,16 @@ public class Core {
      *
      * @access  private
      */
-    public static String getIp()
+    public static String getIp(SessionMap session)
     {
         /* Get the address of user */
-        if (empty($_SERVER["REMOTE_ADDR"])) {
+        if (empty(session.get("REMOTE_ADDR"))) {
             /* We do not know remote IP */
-            return false;
+            return null;
         }
-        $direct_ip = $_SERVER["REMOTE_ADDR"];
+        String $direct_ip = (String) session.get("REMOTE_ADDR");
         /* Do we trust this IP as a proxy? If yes we will use it"s header. */
-        if (! isset(GLOBALS["cfg"]["TrustedProxies"][$direct_ip])) {
+        if (! empty(multiget(GLOBALS.PMA_Config.settings, "TrustedProxies", $direct_ip))) {
             /* Return true IP */
             return $direct_ip;
         }
@@ -901,17 +880,19 @@ public class Core {
          * X-Forwarded-For: client, proxy1, proxy2
          */
         // Get header content
-        $value = getenv(GLOBALS.PMA_Config.get("TrustedProxies").get($direct_ip));
+        String $value = getenv((String) multiget(GLOBALS.PMA_Config.settings,"TrustedProxies", $direct_ip));
         // Grab first element what is client adddress
-        $value = explode(",", $value)[0];
+        $value = $value.split(",")[0];
         // checks that the header contains only one IP address,
-        $is_ip = filter_var($value, FILTER_VALIDATE_IP);
+        return $value;
+        /* TODO
+        String $is_ip = filter_var($value, FILTER_VALIDATE_IP);
         if ($is_ip !== false) {
             // True IP behind a proxy
             return $value;
         }
         // We could not parse header
-        return false;
+        return null;*/
     } // end of the "getIp()" function
     /**
      * Sanitizes MySQL hostname
@@ -924,10 +905,11 @@ public class Core {
      */
     public static String sanitizeMySQLHost(String $name)
     {
-        while (strtolower(substr($name, 0, 2)) == "p:") {
+    	return $name; //Unsupported
+        /*while (strtolower(substr($name, 0, 2)) == "p:") {
             $name = substr($name, 2);
         }
-        return $name;
+        return $name;*/
     }
     /**
      * Sanitizes MySQL username
@@ -940,11 +922,12 @@ public class Core {
      */
     public static String sanitizeMySQLUser(String $name) 
     {
-        $position = strpos($name, chr(0));
+    	return $name; //Unsupported
+        /*$position = strpos($name, chr(0));
         if ($position !== false) {
             return substr($name, 0, $position);
         }
-        return $name;
+        return $name;*/
     }
     /**
      * Safe unserializer wrapper
@@ -955,26 +938,28 @@ public class Core {
      *
      * @return mixed
      */
-    public static mixed safeUnserialize(String $data)
+    public static Object safeUnserialize(String $data)
     {
+    	return null; //TODO
+    	/*
         if (! is_string($data)) {
             return null;
         }
-        /* validate serialized data */
+        // validate serialized data
         $length = strlen($data);
         $depth = 0;
         for ($i = 0; $i < $length; $i++) {
             $value = $data[$i];
             switch ($value) {
                 case "}":
-                    /* end of array */
+                    /* end of array
                     if ($depth <= 0) {
                         return null;
                     }
                     $depth--;
                     break;
                 case "s":
-                    /* String */
+                    // String
                     // parse sting length
                     $strlen = intval(substr($data, $i + 2));
                     // String start
@@ -991,7 +976,7 @@ public class Core {
                 case "b":
                 case "i":
                 case "d":
-                    /* boolean, integer or double */
+                    // boolean, integer or double *
                     // skip value to sepearator
                     $i = strpos($data, ";", $i);
                     if ($i === false) {
@@ -999,7 +984,7 @@ public class Core {
                     }
                     break;
                 case "a":
-                    /* array */
+                    /* array *
                     // find array start
                     $i = strpos($data, "{", $i);
                     if ($i === false) {
@@ -1009,7 +994,7 @@ public class Core {
                     $depth++;
                     break;
                 case "N":
-                    /* null */
+                    /* null *
                     // skip to end
                     $i = strpos($data, ";", $i);
                     if ($i === false) {
@@ -1017,7 +1002,7 @@ public class Core {
                     }
                     break;
                 default:
-                    /* any other elements are not wanted */
+                    /* any other elements are not wanted *
                     return null;
             }
         }
@@ -1025,7 +1010,7 @@ public class Core {
         if ($depth > 0) {
             return null;
         }
-        return unserialize($data);
+        return unserialize($data);*/
     }
     /**
      * Applies changes to PHP configuration.
@@ -1034,23 +1019,7 @@ public class Core {
      */
     public static void configure()
     {
-        /**
-         * Set utf-8 encoding for PHP
-         */
-        ini_set("default_charset", "utf-8");
-        mb_internal_encoding("utf-8");
-        /**
-         * Set precision to sane value, with higher values
-         * things behave slightly unexpectedly, for example
-         * round(1.2, 2) returns 1.199999999999999956.
-         */
-        ini_set("precision", "14");
-        /**
-         * check timezone setting
-         * this could produce an E_WARNING - but only once,
-         * if not done here it will produce E_WARNING on every date/time function
-         */
-        date_default_timezone_set(@date_default_timezone_get());
+    	//Unsupported
     }
     /**
      * Check whether PHP configuration matches our needs.
@@ -1059,50 +1028,26 @@ public class Core {
      */
     public static void checkConfiguration()
     {
-        /**
-         * As we try to handle charsets by ourself, mbstring overloads just
-         * break it, see bug 1063821.
-         *
-         * We specifically use empty here as we are looking for anything else than
-         * empty value or 0.
-         */
-        if (extension_loaded("mbstring") && ! empty(ini_get("mbstring.func_overload"))) {
-            fatalError(
-                __(
-                    "You have enabled mbstring.func_overload in your PHP "
-                    + "configuration. This option is incompatible with phpMyAdmin "
-                    + "and might cause some data to be corrupted!"
-                )
-            );
-        }
-        /**
-         * The ini_set and ini_get functions can be disabled using
-         * disable_functions but we"re relying quite a lot of them.
-         */
-        if (! function_exists("ini_get") || ! function_exists("ini_set")) {
-            fatalError(
-                __(
-                    "The ini_get and/or ini_set functions are disabled in php.ini. "
-                    + "phpMyAdmin requires these functions!"
-                )
-            );
-        }
+    	//Unsupported
     }
     /**
      * Checks request and fails with fatal error if something problematic is found
+     * @param response 
+     * @param GLOBALS 
+     * @param pmaResponse 
      *
      * @return void
      */
-    public static void checkRequest()
+    public static void checkRequest(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Response pmaResponse)
     {
-        if (isset($_REQUEST["GLOBALS"]) || isset($_FILES["GLOBALS"])) {
-            fatalError(__("GLOBALS overwrite attempt"));
+        if (!empty(request.getParameter("GLOBALS")) ) {
+            fatalError(request, response, GLOBALS, pmaResponse, __("GLOBALS overwrite attempt"));
         }
         /**
          * protect against possible exploits - there is no need to have so much variables
          */
-        if (count($_REQUEST) > 1000) {
-            fatalError(__("possible exploit"));
+        if (request.getParameterMap().size() > 1000) {
+            fatalError(request, response, GLOBALS, pmaResponse, __("possible exploit"));
         }
     }
     /**
@@ -1113,7 +1058,8 @@ public class Core {
      */
     public static String signSqlQuery(String $sqlQuery, SessionMap session)
     {
-        return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
+    	return null; // TODO
+        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
     }
     /**
      * Check that the sql query has a valid hmac signature
@@ -1124,7 +1070,8 @@ public class Core {
      */
     public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
     {
-        String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
-        return hash_equals($hmac, $signature);
+    	return true; // TODO
+        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
+        //return hash_equals($hmac, $signature);
     }
 }
