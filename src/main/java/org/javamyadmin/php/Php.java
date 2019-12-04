@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import com.google.gson.Gson;
 
 /**
@@ -44,59 +46,6 @@ public class Php {
 		// TODO
 		System.out.println("" + level + " " + message);
 
-	}
-
-	/**
-	 * Convert special characters to HTML entities.
-	 * 
-	 * @see https://stackoverflow.com/questions/5134959
-	 * 
-	 * @param s
-	 * @return
-	 */
-	public static String htmlspecialchars(String s) {
-		StringBuilder builder = new StringBuilder();
-		boolean previousWasASpace = false;
-		for (char c : s.toCharArray()) {
-			if (c == ' ') {
-				if (previousWasASpace) {
-					builder.append("&nbsp;");
-					previousWasASpace = false;
-					continue;
-				}
-				previousWasASpace = true;
-			} else {
-				previousWasASpace = false;
-			}
-			switch (c) {
-			case '<':
-				builder.append("&lt;");
-				break;
-			case '>':
-				builder.append("&gt;");
-				break;
-			case '&':
-				builder.append("&amp;");
-				break;
-			case '"':
-				builder.append("&quot;");
-				break;
-			case '\n':
-				builder.append("<br>");
-				break;
-			// We need Tab support here, because we print StackTraces as HTML
-			case '\t':
-				builder.append("&nbsp; &nbsp; &nbsp;");
-				break;
-			default:
-				if (c < 128) {
-					builder.append(c);
-				} else {
-					builder.append("&#").append((int) c).append(";");
-				}
-			}
-		}
-		return builder.toString();
 	}
 
 	/**
@@ -170,6 +119,63 @@ public class Php {
 	 */
 	public static String __(String s) {
 		return Gettext.__(s);
+	}
+
+	/**
+	 * Convert special characters to HTML entities.<br/>
+	 * 
+	 * <code>htmlentities</code> will encode ANY character that has an HTML entity
+	 * equivalent. <code>htmlspecialchars</code> ONLY encodes a small set of the
+	 * most problematic characters. It’s generally recommended to use
+	 * htmlspecialchars because htmlentities can cause display problems with your
+	 * text depending on what characters are being output.
+	 * 
+	 * @see https://johnmorrisonline.com/prevent-xss-attacks-escape-strings-in-php/
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String htmlspecialchars(String s) {
+
+		return StringEscapeUtils.escapeHtml4(s);
+	}
+
+	/**
+	 * Convert special characters to HTML entities.<br/>
+	 * 
+	 * <code>htmlentities</code> will encode ANY character that has an HTML entity
+	 * equivalent. <code>htmlspecialchars</code> ONLY encodes a small set of the
+	 * most problematic characters. It’s generally recommended to use
+	 * htmlspecialchars because htmlentities can cause display problems with your
+	 * text depending on what characters are being output.
+	 * 
+	 * @see https://johnmorrisonline.com/prevent-xss-attacks-escape-strings-in-php/
+	 * @see https://www.php.net/manual/en/function.htmlentities.php
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String htmlentities(String s) {
+		StringBuilder builder = new StringBuilder();
+		for (char c : s.toCharArray()) {
+			switch (c) {
+			case '<':
+				builder.append("&lt;");
+				break;
+			case '>':
+				builder.append("&gt;");
+				break;
+			case '&':
+				builder.append("&amp;");
+				break;
+			case '"':
+				builder.append("&quot;");
+				break;
+			default:
+				builder.append(c);
+			}
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -250,7 +256,7 @@ public class Php {
 	 * @param dest
 	 * @param src
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Map array_replace_recursive(Map dest, Map src) {
 		Set<Entry> entries = src.entrySet();
 		for (Entry entry : entries) {
@@ -277,18 +283,20 @@ public class Php {
 
 	/**
 	 * Merge one or more arrays
+	 * 
 	 * @param map
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Map array_merge(Map... maps) {
 		Map result = new HashMap();
-		for (Map map:maps) {
+		for (Map map : maps) {
 			result.putAll(map);
 		}
 		return result;
-		
+
 	}
-	
+
 	/**
 	 * Return true if string represents a number
 	 * 
@@ -356,11 +364,13 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str The string to be escaped
-	 * @param charlist A list of characters to be escaped. If charlist contains
-	 * characters \n, \r etc., they are converted in C-like style, while other
-	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
-	 * 126 converted to octal representation.
+	 * @param str
+	 *            The string to be escaped
+	 * @param charlist
+	 *            A list of characters to be escaped. If charlist contains
+	 *            characters \n, \r etc., they are converted in C-like style, while
+	 *            other non-alphanumeric characters with ASCII codes lower than 32
+	 *            and higher than 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -424,6 +434,7 @@ public class Php {
 	 * 
 	 * array[k1][k2][k3]
 	 */
+	@SuppressWarnings({ "rawtypes" })
 	public static Object multiget(Map map, Object... keys) {
 
 		if (keys.length < 1) {
@@ -449,6 +460,7 @@ public class Php {
 	 * 
 	 * unset(array[k1][k2][k3])
 	 */
+	@SuppressWarnings({ "rawtypes" })
 	public static void multiremove(Map map, Object... keys) {
 
 		if (keys.length < 1) {
@@ -474,6 +486,7 @@ public class Php {
 	 * 
 	 * array[k1][k2][k3] = val
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void multiput(Map map, Object... keysAndValue) {
 
 		if (keysAndValue.length < 2) {
