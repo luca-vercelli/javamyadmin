@@ -34,6 +34,7 @@ public class Php {
 
 	public final static String E_USER_ERROR = "USER ERROR";
 	public final static String E_USER_WARNING = "USER WARNING";
+	public final static String E_USER_NOTICE = "USER_NOTICE";
 	public final static String E_FATAL = "FATAL";
 
 	/**
@@ -566,5 +567,30 @@ public class Php {
 	 */
 	public static SessionMap $_SESSION(HttpSession session) {
 		return new SessionMap(session);
+	}
+
+	/**
+	 * Create an array containing a range of elements
+	 * 
+	 * @param start
+	 * @param end
+	 * @param step
+	 * @return
+	 */
+	public static List<Integer> range(int start, int end, int step) {
+		if (step < 0)
+			throw new IllegalArgumentException("Given negative step");
+		List<Integer> array = new ArrayList<>(((end - start) / step) + 1);
+		int i = 0;
+		int value = start;
+		while (value <= end) {
+			array.set(i, value);
+			value += step;
+		}
+		return array;
+	}
+
+	public static List<Integer> range(int start, int end) {
+		return range(start, end, 1);
 	}
 }

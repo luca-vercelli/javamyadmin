@@ -206,7 +206,7 @@ public class Menu {
                 $tabs.remove($entry.getKey());
             }
         }
-        return Util.getHtmlTabs($tabs, $url_params, "topmenu", true);
+        return Util.getHtmlTabs($tabs, $url_params, "topmenu", true, request, GLOBALS, session);
     }
 
     /**
@@ -219,8 +219,8 @@ public class Menu {
     private Map<String, Map<String, String>> _getAllowedTabs(String $level)
     {
         String $cache_key = "menu-levels-" + $level;
-        if (Util.cacheExists($cache_key, session)) {
-            return (Map<String, Map<String, String>>) Util.cacheGet($cache_key, null, session);
+        if (Util.cacheExists($cache_key, GLOBALS, session)) {
+            return (Map<String, Map<String, String>>) Util.cacheGet($cache_key, null, GLOBALS, session);
         }
         Map<String, Map<String, String>> $allowedTabs = Util.getMenuTabList($level);
         /*
@@ -251,7 +251,7 @@ public class Menu {
                 }
             }
         }*/
-        Util.cacheSet($cache_key, $allowedTabs, session);
+        Util.cacheSet($cache_key, $allowedTabs, GLOBALS, session);
         return $allowedTabs;
     }
 

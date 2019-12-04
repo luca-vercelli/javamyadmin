@@ -31,6 +31,7 @@ public class GLOBALS {
 	public static Config PMA_Config = new Config(null);
 	public static boolean pma_config_loading = false;
 	public static String active_page;
+	public static boolean is_upload;
 	public String lang;
 	public String db;
 	public String table;

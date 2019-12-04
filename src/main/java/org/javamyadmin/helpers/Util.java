@@ -1,10 +1,19 @@
 package org.javamyadmin.helpers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +22,9 @@ import java.util.List;
 
 import org.javamyadmin.helpers.Menu.MenuStruct;
 import org.javamyadmin.helpers.html.Generator;
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Php.SessionMap;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -99,6 +110,21 @@ public class Util {
         return $button;
     }
 
+    public static String getIcon(
+            String $icon,
+            String $alternate /*= ""*/,
+            GLOBALS GLOBALS,
+            SessionMap session
+        ) {
+    	return getIcon(
+    	         $icon,
+    	         $alternate,
+    	        false,false,"ActionLinksMode",
+    	         GLOBALS,
+    	         session
+    	    ) ;
+    }
+    
     /**
      * Returns an HTML IMG tag for a particular image from a theme
      *
@@ -319,7 +345,7 @@ public class Util {
         }
         $mysql = "5.5";
         $lang = "en";
-        if (isset(GLOBALS.dbi)) {
+        if (!empty(GLOBALS.dbi)) {
             $serverVersion = GLOBALS.dbi.getVersion();
             if ($serverVersion >= 50700) {
                 $mysql = "5.7";
@@ -768,13 +794,13 @@ public class Util {
                     $group_name = $parts[$i] + $sep;
                     $group_name_full += $group_name;
 
-                    if (! isset($group[$group_name])) {
+                    if (! !empty($group[$group_name])) {
                         $group[$group_name] = [];
                         $group[$group_name]["is" + $sep + "group"] = true;
                         $group[$group_name]["tab" + $sep + "count"] = 1;
                         $group[$group_name]["tab" + $sep + "group"]
                             = $group_name_full;
-                    } else if (! isset($group[$group_name]["is" + $sep + "group"])) {
+                    } else if (! !empty($group[$group_name]["is" + $sep + "group"])) {
                         $table = $group[$group_name];
                         $group[$group_name] = [];
                         $group[$group_name][$group_name] = $table;
@@ -790,7 +816,7 @@ public class Util {
                     $i++;
                 }
             } else {
-                if (! isset($table_groups[$table_name])) {
+                if (! !empty($table_groups[$table_name])) {
                     $table_groups[$table_name] = [];
                 }
                 $group =& $table_groups;
@@ -927,7 +953,7 @@ public class Util {
 
         $render_sql = $cfg["ShowSQL"] == true && ! empty($sql_query) && $sql_query !== ";";
 
-        if (isset(GLOBALS["using_bookmark_message"])) {
+        if (!empty(GLOBALS["using_bookmark_message"])) {
             $retval += GLOBALS["using_bookmark_message"].getDisplay();
             unset(GLOBALS["using_bookmark_message"]);
         }
@@ -937,7 +963,7 @@ public class Util {
         }
 
         if ($message instanceof Message) {
-            if (isset(GLOBALS["special_message"])) {
+            if (!empty(GLOBALS["special_message"])) {
                 $message.addText(GLOBALS["special_message"]);
                 unset(GLOBALS["special_message"]);
             }
@@ -951,7 +977,7 @@ public class Util {
             }
             $retval += "<div class="alert alert-" + $context + "" role="alert">";
             $retval += Sanitize.sanitizeMessage($message);
-            if (isset(GLOBALS["special_message"])) {
+            if (!empty(GLOBALS["special_message"])) {
                 $retval += Sanitize.sanitizeMessage(GLOBALS["special_message"]);
                 unset(GLOBALS["special_message"]);
             }
@@ -1004,7 +1030,7 @@ public class Util {
 
             // Basic url query part
             $url_params = [];
-            if (! isset(GLOBALS["db"])) {
+            if (! !empty(GLOBALS["db"])) {
                 GLOBALS["db"] = "";
             }
             if (strlen(GLOBALS["db"]) > 0) {
@@ -1106,7 +1132,7 @@ public class Util {
 
             // Refresh query
             if (! empty($cfg["SQLQuery"]["Refresh"])
-                && ! isset(GLOBALS["show_as_php"]) // "Submit query" does the same
+                && ! !empty(GLOBALS["show_as_php"]) // "Submit query" does the same
                 && preg_match("@^(SELECT|SHOW)[[:space:]]+@i", $sql_query)
             ) {
                 $refresh_link = Url.getFromRoute("/import", $url_params);
@@ -1133,7 +1159,7 @@ public class Util {
                 $retval += $template.render("checkbox", [
                     "html_field_name" => "profiling",
                     "label" => __("Profiling"),
-                    "checked" => isset($_SESSION["profiling"]),
+                    "checked" => !empty($_SESSION["profiling"]),
                     "onclick" => true,
                     "html_field_id" => "",
                 ]);
@@ -1219,19 +1245,19 @@ public class Util {
      */
     public static boolean profilingSupported(GLOBALS GLOBALS, SessionMap session)
     {
-        if (! cacheExists("profiling_supported", session)) {
+        if (! cacheExists("profiling_supported", GLOBALS, session)) {
             // 5.0.37 has profiling but for example, 5.1.20 does not
             // (avoid a trip to the server for MySQL before 5.0.37)
             // and do not set a constant as we might be switching servers
             if (GLOBALS.dbi.fetchValue("SELECT @@have_profiling")
             ) {
-                cacheSet("profiling_supported", true, session);
+                cacheSet("profiling_supported", true, GLOBALS, session);
             } else {
-                cacheSet("profiling_supported", false, session);
+                cacheSet("profiling_supported", false, GLOBALS, session);
             }
         }
 
-        return (Boolean) cacheGet("profiling_supported", null, session);
+        return (Boolean) cacheGet("profiling_supported", null, GLOBALS, session);
     }
 
     /**
@@ -1355,6 +1381,9 @@ public class Util {
         boolean $only_down /*= false*/,
         boolean $noTrailingZero /*= true*/
     ) {
+    	return Double.toString($value);
+    	// TODO
+    	/*
         if ($value == 0) {
             return "0";
         }
@@ -1365,9 +1394,7 @@ public class Util {
             String $str_value = number_format(
                 (float) $value,
                 $digits_right,
-                /* l10n: Decimal separator */
                 __("."),
-                /* l10n: Thousands separator */
                 __(",")
             );
             if (($originalValue != 0) && (floatval($value) == 0)) {
@@ -1376,9 +1403,7 @@ public class Util {
             return $str_value;
         }
 
-        /* l10n: Decimal separator */
         String $decimal_sep = __(".");
-        /* l10n: Thousands separator */
         $thousands_sep = __(",");
 
         // check for negative value to retain sign
@@ -1394,13 +1419,13 @@ public class Util {
         /*
          * This gives us the right SI prefix already,
          * but $digits_left parameter not incorporated
-         */
+         *
         $d = floor(log10((float) $value) / 3);
         /*
          * Lowering the SI prefix by 1 gives us an additional 3 zeros
          * So if we have 3,6,9,12.. free digits ($digits_left - $cur_digits)
          * to use, then lower the SI prefix
-         */
+         *
         $cur_digits = floor(log10($value / pow(1000, $d)) + 1);
         if ($digits_left > $cur_digits) {
             $d -= floor(($digits_left - $cur_digits) / 3);
@@ -1435,7 +1460,7 @@ public class Util {
             + " " + $unit;
         }
 
-        return $sign + $formattedValue + " " + $unit;
+        return $sign + $formattedValue + " " + $unit; */
     } // end of the "formatNumber" function
 
     public static String formatNumber(
@@ -1500,6 +1525,9 @@ public class Util {
     /**
      * returns a tab for tabbed navigation.
      * If the variables $link and $args ar left empty, an inactive tab is created
+     * @param request 
+     * @param GLOBALS 
+     * @param session 
      *
      * @param array $tab        array with all options
      * @param array $url_params tab specific URL parameters
@@ -1508,7 +1536,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/)
+    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/, HttpServletRequest request, GLOBALS GLOBALS, SessionMap session)
     {
         //$template = new Template();
         // default values
@@ -1547,48 +1575,50 @@ public class Util {
                 $url_params = array_merge($url_params, (Map)$tab.get("args"));
             }
             if (!(((String)$tab.get("link")).contains( "?") )) {
-                $tab.put("link", htmlentities($tab.get("link")) + Url.getCommon($url_params));
+                $tab.put("link", htmlentities((String)$tab.get("link")) + Url.getCommon($url_params, request, GLOBALS));
             } else {
-                $tab.put("link", htmlentities($tab.get("link")) + Url.getCommon($url_params, "&"));
+                $tab.put("link", htmlentities((String)$tab.get("link")) + Url.getCommon($url_params, "&", request, GLOBALS));
             }
         }
 
         if (! empty($tab.get("fragment"))) {
-            $tab.put("link", $tab.get("link") + $tab.get("fragment"));
+            $tab.put("link", (String)$tab.get("link") + (String)$tab.get("fragment"));
         }
 
         // display icon
-        if (isset($tab["icon"])) {
+        if (!empty($tab.get("icon"))) {
             // avoid generating an alt tag, because it only illustrates
             // the text that follows and if browser does not display
             // images, the text is duplicated
-            $tab.get("text") = getIcon(
-                $tab["icon"],
-                $tab.get("text"),
+            $tab.put("text", getIcon(
+                (String)$tab.get("icon"),
+                (String)$tab.get("text"),
                 false,
                 true,
-                "TabsMode"
-            );
+                "TabsMode",
+                GLOBALS,
+                session
+            ));
         } else if (empty($tab.get("text"))) {
             // check to not display an empty link-text
-            $tab.get("text") = "?";
+            $tab.put("text", "?");
             trigger_error(
-                "empty linktext in function " + __FUNCTION__ + "()",
+                "empty linktext in function getHtmlTab()",
                 E_USER_NOTICE
             );
         }
 
         //Set the id for the tab, if set in the params
-        $tabId = (empty($tab["id"]) ? null : $tab["id"]);
+        String $tabId = (String) $tab.get("id");
 
         Map $item = new HashMap();
         if (! empty($tab.get("link"))) {
             $item.put("content", $tab.get("text"));
             multiput($item, "url", "href", empty($tab.get("link")) ? null : $tab.get("link"));
             multiput($item, "url", "id", $tabId);
-            multiput($item, "url", "class", "tab" + htmlentities($tab.get("class")));
+            multiput($item, "url", "class", "tab" + htmlentities((String)$tab.get("class")));
         } else {
-            $item.put("content", "<span class='tab" + htmlentities($tab.get("class")) + "'"
+            $item.put("content", "<span class='tab" + htmlentities((String)$tab.get("class")) + "'"
                 + $tabId + ">" + $tab.get("text") + "</span>");
         }
 
@@ -1611,7 +1641,8 @@ public class Util {
         Map<String, Map> $tabs,
         Map<String, String> $url_params,
         String $menu_id,
-        boolean $resizable /*= false*/
+        boolean $resizable, /*= false*/
+        HttpServletRequest request, GLOBALS GLOBALS, SessionMap session
     ) {
         String $class = "";
         if ($resizable) {
@@ -1623,8 +1654,8 @@ public class Util {
             + "<i class='scrollindicator scrollindicator--left'><a href='#' class='tab'></a></i>"
             + "<div class='navigationbar'><ul id='" + htmlentities($menu_id) + "' " + $class + ">";
 
-        for (String $tab : $tabs) {
-            $tab_navigation += getHtmlTab($tab, $url_params);
+        for (Map $tab : $tabs.values()) {
+            $tab_navigation += getHtmlTab($tab, $url_params, request, GLOBALS, session);
         }
         $tab_navigation += "";
 
@@ -1657,76 +1688,76 @@ public class Util {
     public static String linkOrButton(
         String $url,
         String $message,
-        Object $tag_params /*= []*/,
+        Map $tag_params /*= []*/, String $js_confirmation,
         String $target /*= ""*/
     ) {
-        $url_length = strlen($url);
+        int $url_length = $url.length();
 
-        if (! is_array($tag_params)) {
-            $tmp = $tag_params;
-            $tag_params = [];
-            if (! empty($tmp)) {
-                $tag_params["onclick"] = "return Functions.confirmLink(this, \""
-                    + Sanitize.escapeJsString($tmp) + "\")";
-            }
-            unset($tmp);
+        if ($tag_params == null) {
+        	$tag_params = new HashMap();
         }
+        if (! empty($js_confirmation)) {
+                $tag_params.put("onclick", "return Functions.confirmLink(this, \""
+                    + Sanitize.escapeJsString($js_confirmation) + "\")");
+           }
         if (! empty($target)) {
-            $tag_params["target"] = $target;
-            if ($target === "_blank" && strncmp($url, "url.php?", 8) == 0) {
-                $tag_params["rel"] = "noopener noreferrer";
+            $tag_params.put("target", $target);
+            if ("_blank".equals($target)  && $url.startsWith("url.php?")) {
+                $tag_params.put("rel", "noopener noreferrer");
             }
         }
 
-        // Suhosin: Check that each query parameter is not above maximum
-        $in_suhosin_limits = true;
-        if ($url_length <= GLOBALS.PMA_Config["LinkLengthLimit"]) {
+        /* Suhosin: Check that each query parameter is not above maximum
+        boolean $in_suhosin_limits = true;
+        if ($url_length <= new Integer(GLOBALS.PMA_Config.get("LinkLengthLimit"))) {
             $suhosin_get_MaxValueLength = ini_get("suhosin.get.max_value_length");
             if ($suhosin_get_MaxValueLength) {
                 $query_parts = splitURLQuery($url);
-                foreach ($query_parts as $query_pair) {
-                    if (strpos($query_pair, "=") === false) {
+                for (String $query_pair : $query_parts ) {
+                    if (!$query_pair.contains( "=") ) {
                         continue;
                     }
 
-                    list(, $eachval) = explode("=", $query_pair);
-                    if (strlen($eachval) > $suhosin_get_MaxValueLength
+                    String[] $eachval = $query_pair.split("=");
+                    if ($eachval[1].length() > $suhosin_get_MaxValueLength
                     ) {
                         $in_suhosin_limits = false;
                         break;
                     }
                 }
             }
-        }
+        }*/
 
-        $tag_params_strings = [];
-        if (($url_length > GLOBALS.PMA_Config["LinkLengthLimit"])
-            || ! $in_suhosin_limits
+        List<String> $tag_params_strings = new ArrayList<>();
+        if (($url_length > new Integer((String) GLOBALS.PMA_Config.get("LinkLengthLimit")))
+            //|| ! $in_suhosin_limits
             // Has as sql_query without a signature
-            || ( strpos($url, "sql_query=") !== false && strpos($url, "sql_signature=") === false)
-            || strpos($url, "view[as]=") !== false
+            || ( $url.contains( "sql_query=") && !$url.contains( "sql_signature="))
+            || $url.contains("view[as]=")
         ) {
-            $parts = explode("?", $url, 2);
+            String[] $parts = $url.split("?");
             /*
              * The data-post indicates that client should do POST
              * this is handled in js/ajax.js
              */
-            $tag_params_strings[] = "data-post='" + (isset($parts[1]) ? $parts[1] : "") + "'";
+            $tag_params_strings.add( "data-post='" + ($parts.length > 2 ? $parts[1] : "") + "'");
             $url = $parts[0];
-            if (array_key_exists("class", $tag_params)
-                && strpos($tag_params["class"], "create_view") !== false
+            if ($tag_params.containsKey("class")
+                && !(((String)$tag_params.get("class")).contains("create_view"))
             ) {
-                $url += "?" + explode("&", $parts[1], 2)[0];
+                $url += "?" + $parts[1].split("&")[0];
             }
         }
 
-        foreach ($tag_params as $par_name => $par_value) {
-            $tag_params_strings[] = $par_name + "='" + htmlspecialchars($par_value) + "'";
+        //for ($tag_params.entrySet() as $par_name => $par_value) {
+        Set<Entry> entries = $tag_params.entrySet();
+        for (Entry entry : entries) {
+            $tag_params_strings.add( entry.getKey() + "='" + htmlspecialchars((String)entry.getValue()) + "'");
         }
 
         // no whitespace within an <a> else Safari will make it part of the link
-        return "<a href='" + $url + "" "
-            + implode(" ", $tag_params_strings) + ">"
+        return "<a href='" + $url + "' "
+            + String.join(" ", $tag_params_strings) + ">"
             + $message + "</a>";
     } // end of the "linkOrButton()" function
 
@@ -1769,6 +1800,8 @@ public class Util {
      */
     public static String timespanFormat(long $seconds)
     {
+    	return null; //TODO
+    	/*
         $days = floor($seconds / 86400);
         if ($days > 0) {
             $seconds -= $days * 86400;
@@ -1790,7 +1823,7 @@ public class Util {
             (String) $hours,
             (String) $minutes,
             (String) $seconds
-        );
+        );*/
     }
 
     /**
@@ -1808,7 +1841,8 @@ public class Util {
      */
     public static void checkParameters(String[] $params, boolean $request /*= false*/)
     {
-        $reported_script_name = basename(GLOBALS["PMA_PHP_SELF"]);
+    	//TODO
+        /*$reported_script_name = basename(GLOBALS["PMA_PHP_SELF"]);
         $found_error = false;
         $error_message = "";
         if ($request) {
@@ -1818,7 +1852,7 @@ public class Util {
         }
 
         foreach ($params as $param) {
-            if (! isset($array[$param])) {
+            if (! !empty($array[$param])) {
                 $error_message += $reported_script_name
                     + ": " + __("Missing parameter:") + " "
                     + $param
@@ -1829,7 +1863,7 @@ public class Util {
         }
         if ($found_error) {
             Core.fatalError($error_message);
-        }
+        }*/
     } // end function
 
     /**
@@ -1859,6 +1893,8 @@ public class Util {
         String $restrict_to_table /*= false*/,
         Map $analyzed_sql_results /*= null*/
     ) {
+    	return null; //TODO
+    	/*
         $primary_key          = "";
         $unique_key           = "";
         $nonprimary_condition = "";
@@ -1874,7 +1910,7 @@ public class Util {
             $meta        = $fields_meta[$i];
 
             // do not use a column alias in a condition
-            if (! isset($meta.orgname) || strlen($meta.orgname) === 0) {
+            if (! !empty($meta.orgname) || strlen($meta.orgname) === 0) {
                 $meta.orgname = $meta.name;
 
                 if (! empty($analyzed_sql_results["statement"].expr)) {
@@ -1901,7 +1937,7 @@ public class Util {
             // a view because this view might be updatable.
             // (The isView() verification should not be costly in most cases
             // because there is some caching in the function).
-            if (isset($meta.orgtable)
+            if (!empty($meta.orgtable)
                 && ($meta.table != $meta.orgtable)
                 && ! GLOBALS.dbi.getTable(GLOBALS["db"], $meta.table).isView()
             ) {
@@ -1928,7 +1964,7 @@ public class Util {
             } // end if... else...
             $condition = " " + $con_key + " ";
 
-            if (! isset($row[$i]) || $row[$i] === null) {
+            if (! !empty($row[$i]) || $row[$i] === null) {
                 $con_val = "IS NULL";
             } else {
                 // timestamp is numeric on some MySQL 4.1
@@ -2014,7 +2050,7 @@ public class Util {
             $where_clause,
             $clause_is_unique,
             $condition_array,
-        ];
+        ];*/
     } // end function
 
     /**
@@ -2027,14 +2063,15 @@ public class Util {
      */
     public static String getCharsetQueryPart(String $collation, boolean $override /*= false*/)
     {
-        list($charset) = explode("_", $collation);
+    	return null; //TODO
+        /*list($charset) = explode("_", $collation);
         $keyword = " CHARSET=";
 
         if ($override) {
             $keyword = " CHARACTER SET ";
         }
         return $keyword + $charset
-            + ($charset == $collation ? "" : " COLLATE " + $collation);
+            + ($charset == $collation ? "" : " COLLATE " + $collation);*/
     }
 
     /**
@@ -2055,12 +2092,14 @@ public class Util {
     	String $button_class,
     	String $text,
     	String $image,
-    	String $value /*= ""*/
+    	String $value, /*= ""*/
+    	GLOBALS GLOBALS,
+        SessionMap session
     ) {
         if ($value == "") {
             $value = $text;
         }
-        if (GLOBALS.PMA_Config["ActionLinksMode"] == "text") {
+        if (GLOBALS.PMA_Config.get("ActionLinksMode") == "text") {
             return " <input class='btn btn-link' type='submit' name='" + $button_name + "'"
                 + " value='" + htmlspecialchars($value) + "'"
                 + " title='" + htmlspecialchars($text) + "'>" + "\n";
@@ -2068,7 +2107,7 @@ public class Util {
         return "<button class='btn btn-link " + $button_class + "' type='submit'"
             + " name='" + $button_name + "' value='" + htmlspecialchars($value)
             + "' title='" + htmlspecialchars($text) + "'>" + "\n"
-            + getIcon($image, $text)
+            + getIcon($image, $text, false, false, $value, GLOBALS, session)
             + "</button>" + "\n";
     } // end function
 
@@ -2106,26 +2145,26 @@ public class Util {
         int $range /*= 10*/,
         String $prompt /*= ""*/
     ) {
-        $increment = floor($nbTotalPage / $percent);
-        $pageNowMinusRange = ($pageNow - $range);
-        $pageNowPlusRange = ($pageNow + $range);
+        int $increment = (int) Math.floor($nbTotalPage / $percent);
+        int $pageNowMinusRange = ($pageNow - $range);
+        int $pageNowPlusRange = ($pageNow + $range);
 
-        $gotopage = $prompt + " <select class="pageselector ajax"";
+        String $gotopage = $prompt + " <select class='pageselector ajax'";
 
-        $gotopage += " name='" + $name + "" >";
+        $gotopage += " name='" + $name + "' >";
+        SortedSet<Integer> $pages = new TreeSet<>();
         if ($nbTotalPage < $showAll) {
-            $pages = range(1, $nbTotalPage);
+            $pages.addAll(range(1, $nbTotalPage));
         } else {
-            $pages = [];
 
             // Always show first X pages
-            for ($i = 1; $i <= $sliceStart; $i++) {
-                $pages[] = $i;
+            for (int $i = 1; $i <= $sliceStart; $i++) {
+                $pages.add( $i);
             }
 
             // Always show last X pages
-            for ($i = $nbTotalPage - $sliceEnd; $i <= $nbTotalPage; $i++) {
-                $pages[] = $i;
+            for (int $i = $nbTotalPage - $sliceEnd; $i <= $nbTotalPage; $i++) {
+            	$pages.add( $i);
             }
 
             // Based on the number of results we add the specified
@@ -2134,9 +2173,9 @@ public class Util {
             // immediately jump to specific pages.
             // As soon as we get near our currently chosen page ($pageNow -
             // $range), every page number will be shown.
-            $i = $sliceStart;
-            $x = $nbTotalPage - $sliceEnd;
-            $met_boundary = false;
+            int $i = $sliceStart;
+            int $x = $nbTotalPage - $sliceEnd;
+            boolean $met_boundary = false;
 
             while ($i <= $x) {
                 if ($i >= $pageNowMinusRange && $i <= $pageNowPlusRange) {
@@ -2156,7 +2195,7 @@ public class Util {
                 }
 
                 if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                	$pages.add( $i);
                 }
             }
 
@@ -2175,12 +2214,12 @@ public class Util {
             around the current page.
             */
             $i = $pageNow;
-            $dist = 1;
+            int $dist = 1;
             while ($i < $x) {
                 $dist = 2 * $dist;
                 $i = $pageNow + $dist;
                 if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                	$pages.add( $i);
                 }
             }
 
@@ -2190,17 +2229,13 @@ public class Util {
                 $dist = 2 * $dist;
                 $i = $pageNow - $dist;
                 if ($i > 0 && $i <= $x) {
-                    $pages[] = $i;
+                	$pages.add( $i);
                 }
             }
-
-            // Since because of ellipsing of the current page some numbers may be
-            // double, we unify our array:
-            sort($pages);
-            $pages = array_unique($pages);
         }
 
-        foreach ($pages as $i) {
+        String $selected;
+        for (int $i : $pages) {
             if ($i == $pageNow) {
                 $selected = "selected='selected' style='font-weight: bold'";
             } else {
@@ -2257,7 +2292,8 @@ public class Util {
         String $name /*= "pos"*/,
         String[] $classes /*= []*/
     ) {
-
+    	return ""; //TODO
+    	/*
         // This is often coming from $cfg["MaxTableList"] and
         // people sometimes set it to empty String
         $max_count = intval($max_count);
@@ -2265,7 +2301,7 @@ public class Util {
             $max_count = 250;
         }
 
-        $class = $frame == "frame_navigation" ? " class="ajax"" : "";
+        $class = $frame == "frame_navigation" ? " class='ajax'" : "";
 
         $list_navigator_html = "";
 
@@ -2346,7 +2382,7 @@ public class Util {
             $list_navigator_html += "</div>" + "\n";
         }
 
-        return $list_navigator_html;
+        return $list_navigator_html;*/
     }
 
     /**
@@ -2365,41 +2401,44 @@ public class Util {
     public static String  userDir(String $dir)
     {
         // add trailing slash
-        if (mb_substr($dir, -1) != "/") {
+        if (!$dir.endsWith("/")) {
             $dir += "/";
         }
 
-        return str_replace("%u", Core.securePath(GLOBALS.PMA_Config["Server"]["user"]), $dir);
+        return $dir.replace("%u", Core.securePath((String) multiget(GLOBALS.PMA_Config.settings, "Server", "user")));
     }
 
     /**
      * returns html code for db link to default db page
+     * @param request 
      *
      * @param String $database database
      *
      * @return String  html link to default db page
      */
-    public static String getDbLink(String $database /*= ""*/)
+    public static String getDbLink(String $database /*= ""*/, HttpServletRequest request, GLOBALS GLOBALS)
     {
-        if (strlen((String) $database) == 0) {
-            if (strlen((String) GLOBALS["db"]) === 0) {
+        if (empty( $database) ) {
+            if (empty(GLOBALS.db)) {
                 return "";
             }
-            $database = GLOBALS["db"];
+            $database = GLOBALS.db;
         } else {
             $database = unescapeMysqlWildcards($database);
         }
 
-        $scriptName = getScriptNameForOption(
-            GLOBALS.PMA_Config["DefaultTabDatabase"],
-            "database"
+        String $scriptName = getScriptNameForOption(
+            (String)GLOBALS.PMA_Config.get("DefaultTabDatabase"),
+            "database", request, GLOBALS
         );
+        Map params = new HashMap();
+        params.put("db", $database);
         return "<a href='"
             + $scriptName
-            + Url.getCommon(["db" => $database], strpos($scriptName, "?") === false ? "?" : "&")
-            + "" title='"
+            + Url.getCommon(params, ($scriptName.contains( "?") ? "&" : "?"), request, GLOBALS)
+            + "' title='"
             + htmlspecialchars(
-                sprintf(
+                String.format(
                     __("Jump to database â€œ%sâ€�."),
                     $database
                 )
@@ -2424,6 +2463,8 @@ public class Util {
     		String $minimum_version,
     		String $bugref
     ) {
+    	return ""; // Unsupported
+    	/* 
         $ext_but_html = "";
         if (($component == "mysql") && (GLOBALS.dbi.getVersion() < $minimum_version)) {
             $ext_but_html += showHint(
@@ -2434,7 +2475,7 @@ public class Util {
                 )
             );
         }
-        return $ext_but_html;
+        return $ext_but_html;*/
     }
 
     /**
@@ -2460,30 +2501,37 @@ public class Util {
         	String $class /*= ""*/,
         	String $id_prefix /*= ""*/
     ) {
-        $template = new Template();
-        $radio_html = "";
+        String $radio_html = "";
 
-        foreach ($choices as $choice_value => $choice_label) {
-            if (! $id_prefix) {
+        //for ($choices as $choice_value => $choice_label) {
+        Set<Entry> entries = $choices.entrySet();
+        for (Entry entry : entries) {
+        	String $choice_value = (String) entry.getKey();
+        	String $choice_label = (String) entry.getValue(); 
+            if (empty($id_prefix)) {
                 $id_prefix = $html_field_name;
             }
-            $html_field_id = $id_prefix + "_" + $choice_value;
-
-            if ($choice_value == $checked_choice) {
+            String $html_field_id = $id_prefix + "_" + $choice_value;
+            int $cheched;
+            
+            int $checked;
+            if ($choice_value .equals( $checked_choice)) {
                 $checked = 1;
             } else {
                 $checked = 0;
             }
-            $radio_html += $template.render("radio_fields", [
-                "class" => $class,
-                "html_field_name" => $html_field_name,
-                "html_field_id" => $html_field_id,
-                "choice_value" => $choice_value,
-                "is_line_break" => $line_break,
-                "choice_label" => $choice_label,
-                "escape_label" => $escape_label,
-                "checked" => $checked,
-            ]);
+            
+            Map<String, Object> model = new HashMap<>();
+            model.put("class" , $class);
+            model.put("html_field_name" , $html_field_name);
+            model.put("html_field_id" , $html_field_id);
+            model.put("choice_value" , $choice_value);
+            model.put("is_line_break" , $line_break);
+            model.put("choice_label" , $choice_label);
+            model.put("escape_label" , $escape_label);
+            model.put("checked" , $checked);
+                             
+            $radio_html += JtwigFactory.render("radio_fields", model);
         }
 
         return $radio_html;
@@ -2514,28 +2562,33 @@ public class Util {
         String $class /*= ""*/,
         String $placeholder /*= null*/
     ) {
-        $template = new Template();
-        $resultOptions = [];
-        $selected = false;
+        Map $resultOptions = new HashMap();
+        boolean $selected = false;
 
-        foreach ($choices as $one_choice_value => $one_choice_label) {
-            $resultOptions[$one_choice_value]["value"] = $one_choice_value;
-            $resultOptions[$one_choice_value]["selected"] = false;
+        //foreach ($choices as $one_choice_value => $one_choice_label) {
+        Set<Entry> entries = $choices.entrySet();
+        for (Entry entry : entries) {
+        	String $one_choice_value = (String) entry.getKey();
+        	String $one_choice_label = (String) entry.getValue();
+        	multiput($resultOptions, $one_choice_value, "value", $one_choice_value);
+        	multiput($resultOptions, $one_choice_value, "selected", false);
 
-            if ($one_choice_value == $active_choice) {
-                $resultOptions[$one_choice_value]["selected"] = true;
+            if ($one_choice_value.equals($active_choice)) {
+            	multiput($resultOptions, $one_choice_value, "selected", true);
                 $selected = true;
             }
-            $resultOptions[$one_choice_value]["label"] = $one_choice_label;
+            multiput($resultOptions, $one_choice_value, "label", $one_choice_label);
         }
-        return $template.render("dropdown", [
-            "select_name" => $select_name,
-            "id" => $id,
-            "class" => $class,
-            "placeholder" => $placeholder,
-            "selected" => $selected,
-            "result_options" => $resultOptions,
-        ]);
+        
+        Map<String, Object> model = new HashMap<>();
+        model.put("select_name" , $select_name);
+        model.put("id" , $id);
+        model.put("class" , $class);
+        model.put("placeholder" , $placeholder);
+        model.put("selected" , $selected);
+        model.put("result_options" , $resultOptions);
+        
+        return JtwigFactory.render("dropdown", model);
     }
 
     /**
@@ -2553,12 +2606,12 @@ public class Util {
      */
     public static String getDivForSliderEffect(String $id /*= ""*/,String $message /*= ""*/, String $overrideDefault /*= null*/)
     {
-        $template = new Template();
-        return $template.render("div_for_slider_effect", [
-            "id" => $id,
-            "initial_sliders_state" => ($overrideDefault != null) ? $overrideDefault : GLOBALS.PMA_Config["InitialSlidersState"],
-            "message" => $message,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("id" , $id);
+        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : GLOBALS.PMA_Config.get("InitialSlidersState"));
+        model.put("message" , $message);
+        
+        return JtwigFactory.render("div_for_slider_effect", model);
     }
 
     /**
@@ -2573,32 +2626,34 @@ public class Util {
      *
      * @return String   HTML code for the toggle button
      */
-    public static String toggleButton(String $action, String $select_name, Map $options, String $callback)
+    public static String toggleButton(String $action, String $select_name, List<Map> $options, String $callback, GLOBALS GLOBALS)
     {
-        $template = new Template();
+        
         // Do the logic first
-        $link = "$action&amp;" + urlencode($select_name) + "=";
-        $link_on = $link + urlencode($options[1]["value"]);
-        $link_off = $link + urlencode($options[0]["value"]);
+        String $link = "$action&amp;" + urlencode($select_name) + "=";
+        String $link_on = $link + urlencode((String)$options.get(1).get("value"));
+        String $link_off = $link + urlencode((String)$options.get(0).get("value"));
 
-        if ($options[1]["selected"] == true) {
+        String $state;
+        if ($options.get(1).get("selected").equals(true)) {
             $state = "on";
-        } else if ($options[0]["selected"] == true) {
+        } else if ($options.get(0).get("selected").equals(true)) {
             $state = "off";
         } else {
             $state = "on";
         }
 
-        return $template.render("toggle_button", [
-            "pma_theme_image" => GLOBALS["pmaThemeImage"],
-            "text_dir" => GLOBALS["text_dir"],
-            "link_on" => $link_on,
-            "link_off" => $link_off,
-            "toggle_on" => $options[1]["label"],
-            "toggle_off" => $options[0]["label"],
-            "callback" => $callback,
-            "state" => $state,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("pma_theme_image" , GLOBALS.pmaThemeImage);
+        model.put("text_dir" , GLOBALS.text_dir);
+        model.put("link_on" , $link_on);
+        model.put("link_off" , $link_off);
+        model.put("toggle_on" , $options.get(1).get("label"));
+        model.put("link_on" , $options.get(0).get("label"));
+        model.put("callback" , $callback);
+        model.put("state" , $state);
+        
+        return JtwigFactory.render("toggle_button", model);
     }
 
     /**
@@ -2606,11 +2661,11 @@ public class Util {
      *
      * @return void
      */
-    public static void clearUserCache()
+    public static void clearUserCache(GLOBALS GLOBALS, SessionMap session)
     {
-        cacheUnset("is_superuser");
-        cacheUnset("is_createuser");
-        cacheUnset("is_grantuser");
+        cacheUnset("is_superuser", GLOBALS, session);
+        cacheUnset("is_createuser", GLOBALS, session);
+        cacheUnset("is_grantuser", GLOBALS, session);
     }
 
     /**
@@ -2618,13 +2673,13 @@ public class Util {
      *
      * @return String
      */
-    public static String cacheKey()
+    public static String cacheKey(GLOBALS GLOBALS)
     {
-        if (!empty(GLOBALS.PMA_Config.get("Server").get("user"))) {
-            return "server_" + GLOBALS.server + "_" + GLOBALS.PMA_Config.get("Server").get("user");
+        if (!empty(multiget(GLOBALS.PMA_Config.settings, "Server", "user"))) {
+            return "server_" + GLOBALS.server + "_" + multiget(GLOBALS.PMA_Config.settings, "Server", "user");
         }
 
-        return "server_" + GLOBALS["server"];
+        return "server_" + GLOBALS.server;
     }
 
     /**
@@ -2634,9 +2689,9 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean cacheExists(String $var, SessionMap session)
+    public static boolean cacheExists(String $var, GLOBALS GLOBALS, SessionMap session)
     {
-        return !empty(multiget(session, "cache", cacheKey(), $var));
+        return !empty(multiget(session, "cache", cacheKey(GLOBALS), $var));
     }
 
     /**
@@ -2647,15 +2702,15 @@ public class Util {
      *
      * @return mixed
      */
-    public static Object cacheGet(String $var, Function $callback /*= null*/, SessionMap session)
+    public static Object cacheGet(String $var, Function $callback /*= null*/, GLOBALS GLOBALS, SessionMap session)
     {
-        if (cacheExists($var, session)) {
-            return (Function) multiget(session, "cache", cacheKey(), $var);
+        if (cacheExists($var, GLOBALS, session)) {
+            return (Function) multiget(session, "cache", cacheKey(GLOBALS), $var);
         }
 
         if ($callback != null) {
         	Object $val = $callback.apply(null);	//FIXME 0-ary function in Java ?!?
-            cacheSet($var, $val, session);
+            cacheSet($var, $val, GLOBALS, session);
             return $val;
         }
         return null;
@@ -2669,9 +2724,9 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheSet(String $var, Object $val /*= null*/, SessionMap session)
+    public static void cacheSet(String $var, Object $val /*= null*/, GLOBALS GLOBALS, SessionMap session)
     {
-    	multiput(session, $val, "cache", cacheKey(), $var);
+    	multiput(session, $val, "cache", cacheKey(GLOBALS), $var);
     }
 
     /**
@@ -2681,9 +2736,9 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheUnset(String $var, SessionMap session)
+    public static void cacheUnset(String $var, GLOBALS GLOBALS, SessionMap session)
     {
-    	multiremove(session, "cache", cacheKey(), $var);
+    	multiremove(session, "cache", cacheKey(GLOBALS), $var);
     }
 
     /**
@@ -2699,6 +2754,8 @@ public class Util {
      */
     public static String printableBitValue(int $value, int $length)
     {
+    	return null; // TODO
+    	/*
         // if running on a 64-bit server or the length is safe for decbin()
         if (PHP_INT_SIZE == 8 || $length < 33) {
             $printable = decbin($value);
@@ -2725,7 +2782,7 @@ public class Util {
             $printable = strrev($printable);
         }
         $printable = str_pad($printable, $length, "0", STR_PAD_LEFT);
-        return $printable;
+        return $printable;*/
     }
 
     /**
@@ -2738,7 +2795,8 @@ public class Util {
      */
     public static String convertBitDefaultValue(String $bit_default_value)
     {
-        return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b'"), "'");
+    	return null; //TODO
+        //return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b'"), "'");
     }
 
     /**
@@ -2751,6 +2809,8 @@ public class Util {
      */
     public static String extractColumnSpec(Map $columnspec)
     {
+    	return ""; //TODO
+    	/*
         $first_bracket_pos = mb_strpos($columnspec, "(");
         if ($first_bracket_pos) {
             $spec_in_brackets = rtrim(
@@ -2783,7 +2843,7 @@ public class Util {
         } else {
             $enum_set_values = [];
 
-            /* Create printable type name */
+            // Create printable type name
             $printtype = mb_strtolower($columnspec);
 
             // Strip the "BINARY" attribute, except if we find "BINARY(" because
@@ -2864,7 +2924,7 @@ public class Util {
             "attribute" => $attribute,
             "can_contain_collation" => $can_contain_collation,
             "displayed_type" => $displayed_type,
-        ];
+        ];*/
     }
 
     /**
@@ -2876,6 +2936,8 @@ public class Util {
      */
     public static boolean isForeignKeySupported(String $engine)
     {
+    	return false; //TODO
+    	/*
         $engine = strtoupper((String) $engine);
         if (($engine == "INNODB") || ($engine == "PBXT")) {
             return true;
@@ -2889,7 +2951,7 @@ public class Util {
             return version_compare($ndbver, "7.3", ">=");
         }
 
-        return false;
+        return false;*/
     }
 
     /**
@@ -2899,12 +2961,14 @@ public class Util {
      */
     public static boolean isForeignKeyCheck()
     {
+    	return false; //TODO
+    	/*
         if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "enable") {
             return true;
         } else if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "disable") {
             return false;
         }
-        return (GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON");
+        return (GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON");*/
     }
 
     /**
@@ -2914,10 +2978,9 @@ public class Util {
      */
     public static String getFKCheckbox()
     {
-        $template = new Template();
-        return $template.render("fk_checkbox", [
-            "checked" => isForeignKeyCheck(),
-        ]);
+        Map model = new HashMap();
+        model.put("checked", isForeignKeyCheck());
+        return JtwigFactory.render("fk_checkbox", model);
     }
 
     /**
@@ -2927,9 +2990,11 @@ public class Util {
      */
     public static boolean handleDisableFKCheckInit()
     {
-        $default_fk_check_value
+    	return false; //TODO
+    	/*
+        boolean $default_fk_check_value
             = GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON";
-        if (isset($_REQUEST["fk_checks"])) {
+        if (!empty($_REQUEST["fk_checks"])) {
             if (empty($_REQUEST["fk_checks"])) {
                 // Disable foreign key checks
                 GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "OFF");
@@ -2938,7 +3003,7 @@ public class Util {
                 GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "ON");
             }
         } // else do nothing, go with default
-        return $default_fk_check_value;
+        return $default_fk_check_value;*/
     }
 
     /**
@@ -2950,10 +3015,11 @@ public class Util {
      */
     public static void handleDisableFKCheckCleanup(boolean $default_fk_check_value)
     {
-        GLOBALS.dbi.setVariable(
+    	//TODO
+    	/*GLOBALS.dbi.setVariable(
             "FOREIGN_KEY_CHECKS",
             $default_fk_check_value ? "ON" : "OFF"
-        );
+        );*/
     }
 
     /**
@@ -2966,6 +3032,8 @@ public class Util {
      */
     public static String asWKT(String $data, boolean $includeSRID /*= false*/)
     {
+    	return null; //TODO
+    	/*
         // Convert to WKT format
         $hex = bin2hex($data);
         $spatialAsText = "ASTEXT";
@@ -2991,7 +3059,7 @@ public class Util {
         }
         @GLOBALS.dbi.freeResult($wktresult);
 
-        return $wktval;
+        return $wktval;*/
     }
 
     /**
@@ -3003,8 +3071,8 @@ public class Util {
      */
     public static String duplicateFirstNewline(String $String)
     {
-        $first_occurence = mb_strpos($String, "\r\n");
-        if ($first_occurence === 0) {
+        int $first_occurence = $String.indexOf("\r\n");
+        if ($first_occurence == 0) {
             $String = "\n" + $String;
         }
         return $String;
@@ -3022,15 +3090,15 @@ public class Util {
      */
     public static String getTitleForTarget(String $target)
     {
-        $mapping = [
-            "structure" =>  __("Structure"),
-            "sql" => __("SQL"),
-            "search" => __("Search"),
-            "insert" => __("Insert"),
-            "browse" => __("Browse"),
-            "operations" => __("Operations"),
-        ];
-        return $mapping[$target] ?? false;
+    	Map<String, String> $mapping = new HashMap<>();
+    	$mapping.put("structure", __("Structure"));
+    	$mapping.put("sql", __("SQL"));
+    	$mapping.put("search", __("Search"));
+    	$mapping.put("insert", __("Insert"));
+    	$mapping.put("browse", __("Browse"));
+    	$mapping.put("operations", __("Operations"));
+    	
+        return $mapping.get($target);
     }
 
     /**
@@ -3048,7 +3116,7 @@ public class Util {
      */
     public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, GLOBALS GLOBALS)
     {
-        if ($location == "server") {
+        if ("server".equals($location)) {
             // Values for $cfg["DefaultTabServer"]
             switch ($target) {
                 case "welcome":
@@ -3062,7 +3130,7 @@ public class Util {
                 case "privileges":
                     return Url.getFromRoute("/server/privileges", req, GLOBALS);
             }
-        } else if ($location == "database") {
+        } else if ("database".equals($location)) {
             // Values for $cfg["DefaultTabDatabase"]
             switch ($target) {
                 case "structure":
@@ -3074,7 +3142,7 @@ public class Util {
                 case "operations":
                     return Url.getFromRoute("/database/operations", req, GLOBALS);
             }
-        } else if ($location == "table") {
+        } else if ("table".equals($location)) {
             // Values for $cfg["DefaultTabTable"],
             // $cfg["NavigationTreeDefaultTabTable"] and
             // $cfg["NavigationTreeDefaultTabTable2"]
@@ -3115,7 +3183,9 @@ public class Util {
         Object $escape /*= null*/,
         Map $updates /*= []*/
     ) {
-        /* Content */
+    	return null; //TODO
+    	/*
+        // Content
         $vars = [];
         $vars["http_host"] = Core.getenv("HTTP_HOST");
         $vars["server_name"] = GLOBALS.PMA_Config["Server"]["host"];
@@ -3131,16 +3201,14 @@ public class Util {
         $vars["table"] = GLOBALS["table"];
         $vars["phpmyadmin_version"] = "phpMyAdmin " + PMA_VERSION;
 
-        /* Update forced variables */
+        // Update forced variables
         foreach ($updates as $key => $val) {
             $vars[$key] = $val;
         }
 
-        /* Replacement mapping */
-        /*
-         * The __VAR__ ones are for backward compatibility, because user
-         * might still have it in cookies.
-         */
+        // Replacement mapping
+        // The __VAR__ ones are for backward compatibility, because user
+        // might still have it in cookies.
         $replace = [
             "@HTTP_HOST@" => $vars["http_host"],
             "@SERVER@" => $vars["server_name"],
@@ -3154,14 +3222,14 @@ public class Util {
             "@PHPMYADMIN@" => $vars["phpmyadmin_version"],
         ];
 
-        /* Optional escaping */
+        // Optional escaping
         if ($escape !== null) {
             if (is_array($escape)) {
                 $escape_class = new $escape[1];
                 $escape_method = $escape[0];
             }
             foreach ($replace as $key => $val) {
-                if (isset($escape_class, $escape_method)) {
+                if (!empty($escape_class, $escape_method)) {
                     $replace[$key] = $escape_class.$escape_method($val);
                 } else {
                     $replace[$key] = ($escape == "backquote")
@@ -3171,12 +3239,12 @@ public class Util {
             }
         }
 
-        /* Backward compatibility in 3.5.x */
+        // Backward compatibility in 3.5.x 
         if (mb_strpos($String, "@FIELDS@") !== false) {
             $String = strtr($String, ["@FIELDS@" => "@COLUMNS@"]);
         }
 
-        /* Fetch columns list if required */
+        // Fetch columns list if required 
         if (mb_strpos($String, "@COLUMNS@") !== false) {
             $columns_list = GLOBALS.dbi.getColumns(
                 GLOBALS["db"],
@@ -3199,8 +3267,9 @@ public class Util {
             }
         }
 
-        /* Do the replacement */
+        // Do the replacement 
         return strtr((String) strftime($String), $replace);
+        */
     }
 
     public static String expandUserString(
@@ -3216,20 +3285,20 @@ public class Util {
      *
      * @return String
      */
-    public static String getBrowseUploadFileBlock(String $max_upload_size)
+    public static String getBrowseUploadFileBlock(int $max_upload_size)
     {
-        $block_html = "";
+        String $block_html = "";
 
-        if (GLOBALS["is_upload"] && ! empty(GLOBALS.PMA_Config["UploadDir"])) {
-            $block_html += "<label for="radio_import_file">";
+        if (GLOBALS.is_upload && ! empty(GLOBALS.PMA_Config.get("UploadDir"))) {
+            $block_html += "<label for='radio_import_file'>";
         } else {
-            $block_html += "<label for="input_import_file">";
+            $block_html += "<label for='input_import_file'>";
         }
 
         $block_html += __("Browse your computer:") + "</label>"
-            + "<div id="upload_form_status" class="hide"></div>"
-            + "<div id="upload_form_status_info" class="hide"></div>"
-            + "<input type="file" name="import_file" id="input_import_file">"
+            + "<div id='upload_form_status' class='hide'></div>"
+            + "<div id='upload_form_status_info' class=''hide'></div>"
+            + "<input type='file' name='import_file' id='input_import_file'>"
             + getFormattedMaximumUploadSize($max_upload_size) + "\n"
             // some browsers should respect this :)
             + generateHiddenMaxFileSize($max_upload_size) + "\n";
@@ -3248,6 +3317,8 @@ public class Util {
      */
     public static String getSelectUploadFileBlock(List $import_list, String $uploaddir)
     {
+    	return null; //TODO
+    	/*
         $fileListing = new FileListing();
 
         $block_html = "";
@@ -3269,7 +3340,7 @@ public class Util {
         $matcher = "@\.(" + $extensions + ")(\.("
             + $fileListing.supportedDecompressions() + "))?$@";
 
-        $active = (isset(GLOBALS["timeout_passed"], GLOBALS["local_import_file"]) && GLOBALS["timeout_passed"])
+        $active = (!empty(GLOBALS["timeout_passed"], GLOBALS["local_import_file"]) && GLOBALS["timeout_passed"])
             ? GLOBALS["local_import_file"]
             : "";
 
@@ -3295,38 +3366,40 @@ public class Util {
             $block_html += "<i>" + __("There are no files to upload!") + "</i>";
         }
 
-        return $block_html;
+        return $block_html;*/
     }
 
     /**
      * Build titles and icons for action links
+     * @param GLOBALS 
+     * @param session 
      *
      * @return array   the action titles
      */
-    public static Map<String,String> buildActionTitles()
+    public static Map<String,String> buildActionTitles(GLOBALS GLOBALS, SessionMap session)
     {
     	Map<String,String> $titles = new HashMap<String,String>();
 
-        $titles["Browse"]     = getIcon("b_browse", __("Browse"));
-        $titles["NoBrowse"]   = getIcon("bd_browse", __("Browse"));
-        $titles["Search"]     = getIcon("b_select", __("Search"));
-        $titles["NoSearch"]   = getIcon("bd_select", __("Search"));
-        $titles["Insert"]     = getIcon("b_insrow", __("Insert"));
-        $titles["NoInsert"]   = getIcon("bd_insrow", __("Insert"));
-        $titles["Structure"]  = getIcon("b_props", __("Structure"));
-        $titles["Drop"]       = getIcon("b_drop", __("Drop"));
-        $titles["NoDrop"]     = getIcon("bd_drop", __("Drop"));
-        $titles["Empty"]      = getIcon("b_empty", __("Empty"));
-        $titles["NoEmpty"]    = getIcon("bd_empty", __("Empty"));
-        $titles["Edit"]       = getIcon("b_edit", __("Edit"));
-        $titles["NoEdit"]     = getIcon("bd_edit", __("Edit"));
-        $titles["Export"]     = getIcon("b_export", __("Export"));
-        $titles["NoExport"]   = getIcon("bd_export", __("Export"));
-        $titles["Execute"]    = getIcon("b_nextpage", __("Execute"));
-        $titles["NoExecute"]  = getIcon("bd_nextpage", __("Execute"));
+        $titles.put("Browse"     , getIcon("b_browse", __("Browse"), GLOBALS, session));
+        $titles.put("NoBrowse"   , getIcon("bd_browse", __("Browse"), GLOBALS, session));
+        $titles.put("Search"     , getIcon("b_select", __("Search"), GLOBALS, session));
+        $titles.put("NoSearch"   , getIcon("bd_select", __("Search"), GLOBALS, session));
+        $titles.put("Insert"     , getIcon("b_insrow", __("Insert"), GLOBALS, session));
+        $titles.put("NoInsert"   , getIcon("bd_insrow", __("Insert"), GLOBALS, session));
+        $titles.put("Structure"  , getIcon("b_props", __("Structure"), GLOBALS, session));
+        $titles.put("Drop"       , getIcon("b_drop", __("Drop"), GLOBALS, session));
+        $titles.put("NoDrop"     , getIcon("bd_drop", __("Drop"), GLOBALS, session));
+        $titles.put("Empty"      , getIcon("b_empty", __("Empty"), GLOBALS, session));
+        $titles.put("NoEmpty"    , getIcon("bd_empty", __("Empty"), GLOBALS, session));
+        $titles.put("Edit"       , getIcon("b_edit", __("Edit"), GLOBALS, session));
+        $titles.put("NoEdit"     , getIcon("bd_edit", __("Edit"), GLOBALS, session));
+        $titles.put("Export"     , getIcon("b_export", __("Export"), GLOBALS, session));
+        $titles.put("NoExport"   , getIcon("bd_export", __("Export"), GLOBALS, session));
+        $titles.put("Execute"    , getIcon("b_nextpage", __("Execute"), GLOBALS, session));
+        $titles.put("NoExecute"  , getIcon("bd_nextpage", __("Execute"), GLOBALS, session));
         // For Favorite/NoFavorite, we need icon only.
-        $titles["Favorite"]  = getIcon("b_favorite", "");
-        $titles["NoFavorite"] = getIcon("b_no_favorite", "");
+        $titles.put("Favorite"  , getIcon("b_favorite", "", GLOBALS, session));
+        $titles.put("NoFavorite" , getIcon("b_no_favorite", "", GLOBALS, session));
 
         return $titles;
     }
@@ -3345,6 +3418,8 @@ public class Util {
      */
     public static Object getSupportedDatatypes(boolean $html /*= false*/, String $selected /*= ""*/)
     {
+    	return null; //TODO
+    	/*
         if ($html) {
             // NOTE: the SELECT tag in not included in this snippet.
             $retval = "";
@@ -3405,7 +3480,7 @@ public class Util {
             }
         }
 
-        return $retval;
+        return $retval;*/
     } // end getSupportedDatatypes()
 
     /**
@@ -3414,9 +3489,9 @@ public class Util {
      *
      * @return array   list of datatypes
      */
-    public static function unsupportedDatatypes()
+    public static Map unsupportedDatatypes()
     {
-        return [];
+        return new HashMap();
     }
 
     /**
@@ -3428,7 +3503,7 @@ public class Util {
      */
     public static String[] getGISDatatypes(boolean $upper_case /*= false*/)
     {
-        $gis_data_types = [
+        String [] $gis_data_types = new String[] {
             "geometry",
             "point",
             "linestring",
@@ -3437,9 +3512,11 @@ public class Util {
             "multilinestring",
             "multipolygon",
             "geometrycollection",
-        ];
+        };
         if ($upper_case) {
-            $gis_data_types = array_map("mb_strtoupper", $gis_data_types);
+            for (int i = 0; i < $gis_data_types.length; ++i) {
+            	$gis_data_types[i] = $gis_data_types[i].toUpperCase();
+            }
         }
         return $gis_data_types;
     }
@@ -3452,8 +3529,10 @@ public class Util {
      *
      * @return String GIS data enclosed in "ST_GeomFromText" or "GeomFromText" function
      */
-    public static String createGISData(String $gis_string, in $mysqlVersion)
+    public static String createGISData(String $gis_string, int $mysqlVersion)
     {
+    	return null; //TODO
+    	/*
         $geomFromText = ($mysqlVersion >= 50600) ? "ST_GeomFromText" : "GeomFromText";
         $gis_string = trim($gis_string);
         $geom_types = "(POINT|MULTIPOINT|LINESTRING|MULTILINESTRING|"
@@ -3464,7 +3543,7 @@ public class Util {
             return $geomFromText + "("" + $gis_string + "")";
         }
 
-        return $gis_string;
+        return $gis_string;*/
     }
 
     /**
@@ -3486,6 +3565,8 @@ public class Util {
         boolean $binary /*= true*/,
         boolean $display /*= false*/
     ) {
+    	return null; // TODO
+    	/*
         $funcs = [];
         if ($display) {
             $funcs[] = ["display" => " "];
@@ -3703,7 +3784,7 @@ public class Util {
                 "type" => "int",
             ];
         }
-        return $funcs;
+        return $funcs;*/
     }
 
     /**
@@ -3720,12 +3801,10 @@ public class Util {
      * @return String   An HTML snippet of a dropdown list with function
      *                    names appropriate for the requested column.
      */
-    public static function getDefaultFunctionForField(array $field, $insert_mode)
+    public static String getDefaultFunctionForField(Map $field, boolean $insert_mode)
     {
-        /*
-         * @todo Except for $cfg, no longer use globals but pass as parameters
-         *       from higher levels
-         */
+    	return null;         //TODO
+    	/*
         global $cfg, $data;
 
         $default_function   = "";
@@ -3733,7 +3812,7 @@ public class Util {
         // Can we get field class based values?
         $current_class = GLOBALS.dbi.types.getTypeClass($field["True_Type"]);
         if (! empty($current_class)) {
-            if (isset($cfg["DefaultFunctions"]["FUNC_" + $current_class])) {
+            if (!empty($cfg["DefaultFunctions"]["FUNC_" + $current_class])) {
                 $default_function
                     = $cfg["DefaultFunctions"]["FUNC_" + $current_class];
             }
@@ -3765,7 +3844,7 @@ public class Util {
              $default_function = $cfg["DefaultFunctions"]["FUNC_UUID"];
         }
 
-        return $default_function;
+        return $default_function;*/
     }
 
     /**
@@ -3781,6 +3860,8 @@ public class Util {
      */
     public static String getFunctionsForField(Map $field, boolean $insert_mode, Map $foreignData)
     {
+    	return ""; //TODO
+    	/*
         $default_function = getDefaultFunctionForField($field, $insert_mode);
         $dropdown_built = [];
 
@@ -3791,7 +3872,7 @@ public class Util {
         $functions = GLOBALS.dbi.types.getFunctions($field["True_Type"]);
         foreach ($functions as $function) {
             $retval += "<option";
-            if (isset($foreignData["foreign_link"]) && $foreignData["foreign_link"] !== false && $default_function === $function) {
+            if (!empty($foreignData["foreign_link"]) && $foreignData["foreign_link"] !== false && $default_function === $function) {
                 $retval += " selected="selected"";
             }
             $retval += ">" + $function + "</option>" + "\n";
@@ -3810,7 +3891,7 @@ public class Util {
         $functions = GLOBALS.dbi.types.getAllFunctions();
         foreach ($functions as $function) {
             // Skip already included functions
-            if (isset($dropdown_built[$function])) {
+            if (!empty($dropdown_built[$function])) {
                 continue;
             }
             $retval += "<option";
@@ -3820,7 +3901,7 @@ public class Util {
             $retval += ">" + $function + "</option>" + "\n";
         } // end for
 
-        return $retval;
+        return $retval;*/
     } // end getFunctionsForField()
 
     /**
@@ -3844,6 +3925,8 @@ public class Util {
      */
     public static boolean currentUserHasPrivilege(String $priv, String $db /*= null*/, String $tbl /*= null*/)
     {
+    	return true; //TODO
+    	/*
         // Get the username for the current user in the format
         // required to use in the information schema database.
         list($user, $host) = GLOBALS.dbi.getCurrentUserAndHost();
@@ -3917,7 +4000,7 @@ public class Util {
         }
         // If we reached this point, the user does not
         // have even valid table-wise privileges.
-        return false;
+        return false;*/
     }
 
     /**
@@ -3929,6 +4012,8 @@ public class Util {
      */
     public static String getServerType()
     {
+    	return null; //Unsupported
+    	/*
         if (GLOBALS.dbi.isMariaDB()) {
             return "MariaDB";
         }
@@ -3937,7 +4022,7 @@ public class Util {
             return "Percona Server";
         }
 
-        return "MySQL";
+        return "MySQL";*/
     }
 
     /**
@@ -3947,6 +4032,8 @@ public class Util {
      */
     public static String getServerSSL()
     {
+    	return null; // Unsupported
+    	/*
         $server = GLOBALS.PMA_Config["Server"];
         $class = "caution";
         if (! $server["ssl"]) {
@@ -3962,7 +4049,7 @@ public class Util {
             $class = "";
             $message = __("SSL is used");
         }
-        return "<span class='" + $class + "'>" + $message + "</span> " + showDocu("setup", "ssl");
+        return "<span class='" + $class + "'>" + $message + "</span> " + showDocu("setup", "ssl");*/
     }
 
     /**
@@ -3976,6 +4063,8 @@ public class Util {
      */
     public static Map parseEnumSetValues(String $definition, boolean $escapeHtml /*= true*/)
     {
+    	return null; //TODO
+    	/*
         $values_string = htmlentities($definition, ENT_COMPAT, "UTF-8");
         // There is a JS port of the below parser in functions.js
         // If you are fixing something here,
@@ -4020,7 +4109,7 @@ public class Util {
             }
         }
 
-        return $values;
+        return $values;*/
     }
 
     /**
@@ -4031,12 +4120,14 @@ public class Util {
      *
      * @return String Matching regular expression.
      */
-    public static String getFirstOccurringRegularExpression(List $regex_array, String $query)
+    public static String getFirstOccurringRegularExpression(List<String> $regex_array, String $query)
     {
+    	return null; //TODO
+    	/*
         $minimum_first_occurence_index = null;
         $regex = null;
 
-        foreach ($regex_array as $test_regex) {
+        for (String $test_regex : $regex_array ) {
             if (preg_match($test_regex, $query, $matches, PREG_OFFSET_CAPTURE)) {
                 if ($minimum_first_occurence_index === null
                     || ($matches[0][1] < $minimum_first_occurence_index)
@@ -4046,7 +4137,7 @@ public class Util {
                 }
             }
         }
-        return $regex;
+        return $regex;*/
     }
 
     /**
@@ -4126,22 +4217,21 @@ public class Util {
      *
      * @return String time, datetime or timestamp strings with fractional seconds
      */
-    public static Strnig addMicroseconds(String $value)
+    public static String addMicroseconds(String $value)
     {
         if (empty($value) || $value == "CURRENT_TIMESTAMP"
             || $value == "current_timestamp()") {
             return $value;
         }
 
-        if (mb_strpos($value, ".") === false) {
+        if (!$value.contains( ".") ) {
             return $value + ".000000";
         }
 
         $value += "000000";
-        return mb_substr(
-            $value,
+        return $value.substring(
             0,
-            mb_strpos($value, ".") + 7
+            $value.indexOf( ".") + 7
         );
     }
 
@@ -4152,16 +4242,20 @@ public class Util {
      * @param resource $file the file handle
      *
      * @return String the MIME type for compression, or "none"
+     * @throws IOException 
      */
-    public static String getCompressionMimeType(File $file)
+    public static String getCompressionMimeType(File $file) throws IOException
     {
-        $test = fread($file, 4);
-        $len = strlen($test);
-        fclose($file);
-        if ($len >= 2 && $test[0] == chr(31) && $test[1] == chr(139)) {
+    	FileReader fw = new FileReader($file);
+    	char[] $buffer = new char[4];
+    	fw.read($buffer, 0, 4);
+        String $test = new String($buffer);
+        int $len = $test.length();
+        fw.close();
+        if ($len >= 2 && $buffer[0] == (char)31 && $buffer[1] == (char)139) {
             return "application/gzip";
         }
-        if ($len >= 3 && substr($test, 0, 3) == "BZh") {
+        if ($len >= 3 && $test.substring(0, 3) == "BZh") {
             return "application/bzip2";
         }
         if ($len >= 4 && $test == "PK\003\004") {
@@ -4197,24 +4291,28 @@ public class Util {
         String $linkTarget /*= ""*/,
         List<String> $classes /*= []*/
     ) {
-        $retval = "<a href='" + $link + "'";
+        String $retval = "<a href='" + $link + "'";
         if (! empty($linkId)) {
             $retval += " id='" + $linkId + "'";
         }
         if (! empty($linkTarget)) {
             $retval += " target='" + $linkTarget + "'";
         }
+        if ($classes == null) {
+            $classes = new ArrayList<>();
+        }
         if ($disableAjax) {
-            $classes[] = "disableAjax";
+            $classes.add( "disableAjax" );
         }
         if (! empty($classes)) {
-            $retval += " class='" + implode(" ", $classes) + "'";
+            $retval += " class='" + String.join(" ", $classes) + "'";
         }
         $retval += " title='" + $text + "'>";
         if ($showIcon) {
             $retval += getImage(
                 $icon,
-                $text
+                $text,
+                null
             );
         }
         if ($showText) {
@@ -4235,13 +4333,15 @@ public class Util {
      */
     public static String getCollateForIS()
     {
+    	return ""; //TODO
+    	/*
         $names = GLOBALS.dbi.getLowerCaseNames();
         if ($names === "0") {
             return "COLLATE utf8_bin";
         } else if ($names === "2") {
             return "COLLATE utf8_general_ci";
         }
-        return "";
+        return "";*/
     }
 
     /**
@@ -4253,6 +4353,8 @@ public class Util {
      */
     public static Map processIndexData(Map $indexes)
     {
+    	return null; // TODO
+    	/*
         $lastIndex    = "";
 
         $primary      = "";
@@ -4274,7 +4376,7 @@ public class Util {
             }
             $indexes_info[$row["Key_name"]]["Sequences"][] = $row["Seq_in_index"];
             $indexes_info[$row["Key_name"]]["Non_unique"] = $row["Non_unique"];
-            if (isset($row["Cardinality"])) {
+            if (!empty($row["Cardinality"])) {
                 $indexes_info[$row["Key_name"]]["Cardinality"] = $row["Cardinality"];
             }
             // I don"t know what does following column mean....
@@ -4284,7 +4386,7 @@ public class Util {
 
             $indexes_data[$row["Key_name"]][$row["Seq_in_index"]]["Column_name"]
                 = $row["Column_name"];
-            if (isset($row["Sub_part"])) {
+            if (!empty($row["Sub_part"])) {
                 $indexes_data[$row["Key_name"]][$row["Seq_in_index"]]["Sub_part"]
                     = $row["Sub_part"];
             }
@@ -4295,7 +4397,7 @@ public class Util {
             $pk_array,
             $indexes_info,
             $indexes_data,
-        ];
+        ];*/
     }
 
     /**
@@ -4305,37 +4407,38 @@ public class Util {
      *
      * @return String html
      */
-    public static String getStartAndNumberOfRowsPanel(String $sql_query)
+    public static String getStartAndNumberOfRowsPanel(String $sql_query, HttpServletRequest request, SessionMap session)
     {
-        $template = new Template();
-
-        if (isset($_REQUEST["session_max_rows"])) {
-            $rows = $_REQUEST["session_max_rows"];
-        } else if (isset($_SESSION["tmpval"]["max_rows"])
-                    && $_SESSION["tmpval"]["max_rows"] != "all"
+    	Integer $rows;
+        if (!empty(request.getParameter("session_max_rows"))) {
+            $rows = new Integer( (String) request.getParameter("session_max_rows"));
+        } else if (!empty(multiget(session,"tmpval","max_rows"))
+                    && multiget(session,"tmpval","max_rows") != "all"
         ) {
-            $rows = $_SESSION["tmpval"]["max_rows"];
+            $rows = new Integer( (String) multiget(session,"tmpval","max_rows"));
         } else {
-            $rows = GLOBALS.PMA_Config["MaxRows"];
-            $_SESSION["tmpval"]["max_rows"] = $rows;
+            $rows = new Integer( (String) GLOBALS.PMA_Config.get("MaxRows"));
+            multiput(session,"tmpval","max_rows", $rows.toString());
         }
 
-        if (isset($_REQUEST["pos"])) {
-            $pos = $_REQUEST["pos"];
-        } else if (isset($_SESSION["tmpval"]["pos"])) {
-            $pos = $_SESSION["tmpval"]["pos"];
+        Integer $pos;
+        if (!empty(request.getParameter("pos"))) {
+            $pos = new Integer(request.getParameter("pos"));
+        } else if (!empty(multiget(session,"tmpval","pos"))) {
+            $pos = new Integer( (String) multiget(session,"tmpval","pos"));
         } else {
-            $number_of_line = (int) $_REQUEST["unlim_num_rows"];
-            $pos = ((ceil($number_of_line / $rows) - 1) * $rows);
-            $_SESSION["tmpval"]["pos"] = $pos;
+            int $number_of_line = new Integer((String)request.getParameter("unlim_num_rows"));
+            $pos = (int) ((Math.ceil($number_of_line / $rows) - 1) * $rows);
+            multiput(session,"tmpval","pos", $pos.toString());
         }
 
-        return $template.render("start_and_number_of_rows_panel", [
-            "pos" => $pos,
-            "unlim_num_rows" => (int) $_REQUEST["unlim_num_rows"],
-            "rows" => $rows,
-            "sql_query" => $sql_query,
-        ]);
+        Map<String,Object> model = new HashMap<>();
+        model.put("pos" , $pos);
+        model.put("unlim_num_rows" , request.getParameter("unlim_num_rows"));
+        model.put("rows" , $rows);
+        model.put("sql_query" , $sql_query);
+        
+        return JtwigFactory.render("start_and_number_of_rows_panel", model);
     }
 
     /**
@@ -4345,10 +4448,12 @@ public class Util {
      */
     public static boolean isVirtualColumnsSupported()
     {
+    	return false; // TODO
+    	/*
         $serverType = getServerType();
         $serverVersion = GLOBALS.dbi.getVersion();
         return in_array($serverType, ["MySQL", "Percona Server"]) && $serverVersion >= 50705
-             || ($serverType == "MariaDB" && $serverVersion >= 50200);
+             || ($serverType == "MariaDB" && $serverVersion >= 50200);*/
     }
 
     /**
@@ -4363,30 +4468,32 @@ public class Util {
      */
     public static Map getDbInfo(String $db, String $sub_part)
     {
+    	return new HashMap<>(); // TODO
+    	/*
         global $cfg;
 
         /**
          * limits for table list
-         */
-        if (! isset($_SESSION["tmpval"]["table_limit_offset"])
+         *
+        if (! !empty($_SESSION["tmpval"]["table_limit_offset"])
             || $_SESSION["tmpval"]["table_limit_offset_db"] != $db
         ) {
             $_SESSION["tmpval"]["table_limit_offset"] = 0;
             $_SESSION["tmpval"]["table_limit_offset_db"] = $db;
         }
-        if (isset($_REQUEST["pos"])) {
+        if (!empty($_REQUEST["pos"])) {
             $_SESSION["tmpval"]["table_limit_offset"] = (int) $_REQUEST["pos"];
         }
         $pos = $_SESSION["tmpval"]["table_limit_offset"];
 
         /**
          * whether to display extended stats
-         */
+         *
         $is_show_stats = $cfg["ShowStats"];
 
         /**
          * whether selected db is information_schema
-         */
+         *
         $db_is_system_schema = false;
 
         if (GLOBALS.dbi.isSystemSchema($db)) {
@@ -4396,7 +4503,7 @@ public class Util {
 
         /**
          * information about tables in db
-         */
+         *
         $tables = [];
 
         $tooltip_truename = [];
@@ -4421,7 +4528,7 @@ public class Util {
             $sort = "Name";
             $sort_order = "ASC";
 
-            if (isset($_REQUEST["sort"])) {
+            if (!empty($_REQUEST["sort"])) {
                 $sortable_name_mappings = [
                     "table"       => "Name",
                     "records"     => "Rows",
@@ -4436,7 +4543,7 @@ public class Util {
                 ];
 
                 // Make sure the sort type is implemented
-                if (isset($sortable_name_mappings[$_REQUEST["sort"]])) {
+                if (!empty($sortable_name_mappings[$_REQUEST["sort"]])) {
                     $sort = $sortable_name_mappings[$_REQUEST["sort"]];
                     if ($_REQUEST["sort_order"] == "DESC") {
                         $sort_order = "DESC";
@@ -4479,7 +4586,7 @@ public class Util {
                 //  (needed for proper working of the MaxTableList feature)
                 $tables = GLOBALS.dbi.getTables($db);
                 $total_num_tables = count($tables);
-                if (! (isset($sub_part) && $sub_part == "_export")) {
+                if (! (!empty($sub_part) && $sub_part == "_export")) {
                     // fetch the details for a possible limited subset
                     $limit_offset = $pos;
                     $limit_count = true;
@@ -4502,14 +4609,14 @@ public class Util {
 
         $num_tables = count($tables);
         //  (needed for proper working of the MaxTableList feature)
-        if (! isset($total_num_tables)) {
+        if (! !empty($total_num_tables)) {
             $total_num_tables = $num_tables;
         }
 
         /**
          * If coming from a Show MySQL link on the home page,
          * put something in $sub_part
-         */
+         *
         if (empty($sub_part)) {
             $sub_part = "_structure";
         }
@@ -4524,7 +4631,7 @@ public class Util {
             $tooltip_truename,
             $tooltip_aliasname,
             $pos,
-        ];
+        ];*/
     }
 
     /**
@@ -4539,6 +4646,8 @@ public class Util {
      */
     public static List getTablesWhenOpen(String $db, Object $db_info_result)
     {
+    	return new ArrayList<>(); //TODO
+    	/*
         $sot_cache = [];
         $tables = [];
 
@@ -4583,7 +4692,7 @@ public class Util {
             if ($db_info_result && GLOBALS.dbi.numRows($db_info_result) > 0) {
                 $names = [];
                 while ($tmp = GLOBALS.dbi.fetchRow($db_info_result)) {
-                    if (! isset($sot_cache[$tmp[0]])) {
+                    if (! !empty($sot_cache[$tmp[0]])) {
                         $names[] = $tmp[0];
                     } else { // table in use
                         $tables[$tmp[0]] = [
@@ -4609,7 +4718,7 @@ public class Util {
             }
             unset($sot_cache);
         }
-        return $tables;
+        return $tables;*/
     }
 
     /**
@@ -4617,24 +4726,9 @@ public class Util {
      *
      * @return array of strings
      */
-    public static function listPHPExtensions()
+    public static List listPHPExtensions()
     {
-        $result = [];
-        if (DatabaseInterface.checkDbExtension("mysqli")) {
-            $result[] = "mysqli";
-        } else {
-            $result[] = "mysql";
-        }
-
-        if (extension_loaded("curl")) {
-            $result[] = "curl";
-        }
-
-        if (extension_loaded("mbstring")) {
-            $result[] = "mbstring";
-        }
-
-        return $result;
+    	return new ArrayList(); //Unsupported
     }
 
     /**
@@ -4644,12 +4738,14 @@ public class Util {
      *
      * @return String
      */
-    public static function requestString($value)
+    public static String requestString(Object $value)
     {
+    	return $value.toString(); //TODO
+    	/*
         while (is_array($value) || is_object($value)) {
             $value = reset($value);
         }
-        return trim((String) $value);
+        return trim((String) $value);*/
     }
 
     /**
@@ -4659,28 +4755,33 @@ public class Util {
      * @param boolean    $asHex  (optional) Send the result as hex
      *
      * @return String
+     * 
+     * @see https://www.geeksforgeeks.org/generate-random-string-of-given-size-in-java/
      */
-    public static String generateRandom(int $length, boolean $asHex = false)
+    public static String generateRandom(int $length /*, boolean $asHex = false*/)
     {
-        $result = "";
-        if (class_exists(Random.class)) {
-            $random_func = [
-                Random.class,
-                "String",
-            ];
-        } else {
-            $random_func = "openssl_random_pseudo_bytes";
-        }
-        while (strlen($result) < $length) {
-            // Get random byte and strip highest bit
-            // to get ASCII only range
-            $byte = ord($random_func(1)) & 0x7f;
-            // We want only ASCII chars
-            if ($byte > 32) {
-                $result += chr($byte);
-            }
-        }
-        return $asHex ? bin2hex($result) : $result;
+        // chose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    + "0123456789"
+                                    + "abcdefghijklmnopqrstuvxyz"; 
+  
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder($length); 
+  
+        for (int i = 0; i < $length; i++) { 
+  
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index 
+                = (int)(AlphaNumericString.length() 
+                        * Math.random()); 
+  
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString 
+                          .charAt(index)); 
+        } 
+  
+        return sb.toString(); 
     }
 
     /**
@@ -4706,20 +4807,14 @@ public class Util {
      *
      * @return mixed Searched value
      */
-    public static function getValueByKey(array $array, $path, $default = null)
+    public static Object getValueByKey(Map $array, String[] $path, Object $default /*= null*/)
     {
-        if (is_string($path)) {
-            $path = explode(".", $path);
-        }
-        $p = array_shift($path);
-        while (isset($p)) {
-            if (! isset($array[$p])) {
-                return $default;
-            }
-            $array = $array[$p];
-            $p = array_shift($path);
-        }
-        return $array;
+        Object $value = multiget($array, $path);
+        return !empty($value) ? $value : $default;
+    }
+    
+    public static Object getValueByKey(Map $array, String $path, Object $default /*= null*/)  {
+    	return getValueByKey($array, $path.split("\\."), $default);
     }
 
     /**
@@ -4734,12 +4829,14 @@ public class Util {
      */
     public static String sortableTableHeader(String $title, String $sort, String $initialSortOrder /*= "ASC"*/)
     {
+    	return null; //TODO
+    	/*
         $requestedSort = "table";
         $requestedSortOrder = $futureSortOrder = $initialSortOrder;
         // If the user requested a sort
-        if (isset($_REQUEST["sort"])) {
+        if (!empty($_REQUEST["sort"])) {
             $requestedSort = $_REQUEST["sort"];
-            if (isset($_REQUEST["sort_order"])) {
+            if (!empty($_REQUEST["sort_order"])) {
                 $requestedSortOrder = $_REQUEST["sort_order"];
             }
         }
@@ -4812,7 +4909,7 @@ public class Util {
 
         $url = Url.getFromRoute("/database/structure", $urlParams);
 
-        return linkOrButton($url, $title + $orderImg, $orderLinkParams);
+        return linkOrButton($url, $title + $orderImg, $orderLinkParams);*/
     }
 
     /**
@@ -4824,7 +4921,15 @@ public class Util {
      */
     public static boolean isInteger(Object $input)
     {
-        return ctype_digit((String) $input);
+    	if ($input instanceof String) {
+    		try {
+    			new Long((String)$input);
+    			return true;
+    		} catch(NumberFormatException exc) {
+    			return false;
+    		}
+    	}
+    	return $input instanceof Integer || $input instanceof Long;
     }
 
 }
