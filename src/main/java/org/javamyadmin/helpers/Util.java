@@ -3116,6 +3116,9 @@ public class Util {
      */
     public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, GLOBALS GLOBALS)
     {
+    	if ($target == null) {
+    		return "";
+    	}
         if ("server".equals($location)) {
             // Values for $cfg["DefaultTabServer"]
             switch ($target) {

@@ -305,10 +305,12 @@ public class Header {
     {
         Map<String, Object> $params = this.getJsParams();
         for (Entry<String, Object> entry: $params.entrySet()) {
+        	String key = entry.getKey();
+        	String value = entry.getValue() == null ? null : entry.getValue().toString();
             if (entry.getValue() instanceof Boolean) {
-                $params.put(entry.getKey(), entry.getKey() + ":" + (((Boolean)entry.getValue()) ? "true" : "false") + "");
+                $params.put(entry.getKey(), key + ":" + (((Boolean)entry.getValue()) ? "true" : "false") + "");
             } else {
-                $params.put(entry.getKey(), entry.getKey() + ":'" + Sanitize.escapeJsString((String) entry.getValue()) + "'");
+                $params.put(entry.getKey(), key + ":'" + Sanitize.escapeJsString(value) + "'");
             }
         }
         return "CommonParams.setAll({" + String.join(",", (Collection)$params.values()) + "});";
