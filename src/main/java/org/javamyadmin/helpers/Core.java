@@ -1,14 +1,20 @@
 package org.javamyadmin.helpers;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 import static org.javamyadmin.php.Php.*;
 
@@ -238,8 +244,12 @@ public class Core {
         } else if (! empty(req.getParameter("ajax_request"))) {
             // Generate JSON manually
             headerJSON(resp);
-            resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()))
-            );
+            try {
+				resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()))
+				);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         } else {
             $error_message = $error_message.replace("<br>", "[br]");
             String $error_header = __("Error");
@@ -253,7 +263,7 @@ public class Core {
             HttpServletRequest req, HttpServletResponse resp, GLOBALS GLOBALS, Response pmaResponse,
             String $error_message)
     {
-    	return fatalError(req, resp, GLOBALS, pmaResponse);
+    	fatalError(req, resp, GLOBALS, pmaResponse, $error_message, null);
     }
     
     /**
@@ -340,25 +350,23 @@ public class Core {
      *
      * @return integer
      */
-    public static int getRealSize($size /*= 0*/)
+    public static Long getRealSize(String $size /*= 0*/)
     {
-        if (! $size) {
-            return 0;
+        if (empty($size)) {
+            return 0L;
         }
-        $binaryprefixes = [
-            "T" => 1099511627776,
-            "t" => 1099511627776,
-            "G" =>    1073741824,
-            "g" =>    1073741824,
-            "M" =>       1048576,
-            "m" =>       1048576,
-            "K" =>          1024,
-            "k" =>          1024,
-        ];
-        if (preg_match("/^([0-9]+)([KMGT])/i", $size, $matches)) {
-            return $matches[1] * $binaryprefixes[$matches[2]];
+        Map<String, Long> $binaryprefixes = new HashMap<>();
+        $binaryprefixes.put("T" , 1099511627776L);
+        $binaryprefixes.put("G" ,    1073741824L);
+        $binaryprefixes.put("M" ,       1048576L);
+        $binaryprefixes.put("K" ,          1024L);
+
+        $size=$size.toUpperCase().trim();
+        String lastLetter = $size.substring($size.length()-1);
+        if ($binaryprefixes.containsKey(lastLetter)) {
+        	return new Long($size.substring(0, -1)) * $binaryprefixes.get(lastLetter);
         }
-        return (int) $size;
+        return new Long($size);
     } // end getRealSize()
     /**
      * Checks given $page against given $whitelist and returns true if valid
@@ -372,35 +380,28 @@ public class Core {
      */
     public static boolean checkPageValidity(String $page, List $whitelist /*= []*/, boolean $include /*= false*/)
     {
-        if (empty($whitelist)) {
-            $whitelist = $goto_whitelist;
+    	if (empty($whitelist)) {
+            $whitelist = Arrays.asList($goto_whitelist);
         }
         if (empty($page)) {
             return false;
         }
-        if (in_array($page, $whitelist)) {
+        if ($whitelist.contains($page)) {
             return true;
         }
         if ($include) {
             return false;
         }
-        $_page = mb_substr(
-            $page,
+        String $_page = $page + "?"; 
+        $_page = $_page.substring(
             0,
-            mb_strpos($page + "?", "?")
+            $_page.indexOf( "?")
         );
-        if (in_array($_page, $whitelist)) {
+        if ($whitelist.contains($_page)) {
             return true;
         }
-        $_page = urldecode($page);
-        $_page = mb_substr(
-            $_page,
-            0,
-            mb_strpos($_page + "?", "?")
-        );
-        if (in_array($_page, $whitelist)) {
-            return true;
-        }
+        //$_page = urldecode($page);
+        //... TODO
         return false;
     }
     /**
@@ -425,43 +426,23 @@ public class Core {
     }
     /**
      * Send HTTP header, taking IIS limits into account (600 seems ok)
+     * @param request 
      *
      * @param String $uri         the header to send
      * @param boolean   $use_refresh whether to use Refresh: header when running on IIS
      *
      * @return void
      */
-    public static void sendHeaderLocation(String $uri, boolean $use_refresh /*= false*/)
+    public static void sendHeaderLocation(String $uri, boolean $use_refresh /*= false*/, HttpServletRequest request, HttpServletResponse response)
     {
-        if (GLOBALS.PMA_Config.get("PMA_IS_IIS") && mb_strlen($uri) > 600) {
-            Response.getInstance().disable();
-            //$template = new Template();
-            echo $template.render("header_location", ["uri" => $uri]);
-            return;
-        }
         /*
          * Avoid relative path redirect problems in case user entered URL
          * like /phpmyadmin/index.php/ which some web servers happily accept.
          */
-        if ($uri[0] == ".") {
-            $uri = GLOBALS.PMA_Config.getRootPath() + substr($uri, 2);
+        if ($uri.charAt(0) == '.') {
+            $uri = GLOBALS.PMA_Config.getRootPath(request) + $uri.substring(2);
         }
-        $response = Response.getInstance();
-        session_write_close();
-        if ($response.headersSent()) {
-            trigger_error(
-                "Core.sendHeaderLocation called when headers are already sent!",
-                E_USER_ERROR
-            );
-        }
-        // bug #1523784: IE6 does not like "Refresh: 0", it
-        // results in a blank page
-        // but we need it when coming from the cookie login panel)
-        if (GLOBALS.PMA_Config.get("PMA_IS_IIS") && $use_refresh) {
-            $response.header("Refresh: 0; " + $uri);
-        } else {
-            $response.header("Location: " + $uri);
-        }
+        response.addHeader("Location: ", $uri);
     }
     /**
      * Outputs application/json headers. This includes no caching.
@@ -474,7 +455,7 @@ public class Core {
             return;
         }*/
         // No caching
-        noCacheHeader();
+        noCacheHeader(response);
         // MIME type
         response.addHeader("Content-Type", "application/json; charset=UTF-8");
         // Disable content sniffing in browser
@@ -487,23 +468,20 @@ public class Core {
      *
      * @return void
      */
-    public static void noCacheHeader()
+    public static void noCacheHeader(HttpServletResponse response)
     {
-        if (defined("TESTSUITE")) {
-            return;
-        }
         // rfc2616 - Section 14.21
-        header("Expires: " + gmdate(DATE_RFC1123));
+    	response.addHeader("Expires", new Date().toString()); //FIXME check format
         // HTTP/1.1
-        header(
-            "Cache-Control: no-store, no-cache, must-revalidate,"
+    	response.addHeader(
+            "Cache-Control", "no-store, no-cache, must-revalidate,"
             + "  pre-check=0, post-check=0, max-age=0"
         );
-        header("Pragma: no-cache"); // HTTP/1.0
+    	response.addHeader("Pragma", "no-cache"); // HTTP/1.0
         // test case: exporting a database into a .gz file with Safari
         // would produce files not having the current time
         // (added this header for Safari but should not harm other browsers)
-        header("Last-Modified: " + gmdate(DATE_RFC1123));
+    	response.addHeader("Last-Modified", new Date().toString());
     }
     /**
      * Sends header indicating file download.

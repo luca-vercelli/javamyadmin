@@ -299,14 +299,17 @@ public class Php {
 	}
 
 	/**
-	 * Return true if string represents a number
+	 * Return true if Object represents a number
 	 * 
 	 * @param x
 	 * @return
+	 * @see gettype
 	 */
-	public static boolean is_numeric(String x) {
+	public static boolean is_numeric(Object x) {
+		if (x == null || x instanceof Integer || x instanceof Long || x instanceof Float || x instanceof Double)
+			return true;
 		try {
-			new Double(x);
+			new Double(x.toString());
 			return true;
 		} catch (NumberFormatException exc) {
 			return false;
@@ -333,7 +336,7 @@ public class Php {
 	 * @param x
 	 * @return
 	 */
-	public static boolean is_scalar(String x) {
+	public static boolean is_scalar(Object x) {
 
 		return x == null || scalarTypes.contains(gettype(x));
 	}
