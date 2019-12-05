@@ -41,7 +41,7 @@ public class Theme {
      * @var String theme path
      * @access  protected
      */
-    public String path = "";
+    public File path = null;
 
     /**
      * @var String image path
@@ -160,7 +160,7 @@ public class Theme {
      * @static
      * @access public
      */
-    public static Theme load(String folder)
+    public static Theme load(File folder)
     {
         Theme theme = new Theme();
 
@@ -210,7 +210,7 @@ public class Theme {
      * @access public
      * @return String path to theme
      */
-    public String getPath()
+    public File getPath()
     {
         return this.path;
     }
@@ -223,9 +223,9 @@ public class Theme {
      * @return void
      * @access public
      */
-    public void setPath(String path)
+    public void setPath(File path)
     {
-        this.path = path.trim();
+        this.path = path;
     }
 
     /**

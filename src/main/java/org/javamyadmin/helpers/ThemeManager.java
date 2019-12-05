@@ -248,20 +248,21 @@ public class ThemeManager {
 		}
 
 		// check for themes directory
-		String[] directoryListing = themesDir.list();
-		for (String PMA_Theme : directoryListing) {
+		File[] directoryListing = themesDir.listFiles();
+		for (File PMA_Theme : directoryListing) {
+			String name = PMA_Theme.getName();
 			// Skip non dirs, . and ..
-			if (PMA_Theme == "." || PMA_Theme == ".."
-					|| !new File(GLOBALS.ROOT_PATH + this._themes_path + PMA_Theme).isDirectory()) {
+			if (name.equals(".") || name.equals("..")
+					|| !PMA_Theme.isDirectory()) {
 				continue;
 			}
-			if (this.themes.containsKey(PMA_Theme)) {
+			if (this.themes.containsKey(name)) {
 				continue;
 			}
-			Theme new_theme = Theme.load(this._themes_path + PMA_Theme);
+			Theme new_theme = Theme.load(PMA_Theme);
 			if (new_theme != null) {
-				new_theme.setId(PMA_Theme);
-				this.themes.put(PMA_Theme, new_theme);
+				new_theme.setId(name);
+				this.themes.put(name, new_theme);
 			}
 		} // end get themes
 

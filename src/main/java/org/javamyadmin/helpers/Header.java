@@ -443,7 +443,7 @@ public class Header {
 
                 $baseDir = GLOBALS.PMA_PATH_TO_BASEDIR;
                 $uniqueValue = GLOBALS.PMA_Config.getThemeUniqueValue(GLOBALS);
-                $themePath = GLOBALS.pmaThemePath;
+                $themePath = GLOBALS.pmaThemePath.getAbsolutePath();
                 $version = getVersionParameter();
 
                 // The user preferences have been merged at this point

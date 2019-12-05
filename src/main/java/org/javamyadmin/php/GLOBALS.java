@@ -1,5 +1,6 @@
 package org.javamyadmin.php;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -33,7 +34,7 @@ public class GLOBALS {
 	public static final String PMA_MINIMUM_COMMON = "";
 	public boolean IS_TRANSFORMATION_WRAPPER = false;
 	public Theme PMA_Theme;
-	public String pmaThemePath;
+	public File pmaThemePath;
 	public String pmaThemeImage;
 	public static Config PMA_Config = new Config(null);
 	public static boolean pma_config_loading = false;
