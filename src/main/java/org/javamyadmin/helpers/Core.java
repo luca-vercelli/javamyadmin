@@ -772,7 +772,7 @@ public class Core {
      *
      * @return void
      */
-    public static void setPostAsGlobal(array $post_patterns)
+    public static void setPostAsGlobal(Map $post_patterns)
     {
     	/* TODO
         foreach (array_keys($_POST) as $post_key) {

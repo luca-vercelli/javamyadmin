@@ -84,13 +84,72 @@ public class Sanitize {
         return message;
     }
 
-	public static void removeRequestVars(String[] $whitelist) {
-		// TODO Auto-generated method stub
-		
+    /**
+     * Removes all variables from request except whitelisted ones.
+     *
+     * @param string[] $whitelist list of variables to allow
+     *
+     * @return possibly modified whitelist
+     * @access public
+     */
+    public static String[] removeRequestVars(String[] $whitelist) {
+		// TODO
+    	// Really required ?!?
+		return $whitelist;
 	}
 
-	public static Object escapeJsString(String $url) {
-		// TODO Auto-generated method stub
-		return null;
+    /**
+     * escapes a string to be inserted as string a JavaScript block
+     * enclosed by <![CDATA[ ... ]]>
+     * this requires only to escape ' with \' and end of script block
+     *
+     * We also remove NUL byte as some browsers (namely MSIE) ignore it and
+     * inserting it anywhere inside </script would allow to bypass this check.
+     *
+     * @param string $string the string to be escaped
+     *
+     * @return string  the escaped string
+     */
+	public static String escapeJsString(String $string) {
+
+		return $string.replace("\000", "")	//
+				.replace("\\", "\\\\")	//
+				.replace("'", "\\'")	//
+				.replace("\"", "\\\"")	//
+				.replace("\n", "\\n")	//
+				.replace("\r", "\\r")	//
+				.replaceAll("@</script@i", "</\" + \"script");
+	}
+
+    /**
+     * Sanitize a filename by removing anything besides legit characters
+     *
+     * Intended usecase:
+     *    When using a filename in a Content-Disposition header
+     *    the value should not contain ; or "
+     *
+     *    When exporting, avoiding generation of an unexpected double-extension file
+     *
+     * @param string  $filename    The filename
+     * @param boolean $replaceDots Whether to also replace dots
+     *
+     * @return string  the sanitized filename
+     *
+     */
+	public static String sanitizeFilename(String $filename, boolean $replaceDots) {
+
+        String $pattern = "/[^A-Za-z0-9_";
+        // if we don't have to replace dots
+        if (! $replaceDots) {
+            // then add the dot to the list of legit characters
+            $pattern += "\\.";
+        }
+        $pattern += "-]/";
+        $filename = $filename.replaceAll($pattern, "_");
+        return $filename;
+	}
+	
+	public static String sanitizeFilename(String $filename) {
+		return sanitizeFilename($filename, false);
 	}
 }

@@ -44,7 +44,7 @@ public class Functions {
 					Map<String, String> attributes = args.getNumberOfArguments() >= 3
 							? (Map<String, String>) args.get(2)
 							: null;
-					return Generator.getImage(image, alternate, attributes);
+					return Generator.getImage(image, alternate, (Map)attributes);
 				}
 			});
 		}
