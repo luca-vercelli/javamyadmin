@@ -3,14 +3,12 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.Language;
 import org.javamyadmin.helpers.LanguageManager;
@@ -22,6 +20,7 @@ import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Php.SessionMap;
 import org.jtwig.web.servlet.JtwigRenderer;
 
 public abstract class AbstractController extends HttpServlet {
@@ -32,7 +31,7 @@ public abstract class AbstractController extends HttpServlet {
 
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		GLOBALS GLOBALS = new GLOBALS();
+		GLOBALS GLOBALS = new GLOBALS(getServletContext());
 		SessionMap $_SESSION = $_SESSION(request.getSession());
 		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
 		

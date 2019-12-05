@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
+
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Theme;
@@ -21,7 +23,12 @@ public class GLOBALS {
 	public static final String PMA_PATH_TO_BASEDIR = ""; // Is it needed ?!?
 	public static final String PMA_VERSION = "0.1";
 	public Integer server = 0;
-	public static final String ROOT_PATH = "/"; // Is it needed ?!?
+	
+	/**
+	 * Absolute path of /WEB-INF/..
+	 */
+	public String ROOT_PATH;
+	
 	public static final String LOCALE_PATH = "/"; // Where is it? files *.mo should be there
 	public static final String PMA_MINIMUM_COMMON = "";
 	public boolean IS_TRANSFORMATION_WRAPPER = false;
@@ -68,6 +75,7 @@ public class GLOBALS {
 	public int PMA_USR_BROWSER_VER;
 	
 
-	public GLOBALS() {
+	public GLOBALS(ServletContext context) {
+		ROOT_PATH = context.getRealPath("/WEB-INF/..");
 	}
 }

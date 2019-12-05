@@ -88,11 +88,9 @@ public class ThemeManager {
 		this.theme_default = FALLBACK_THEME;
 		this.active_theme = "";
 
-		if (!setThemesPath("./themes/")) {
-			return;
-		}
+		setThemesPath(GLOBALS.ROOT_PATH + "/themes/");
 
-		this.setThemePerServer((Boolean) GLOBALS.PMA_Config.get("ThemePerServer"));
+		this.setThemePerServer("true".equals(GLOBALS.PMA_Config.get("ThemePerServer")));
 
 		this.loadThemes();
 
@@ -141,9 +139,6 @@ public class ThemeManager {
 	 * @return boolean success
 	 */
 	public boolean setThemesPath(String path) {
-		if (!this._checkThemeFolder(path)) {
-			return false;
-		}
 
 		this._themes_path = path.trim();
 		return true;
@@ -238,25 +233,6 @@ public class ThemeManager {
 	}
 
 	/**
-	 * Checks whether folder is valid for storing themes
-	 *
-	 * @param String
-	 *            folder Folder name to test
-	 *
-	 * @return boolean
-	 * @access private
-	 */
-	private boolean _checkThemeFolder(String folder) {
-		if (!new File(folder).isDirectory()) {
-			trigger_error(String.format(__("Theme path not found for theme %s!"), htmlspecialchars(folder)),
-					E_USER_ERROR);
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * read all themes
 	 *
 	 * @return boolean true
@@ -315,7 +291,6 @@ public class ThemeManager {
 	 * @access public
 	 */
 	public String getHtmlSelectBox(boolean form)
-	// TODO use twig
 	{
 		String select_box = "";
 
