@@ -112,7 +112,7 @@ public class Sanitize {
      */
 	public static String escapeJsString(String $string) {
 
-		return $string.replace("\000", "")	//
+		return $string == null ? null : $string.replace("\000", "")	//
 				.replace("\\", "\\\\")	//
 				.replace("'", "\\'")	//
 				.replace("\"", "\\\"")	//

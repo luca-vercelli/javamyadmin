@@ -7,12 +7,12 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.php.GLOBALS;
 import org.javamyadmin.php.Php.SessionMap;
 
@@ -42,15 +42,15 @@ public class Menu {
     private String _table;
     
 	private SessionMap session;
-	private Properties cfg;
+	private SmartMap cfg;
 	private HttpServletRequest request;
 	private GLOBALS GLOBALS;
 
-	private static Properties menuProperties;
+	private static SmartMap menuProperties;
 	static {
-		menuProperties = new Properties();
+		menuProperties = new SmartMap();
         try {
-			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("menu.properties");
+			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/menu.properties");
 			menuProperties.load(is);
 		} catch (NullPointerException e) {
 			throw new IllegalStateException("File menu.properties not found!");

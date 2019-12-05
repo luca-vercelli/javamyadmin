@@ -349,7 +349,7 @@ public class LanguageManager {
 		}
 
 		// Didn"t catch any valid lang : we use the default settings
-		if (!empty($langs.get(GLOBALS.PMA_Config.get("DefaultLang")))) {
+		if (!empty(GLOBALS.PMA_Config.get("DefaultLang")) && !empty($langs.get(GLOBALS.PMA_Config.get("DefaultLang")))) {
 			return $langs.get(GLOBALS.PMA_Config.get("DefaultLang"));
 		}
 

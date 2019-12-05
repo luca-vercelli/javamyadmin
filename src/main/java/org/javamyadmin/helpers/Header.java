@@ -11,6 +11,7 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.GLOBALS;
 import static org.javamyadmin.php.Php.*;
@@ -127,7 +128,7 @@ public class Header {
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 	private SessionMap session;
-    private Properties cfg;
+    private SmartMap cfg;
     
     /**
      * Creates a new class instance

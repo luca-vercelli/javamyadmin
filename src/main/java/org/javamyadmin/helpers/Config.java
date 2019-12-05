@@ -1,15 +1,9 @@
 package org.javamyadmin.helpers;
 
-import static org.javamyadmin.php.Php.E_FATAL;
-import static org.javamyadmin.php.Php.E_USER_ERROR;
-import static org.javamyadmin.php.Php.__;
-import static org.javamyadmin.php.Php.array_replace_recursive;
-import static org.javamyadmin.php.Php.empty;
-import static org.javamyadmin.php.Php.is_numeric;
-import static org.javamyadmin.php.Php.md5;
-import static org.javamyadmin.php.Php.trigger_error;
+import static org.javamyadmin.php.Php.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,6 +17,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.php.GLOBALS;
 
 public class Config {
@@ -35,17 +30,17 @@ public class Config {
     /**
      * @var array   default configuration settings
      */
-    public Properties defaults = new Properties();
+    public SmartMap defaults = new SmartMap();
 
     /**
      * @var array   configuration settings, without user preferences applied
      */
-    public Properties base_settings = new Properties();
+    public SmartMap base_settings = new SmartMap();
 
     /**
      * @var array   configuration settings
      */
-    public Properties settings = new Properties();
+    public SmartMap settings = new SmartMap();
 
     /**
      * @var String  config source
@@ -53,11 +48,11 @@ public class Config {
     public String source = "";
 
     /**
-     * @var int     source modification time
+     * @var int     source modification time	- Unsupported
      */
-    public long source_mtime = 0;
-    public long default_source_mtime = 0;
-    public long set_mtime = 0;
+    //public long source_mtime = 0;
+    //public long default_source_mtime = 0;
+    //public long set_mtime = 0;
 
     /**
      * @var boolean
@@ -341,22 +336,16 @@ public class Config {
      */
     public boolean loadDefaults()
     {
-        if (! new File(this.default_source).exists()) {
-            this.error_config_default_file = true;
-            return false;
-        }
-       
         GLOBALS.pma_config_loading = true;
-        Properties cfg = new Properties();
+        SmartMap cfg = new SmartMap();
         try {
-			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream(default_source);
-			cfg.load(is);
-		} catch (NullPointerException e) {
-			System.out.println("File " + default_source + " not found!"); //FIXME
+            cfg.loadFromResource(default_source);
+		} catch (FileNotFoundException e) {
+			trigger_error(__("Resource file not found"), E_USER_ERROR);
 			this.error_config_default_file = true;
             return false;
 		} catch (IOException e) {
-			System.out.println("Error reading " + default_source + "!"); //FIXME
+			trigger_error(__("Error readinge resource file"), E_USER_ERROR);
 			this.error_config_default_file = true;
             return false;
 		}
@@ -369,15 +358,13 @@ public class Config {
             return false;
         }
 
-        this.default_source_mtime = new File(this.default_source).lastModified();
-
-        this.default_server = ((List<Map>)cfg.get("Servers")).get(0);
+        this.default_server = (Map) multiget(cfg, "Servers", "0");
         cfg.remove("Servers");
 
         this.defaults = cfg;
         
         Map tmpMap = array_replace_recursive(this.settings, cfg);
-        this.settings = new Properties();
+        this.settings = new SmartMap();
         this.settings.putAll(tmpMap);
 
         this.error_config_default_file = false;
@@ -410,24 +397,22 @@ public class Config {
          * output.
          */
         GLOBALS.pma_config_loading = true;
-        Properties cfg = new Properties(defaults);
+        SmartMap cfg = new SmartMap();
+        cfg.putAll(defaults);
         try {
-			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream(this.getSource());
-			cfg.load(is);
-		} catch (NullPointerException e) {
-			System.out.println("File " + default_source + " not found!"); //FIXME
+        	cfg.loadFromResource(this.getSource());
+		} catch (FileNotFoundException e) {
+			trigger_error(__("Resource file not found"), E_USER_ERROR);
 			this.error_config_file = true;
             return false;
 		} catch (IOException e) {
-			System.out.println("Error reading " + default_source + "!"); //FIXME
+			trigger_error(__("Error readinge resource file"), E_USER_ERROR);
 			this.error_config_file = true;
             return false;
 		}
         GLOBALS.pma_config_loading = false;
         
         //error_reporting(old_error_reporting);
-
-        this.source_mtime = 0; // FIXME File is a resource....new File(this.getSource()).lastModified();
         
 
         /**
@@ -452,7 +437,7 @@ public class Config {
         }
 
         Map tmpMap = array_replace_recursive(this.settings, cfg);
-        this.settings = new Properties();
+        this.settings = new SmartMap();
         this.settings.putAll(tmpMap);
         
         return true;
@@ -667,38 +652,6 @@ public class Config {
     }
 
     /**
-     * check config source
-     *
-     * @return boolean whether source is valid or not
-     */
-    public boolean checkConfigSource()
-    {
-        if (this.getSource() == null) {
-            // no configuration file set at all
-            return false;
-        }
-
-        if (! new File(this.getSource()).exists()) {
-            this.source_mtime = 0;
-            return false;
-        }
-
-        if (! new File(this.getSource()).canRead()) {
-            this.source_mtime = 0;
-                trigger_error(
-                    String.format(
-                        __("Existing configuration file (%s) is not readable."),
-                        this.getSource()
-                    ),
-                    E_FATAL
-                );
-                return false;
-        }
-
-        return true;
-    }
-
-    /**
      * verifies the permissions on config file (if asked by configuration)
      * (must be called after config.inc.php has been merged)
      *
@@ -787,7 +740,6 @@ public class Config {
             || !this.settings.get(setting).equals(value)
         ) {
             this.settings.put(setting, value);
-            this.set_mtime = new Date().getTime();
         }
     }
 
@@ -811,9 +763,7 @@ public class Config {
     public String getThemeUniqueValue(GLOBALS GLOBALS)
     {
         return (
-            "" + this.source_mtime +
-            this.default_source_mtime +
-            this.get("user_preferences_mtime") +
+            "" + this.get("user_preferences_mtime") +
             GLOBALS.PMA_Theme.mtime_info +
             GLOBALS.PMA_Theme.filesize_info
         );
