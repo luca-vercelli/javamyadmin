@@ -64,10 +64,10 @@ In the second case:
 | x[y]                  | x.get(y)                  |
 
 
-#Conversion of PMA classes
+# Conversion of PMA classes
 
 Please notice that a "Singleton" in PHP is not a singleton in Java, and a "global variable" in PHP is not global (nor static) in Java.
 
 
-՝Template՝ class has been merged into ՝JtwigFactory՝.
+`Template` class has been merged into `JtwigFactory`.
 
