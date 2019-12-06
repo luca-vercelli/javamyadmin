@@ -72,3 +72,12 @@ Please notice that a "Singleton" in PHP is not a singleton in Java, and a "globa
 `Template` class has been merged into `JtwigFactory`.
 
 All paths have been defined inside GLOBALS class.
+
+# Conversion of twig templates
+
+JTwig has some limitations. We added some configuration, however that's not enough.
+ 
+(1) The construct for ... if is not allowed.
+
+(2) The "?" construct requires parenthesis, e.g. (condition) ? x : y
+

@@ -21,9 +21,6 @@ public class JtwigFunction1Ary extends AbstractJtwigFunction {
 
 	@Override
 	public Object execute(FunctionRequest arg) {
-		if (arg.getNumberOfArguments() != 1) {
-			throw new IllegalArgumentException(String.format("'%s' expects exacly 1 argument(s)", name));
-		}
 		return function.apply(arg.get(0));
 	}
 
