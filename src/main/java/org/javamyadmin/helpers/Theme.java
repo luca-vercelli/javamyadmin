@@ -1,10 +1,18 @@
 package org.javamyadmin.helpers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.php.GLOBALS;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -80,6 +88,8 @@ public class Theme {
         "icons",
     };
 
+	private String THEMES_FOLDER;
+
     /**
      * @var Template
      */
@@ -88,8 +98,10 @@ public class Theme {
     /**
      * Theme constructor.
      */
-    public Theme()
+    private Theme(File path, String THEMES_FOLDER)
     {
+    	this.path = path;
+    	this.THEMES_FOLDER = THEMES_FOLDER;
     }
 
     /**
@@ -100,10 +112,7 @@ public class Theme {
      */
     public boolean loadInfo()
     {
-    	throw new IllegalStateException("Not implemented");
-    	//JSON decode
-    	/*
-        File infofile = new File(this.getPath() + "/theme.json");
+    	File infofile = new File(this.getPath() + "/theme.json");
         if (!infofile.exists()) {
             return false;
         }
@@ -111,11 +120,28 @@ public class Theme {
         if (this.mtime_info == infofile.lastModified()) {
             return true;
         }
-        content = @file_get_contents(infofile);
-        if (content === false) {
+
+        if (infofile.length() == 0) {
             return false;
         }
-        Map<String, Object> data = json_decode(content, true);
+        
+        Gson gson = new Gson();
+        Map<String, Object> data;
+		try {
+			data = gson.fromJson(new FileReader(infofile), Map.class);
+		} catch (JsonSyntaxException e) {
+			trigger_error(__("Cannot decode theme.json"), E_USER_ERROR);
+			e.printStackTrace();
+			return false;
+		} catch (JsonIOException e) {
+			trigger_error(__("Cannot read theme.json"), E_USER_ERROR);
+			e.printStackTrace();
+			return false;
+		} catch (FileNotFoundException e) {
+			// this should not happen
+			e.printStackTrace();
+			return false;
+		}
 
         // Did we get expected data?
         if (! is_array(data)) {
@@ -134,10 +160,7 @@ public class Theme {
         }
 
         // Version check
-        if (! is_array(data.get("supports"))) {
-            return false;
-        }
-        if (! in_array(PMA_MAJOR_VERSION, data.get("supports")) {
+        if (! ((List) data.get("supports")).contains(GLOBALS.PMA_MAJOR_VERSION)) {
             return false;
         }
 
@@ -147,7 +170,7 @@ public class Theme {
         this.setVersion((String)data.get("version"));
         this.setName((String)data.get("name"));
 
-        return true;*/
+        return true;
     }
 
     /**
@@ -160,11 +183,9 @@ public class Theme {
      * @static
      * @access public
      */
-    public static Theme load(File folder)
+    public static Theme load(File folder, String THEMES_FOLDER)
     {
-        Theme theme = new Theme();
-
-        theme.setPath(folder);
+        Theme theme = new Theme(folder, THEMES_FOLDER);
 
         if (! theme.loadInfo()) {
             return null;
@@ -190,17 +211,20 @@ public class Theme {
         }
 
         // try fallback theme
-        String fallback = "./themes/" + ThemeManager.FALLBACK_THEME + "/img/";
+        String fallback = this.THEMES_FOLDER + ThemeManager.FALLBACK_THEME + "/img/";
         if (new File(fallback).isDirectory()) {
             this.setImgPath(fallback);
             return true;
         }
 
         // we failed
-        /*TODO trigger_exception(
-                __("No valid image path for theme %s found!",
-                this.getName())
-            );*/
+        trigger_error(
+        		String.format(
+                    __("No valid image path for theme %s found!"),
+                    this.getName()
+    				),
+        		E_FATAL
+            );
         return false;
     }
 
@@ -213,19 +237,6 @@ public class Theme {
     public File getPath()
     {
         return this.path;
-    }
-
-    /**
-     * set path to theme
-     *
-     * @param String path path to theme
-     *
-     * @return void
-     * @access public
-     */
-    public void setPath(File path)
-    {
-        this.path = path;
     }
 
     /**
@@ -382,4 +393,8 @@ public class Theme {
         return JtwigFactory.render("theme_preview", data);
     }
 
+    @Override
+    public String toString() {
+    	return "Theme " + name;
+    }
 }

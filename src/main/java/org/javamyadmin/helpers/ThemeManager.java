@@ -72,6 +72,7 @@ public class ThemeManager {
 
 	private HttpServletRequest request;
 	private GLOBALS GLOBALS;
+	private Config cfg;
 
 	/**
 	 * Constructor for Theme Manager class
@@ -84,26 +85,25 @@ public class ThemeManager {
 	public ThemeManager(HttpServletRequest req, GLOBALS GLOBALS) {
 		this.request = req;
 		this.GLOBALS = GLOBALS;
+		this.cfg = GLOBALS.PMA_Config;
 
 		this.theme_default = FALLBACK_THEME;
 		this.active_theme = "";
 
-		setThemesPath(GLOBALS.ROOT_PATH + "/themes/");
+		setThemesPath(GLOBALS.THEMES_PATH);
 
-		this.setThemePerServer("true".equals(GLOBALS.PMA_Config.get("ThemePerServer")));
+		this.setThemePerServer("true".equals(cfg.get("ThemePerServer")));
 
 		this.loadThemes();
 
-		this.theme = new Theme();
-
 		boolean config_theme_exists = true;
 
-		if (!this.checkTheme((String) GLOBALS.PMA_Config.get("ThemeDefault"))) {
+		if (!this.checkTheme((String) cfg.get("ThemeDefault"))) {
 			trigger_error(String.format(__("Default theme %s not found!"),
-					htmlspecialchars((String) GLOBALS.PMA_Config.get("ThemeDefault"))), E_USER_ERROR);
+					htmlspecialchars((String) cfg.get("ThemeDefault"))), E_USER_ERROR);
 			config_theme_exists = false;
 		} else {
-			this.theme_default = (String) GLOBALS.PMA_Config.get("ThemeDefault");
+			this.theme_default = (String) cfg.get("ThemeDefault");
 		}
 
 		// check if user have a theme cookie
@@ -207,8 +207,8 @@ public class ThemeManager {
 	public String getThemeCookie(HttpServletRequest req) {
 
 		String name = this.getThemeCookieName();
-		if (GLOBALS.PMA_Config.issetCookie(name, req)) {
-			return GLOBALS.PMA_Config.getCookie(name, req);
+		if (cfg.issetCookie(name, req)) {
+			return cfg.getCookie(name, req);
 		}
 
 		return null;
@@ -224,16 +224,16 @@ public class ThemeManager {
 	 * @access public
 	 */
 	public boolean setThemeCookie(HttpServletRequest req, HttpServletResponse resp) {
-		GLOBALS.PMA_Config.setCookie(this.getThemeCookieName(), this.theme.id, this.theme_default, null, false, req,
+		cfg.setCookie(this.getThemeCookieName(), this.theme.id, this.theme_default, null, false, req,
 				resp);
 		// force a change of a dummy session variable to avoid problems
 		// with the caching of phpmyadmin.css.php
-		GLOBALS.PMA_Config.set("theme-update", this.theme.id);
+		cfg.set("theme-update", this.theme.id);
 		return true;
 	}
 
 	/**
-	 * read all themes
+	 * Load all themes into this.themes
 	 *
 	 * @return boolean true
 	 * @access public
@@ -259,7 +259,7 @@ public class ThemeManager {
 			if (this.themes.containsKey(name)) {
 				continue;
 			}
-			Theme new_theme = Theme.load(PMA_Theme);
+			Theme new_theme = Theme.load(PMA_Theme, this._themes_path);
 			if (new_theme != null) {
 				new_theme.setId(name);
 				this.themes.put(name, new_theme);

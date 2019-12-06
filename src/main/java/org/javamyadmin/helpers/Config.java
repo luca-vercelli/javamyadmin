@@ -467,7 +467,8 @@ public class Config {
      */
     public void loadUserPreferences()
     {
-    	throw new IllegalStateException("Not implemented");/*
+    	// TODO
+    	/*
         userPreferences = new UserPreferences();
         // index.php should load these settings, so that phpmyadmin.css.php
         // will have everything available in session cache

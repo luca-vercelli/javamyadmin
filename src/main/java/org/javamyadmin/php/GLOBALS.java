@@ -1,9 +1,6 @@
 package org.javamyadmin.php;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
@@ -22,13 +19,15 @@ import org.javamyadmin.helpers.ThemeManager;
 public class GLOBALS {
 
 	public static final String PMA_PATH_TO_BASEDIR = ""; // Is it needed ?!?
-	public static final String PMA_VERSION = "0.1";
+	public static final String PMA_VERSION = "5.1.1";
+	public static final String PMA_MAJOR_VERSION = "5.1";
 	public Integer server = 0;
 	
 	/**
 	 * Absolute path of /WEB-INF/..
 	 */
 	public String ROOT_PATH;
+	public String THEMES_PATH;
 	
 	public static final String LOCALE_PATH = "/"; // Where is it? files *.mo should be there
 	public static final String PMA_MINIMUM_COMMON = "";
@@ -78,5 +77,6 @@ public class GLOBALS {
 
 	public GLOBALS(ServletContext context) {
 		ROOT_PATH = context.getRealPath("/WEB-INF/..");
+		THEMES_PATH = ROOT_PATH + "/themes"; 
 	}
 }
