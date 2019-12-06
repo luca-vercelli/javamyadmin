@@ -26,8 +26,9 @@ public class GLOBALS {
 	/**
 	 * Absolute path of /WEB-INF/..
 	 */
-	public String ROOT_PATH;
-	public String THEMES_PATH;
+	public static String ROOT_PATH;
+	public static String THEMES_PATH;
+	public static String TEMPLATES_PATH;
 	
 	public static final String LOCALE_PATH = "/"; // Where is it? files *.mo should be there
 	public static final String PMA_MINIMUM_COMMON = "";
@@ -76,7 +77,11 @@ public class GLOBALS {
 	
 
 	public GLOBALS(ServletContext context) {
-		ROOT_PATH = context.getRealPath("/WEB-INF/..");
-		THEMES_PATH = ROOT_PATH + "/themes"; 
+		if (ROOT_PATH == null) {
+			// only at first run
+			ROOT_PATH = context.getRealPath("/WEB-INF/..");
+			THEMES_PATH = ROOT_PATH + "/themes/";
+			TEMPLATES_PATH = ROOT_PATH + "/WEB-INF/templates/";
+		}
 	}
 }

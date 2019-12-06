@@ -259,7 +259,7 @@ public class ThemeManager {
 			if (this.themes.containsKey(name)) {
 				continue;
 			}
-			Theme new_theme = Theme.load(PMA_Theme, this._themes_path);
+			Theme new_theme = Theme.load(PMA_Theme);
 			if (new_theme != null) {
 				new_theme.setId(name);
 				this.themes.put(name, new_theme);

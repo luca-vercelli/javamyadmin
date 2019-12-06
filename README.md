@@ -71,3 +71,4 @@ Please notice that a "Singleton" in PHP is not a singleton in Java, and a "globa
 
 `Template` class has been merged into `JtwigFactory`.
 
+All paths have been defined inside GLOBALS class.

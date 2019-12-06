@@ -1106,7 +1106,7 @@ public class Config {
      */
     public static String renderFooter()
     {
-    	throw new IllegalArgumentException("Not implemented");
+    	return ""; //TODO
     	// return _renderCustom(CUSTOM_FOOTER_FILE, "pma_footer"); // cfr. vendors.properties
     }
 
@@ -1117,7 +1117,7 @@ public class Config {
      */
     public static String renderHeader()
     {
-    	throw new IllegalArgumentException("Not implemented");
+    	return ""; //TODO
         //return _renderCustom(CUSTOM_HEADER_FILE, "pma_header"); // cfr. vendors.properties
     }
 

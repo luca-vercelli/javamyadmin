@@ -88,8 +88,6 @@ public class Theme {
         "icons",
     };
 
-	private String THEMES_FOLDER;
-
     /**
      * @var Template
      */
@@ -98,10 +96,9 @@ public class Theme {
     /**
      * Theme constructor.
      */
-    private Theme(File path, String THEMES_FOLDER)
+    private Theme(File path)
     {
     	this.path = path;
-    	this.THEMES_FOLDER = THEMES_FOLDER;
     }
 
     /**
@@ -183,9 +180,9 @@ public class Theme {
      * @static
      * @access public
      */
-    public static Theme load(File folder, String THEMES_FOLDER)
+    public static Theme load(File folder)
     {
-        Theme theme = new Theme(folder, THEMES_FOLDER);
+        Theme theme = new Theme(folder);
 
         if (! theme.loadInfo()) {
             return null;
@@ -211,7 +208,7 @@ public class Theme {
         }
 
         // try fallback theme
-        String fallback = this.THEMES_FOLDER + ThemeManager.FALLBACK_THEME + "/img/";
+        String fallback = GLOBALS.THEMES_PATH + ThemeManager.FALLBACK_THEME + "/img/";
         if (new File(fallback).isDirectory()) {
             this.setImgPath(fallback);
             return true;
