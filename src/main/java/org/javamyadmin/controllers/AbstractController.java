@@ -130,7 +130,7 @@ public abstract class AbstractController extends HttpServlet {
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
-		    GLOBALS.PMA_Config.setCookie("pma_lang", GLOBALS.lang);
+		    GLOBALS.PMA_Config.setCookie("pma_lang", GLOBALS.lang, request, response);
 		    GLOBALS.themeManager.setThemeCookie(request, response);
 		    if (! empty(GLOBALS.PMA_Config.get("Server"))) {
 		        /**

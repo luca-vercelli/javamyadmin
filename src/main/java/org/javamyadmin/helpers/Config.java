@@ -999,8 +999,8 @@ public class Config {
         return true;
     }
 
-	public boolean setCookie(String cookie, String value) {
-		return setCookie(cookie, value, null, null, false, null, null);
+	public boolean setCookie(String cookie, String value, HttpServletRequest req, HttpServletResponse resp) {
+		return setCookie(cookie, value, null, null, false, req, resp);
 	}
 
     /**
