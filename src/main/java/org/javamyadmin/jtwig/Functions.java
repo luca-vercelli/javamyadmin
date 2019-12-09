@@ -11,6 +11,8 @@ import org.javamyadmin.helpers.html.Generator;
 import org.jtwig.functions.FunctionRequest;
 import org.jtwig.functions.JtwigFunction;
 
+import static org.javamyadmin.php.Php.*;
+
 /**
  * Long list of PMA-specific twig functions
  * 
@@ -31,6 +33,8 @@ public class Functions {
 			functions = new ArrayList<>();
 			functions.add(new JtwigFunction1Ary("url", x -> x)); // TODO
 			functions.add(new JtwigFunction1Ary("link", x -> x)); // TODO
+			functions.add(new JtwigFunction1Ary("trans", x -> __((String)x)));
+			functions.add(new JtwigFunction1Ary("error", x -> x)); // TODO
 			functions.add(new JtwigFunction1Ary("show_php_docu", x -> x)); // TODO (or not)
 			functions.add(
 					new JtwigFunction2Ary("get_docu_link", (x, y) -> Util.getDocuLink((String) x, (String) y), "", ""));
