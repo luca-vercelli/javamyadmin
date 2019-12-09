@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import org.jtwig.functions.FunctionRequest;
 
 /**
- * Skeleton for 1-ary functions.
+ * Skeleton for n-ary functions.
  * 
  * @author lucav
  *
@@ -16,15 +16,9 @@ public class JtwigFunctionVarargs extends AbstractJtwigFunction {
 	private Method staticMethod;
 	private Object[] defaults;
 
-	public JtwigFunctionVarargs(String name, Class clazz, String staticMethodName, Object... defaults) {
+	public JtwigFunctionVarargs(String name, Method staticMethod, Object... defaults) {
 		super(name);
-		try {
-			this.staticMethod = clazz.getMethod(staticMethodName);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(e);
-		} catch (SecurityException e) {
-			throw new IllegalArgumentException(e);
-		}
+		this.staticMethod = staticMethod;
 		this.defaults = defaults;
 	}
 

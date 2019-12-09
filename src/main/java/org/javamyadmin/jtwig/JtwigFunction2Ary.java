@@ -29,7 +29,7 @@ public class JtwigFunction2Ary extends AbstractJtwigFunction {
 	public Object execute(FunctionRequest arg) {
 		if (arg.getNumberOfArguments() == 0) {
 			return function.apply(default1, default2);
-		} else if (arg.getNumberOfArguments() == 0) {
+		} else if (arg.getNumberOfArguments() == 1) {
 			return function.apply(arg.get(0), default2);
 		} else {
 			return function.apply(arg.get(0), arg.get(1));
