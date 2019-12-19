@@ -442,7 +442,7 @@ public class Header {
 
                 $baseDir = GLOBALS.PMA_PATH_TO_BASEDIR;
                 $uniqueValue = GLOBALS.PMA_Config.getThemeUniqueValue(GLOBALS);
-                $themePath = GLOBALS.pmaThemePath.getAbsolutePath();
+                $themePath = GLOBALS.pmaThemeUrlPath;
                 $version = getVersionParameter();
 
                 // The user preferences have been merged at this point
@@ -594,54 +594,54 @@ public class Header {
             "Referrer-Policy", "no-referrer"
         );
         response.addHeader(
-            "Content-Security-Policy", "default-src \"self\" "
+            "Content-Security-Policy", "default-src 'self' "
             + $captcha_url
             + cfg.get("CSPAllow") + ";"
-            + "script-src \"self\" \"unsafe-inline\" \"unsafe-eval\" "
+            + "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
             + $captcha_url
             + cfg.get("CSPAllow") + ";"
-            + "style-src \"self\" \"unsafe-inline\" "
+            + "style-src 'self' 'unsafe-inline' "
             + $captcha_url
             + cfg.get("CSPAllow")
             + ";"
-            + "img-src \"self\" data: "
+            + "img-src 'self' data: "
             + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
-            + "object-src \"none\";"
+            + "object-src 'none';"
         );
         response.addHeader(
-            "X-Content-Security-Policy", "default-src \"self\" "
+            "X-Content-Security-Policy", "default-src 'self' "
             + $captcha_url
             + cfg.get("CSPAllow") + ";"
             + "options inline-script eval-script;"
             + "referrer no-referrer;"
-            + "img-src \"self\" data: "
+            + "img-src 'self' data: "
             + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
-            + "object-src \"none\";"
+            + "object-src 'none';"
         );
         response.addHeader(
-            "X-WebKit-CSP", "default-src \"self\" "
+            "X-WebKit-CSP", "default-src 'self' "
             + $captcha_url
             + cfg.get("CSPAllow") + ";"
-            + "script-src \"self\" "
+            + "script-src 'self' "
             + $captcha_url
             + cfg.get("CSPAllow")
-            + " \"unsafe-inline\" \"unsafe-eval\";"
+            + " 'unsafe-inline' 'unsafe-eval';"
             + "referrer no-referrer;"
-            + "style-src \"self\" \"unsafe-inline\" "
+            + "style-src 'self' 'unsafe-inline' "
             + $captcha_url
             + ";"
-            + "img-src \"self\" data: "
+            + "img-src 'self' data: "
             + cfg.get("CSPAllow")
             + $map_tile_urls
             + $captcha_url
             + ";"
-            + "object-src \"none\";"
+            + "object-src 'none';"
         );
         // Re-enable possible disabled XSS filters
         // see https://www.owasp.org/index.php/List_of_useful_HTTP_headers

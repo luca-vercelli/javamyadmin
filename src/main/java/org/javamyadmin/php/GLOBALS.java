@@ -34,7 +34,8 @@ public class GLOBALS {
 	public static final String PMA_MINIMUM_COMMON = "";
 	public boolean IS_TRANSFORMATION_WRAPPER = false;
 	public Theme PMA_Theme;
-	public File pmaThemePath;
+	public File pmaThemeFullPath;
+	public String pmaThemeUrlPath;
 	public String pmaThemeImage;
 	public static Config PMA_Config = new Config(null);
 	public static boolean pma_config_loading = false;

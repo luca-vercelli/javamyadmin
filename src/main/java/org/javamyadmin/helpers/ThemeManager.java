@@ -362,7 +362,9 @@ public class ThemeManager {
 		 * 
 		 * @global String GLOBALS["pmaThemePath"]
 		 */
-		GLOBALS.pmaThemePath = tmanager.theme.getPath();
+		GLOBALS.pmaThemeFullPath = tmanager.theme.getPath();
+		GLOBALS.pmaThemeUrlPath = "themes/" + tmanager.theme.getPath().getName(); // TODO improve this...
+		
 		/**
 		 * the theme image path
 		 * 
