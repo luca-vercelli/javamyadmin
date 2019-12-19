@@ -81,3 +81,4 @@ JTwig has some limitations. We added some configuration, however that's not enou
 
 (2) The "?" construct requires parenthesis, e.g. (condition) ? x : y
 
+(3) The precedence of "|" operator is different
