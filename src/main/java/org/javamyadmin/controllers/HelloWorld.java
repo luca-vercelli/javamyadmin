@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.jtwig.web.servlet.JtwigRenderer;
 
-@WebServlet(name = "HelloWorld", urlPatterns = { "/HelloWorld" })
+@WebServlet(urlPatterns = "/HelloWorld" , name = "HelloWorld")
 public class HelloWorld extends HttpServlet {
 
 	private static final long serialVersionUID = 2766674644118792082L;

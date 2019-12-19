@@ -25,7 +25,7 @@ import org.javamyadmin.php.GLOBALS;
  * original dispatcher
  *
  */
-@WebServlet(urlPatterns = "/", name = "HomeController")
+@WebServlet(urlPatterns = "/Home", name = "HomeController")
 public class HomeController extends AbstractController {
 
 	private static final long serialVersionUID = 2766674644118792082L;
