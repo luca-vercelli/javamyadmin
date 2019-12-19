@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -150,13 +149,13 @@ public class Header {
         // TODO this._console = new Console();
         String $db = GLOBALS.db; // FIXME col xxx che sono globali
         String $table = GLOBALS.table;
-        /* TODO this._menu = new Menu(
+        this._menu = new Menu(
             $db,
             $table,
             request,
             GLOBALS,
             session
-        );*/
+        );
         this._menuEnabled = true;
         this._warningsEnabled = true;
         this._isPrintView = false;
@@ -571,7 +570,7 @@ public class Header {
          */
         String $captcha_url;
         
-        String now = gmdate.format(new Date());
+        String now = gmdate.format(new Date());	// FIXME
         if (! empty(cfg.get("CaptchaLoginPrivateKey"))
             && ! empty(cfg.get("CaptchaLoginPublicKey"))
         ) {
