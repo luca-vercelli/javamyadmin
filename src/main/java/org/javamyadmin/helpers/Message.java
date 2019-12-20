@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.html.Generator;
+import org.javamyadmin.php.GLOBALS;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -646,6 +648,8 @@ public class Message {
     /**
      * decode message, taking into account our special codes
      * for formatting
+     * @param request 
+     * @param GLOBALS 
      *
      * @param String message the message
      *
@@ -653,9 +657,9 @@ public class Message {
      * @access  public
      * @static
      */
-    public static String decodeBB(String message)
+    public static String decodeBB(String message, HttpServletRequest request, GLOBALS GLOBALS)
     {
-        return Sanitize.sanitizeMessage(message, false, true);
+        return Sanitize.sanitizeMessage(message, false, true, request, GLOBALS);
     }
 
     /**
@@ -682,10 +686,12 @@ public class Message {
 
     /**
      * returns compiled message
+     * @param request 
+     * @param GLOBALS 
      *
      * @return String complete message
      */
-    public String getMessage()
+    public String getMessage(HttpServletRequest request, GLOBALS GLOBALS)
     {
         String message = this.message;
 
@@ -706,7 +712,7 @@ public class Message {
         }
 
         if (this.useBBCode) {
-            message = decodeBB(message);
+            message = decodeBB(message, request, GLOBALS);
         }
 
         for (Object add_message: this.getAddedMessages()) {

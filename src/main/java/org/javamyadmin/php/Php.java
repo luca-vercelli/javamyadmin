@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -443,6 +445,23 @@ public class Php {
 		return result;
 	}
 
+	/**
+	 * Perform a regular expression search and replace using a callback
+	 */
+	public static String preg_replace_callback(String $pattern, Function<String,String> $callback, String $subject) {
+		Pattern pc = Pattern.compile($pattern);
+		Matcher matcher = pc.matcher($subject);
+		StringBuilder sb = new StringBuilder();
+		int lastMatchPos = 0;
+		while (matcher.find()) {
+			sb.append($subject.substring(lastMatchPos, matcher.start()));
+			lastMatchPos = matcher.end();
+			sb.append($callback.apply(matcher.group()));
+		}
+		sb.append($subject.substring(lastMatchPos));
+		return sb.toString();
+	}
+	
 	/**
 	 * This is NOT a PHP function, this correspond to PHP construct:
 	 * 

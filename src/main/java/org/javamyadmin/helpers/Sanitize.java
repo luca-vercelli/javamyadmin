@@ -1,12 +1,17 @@
 package org.javamyadmin.helpers;
 
 import org.javamyadmin.helpers.html.Generator;
+import org.javamyadmin.php.GLOBALS;
+
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -15,6 +20,97 @@ import javax.servlet.http.HttpServletResponse;
  * @package PhpMyAdmin
  */
 public class Sanitize {
+
+
+    /**
+     * Checks whether given link is valid
+     *
+     * @param string  $url   URL to check
+     * @param boolean $http  Whether to allow http links
+     * @param boolean $other Whether to allow ftp and mailto links
+     *
+     * @return boolean True if string can be used as link
+     */
+    public static boolean checkLink(String $url, boolean $http /*= false*/, boolean $other /*= false*/)
+    {
+        $url = $url.toLowerCase();
+        List<String> $valid_starts = Arrays.asList(new String[] {
+            "https://",
+            "./url.php?url=https%3a%2f%2f",
+            "./doc/html/",
+            "./index.php?",
+        });
+        boolean $is_setup = GLOBALS.PMA_Config != null && "true".equals(GLOBALS.PMA_Config.get("is_setup"));
+        // Adjust path to setup script location
+        if ($is_setup) {
+            /* TODO foreach ($valid_starts as $key => $value) {
+                if (substr($value, 0, 2) === './') {
+                    $valid_starts[$key] = '.' . $value;
+                }
+            }*/
+        }
+        if ($other) {
+            $valid_starts.add("mailto:");
+            $valid_starts.add("ftp://");
+        }
+        if ($http) {
+            $valid_starts.add("http://");
+        }
+        if ($is_setup) {
+            $valid_starts.add("?page=form&");
+            $valid_starts.add("?page=servers&");
+        }
+        for (String $val : $valid_starts) {
+            if ($url.startsWith($val)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean checkLink(String $url) {
+    	return checkLink($url, false, false);
+    }
+
+    /**
+     * Callback function for replacing [a@link@target] links in bb code.
+     * @param request 
+     * @param GLOBALS 
+     *
+     * @param array $found Array of preg matches
+     *
+     * @return string Replaced string
+     */
+    public static String replaceBBLink(String[] $found, HttpServletRequest request, GLOBALS GLOBALS)
+    {
+        /* Check for valid link */
+        if (! checkLink($found[1])) {
+            return $found[0];
+        }
+        /* a-z and _ allowed in target */
+        if (! empty($found[3]) && preg_match("/[^a-z_]+/i", $found[3])) {
+            return $found[0];
+        }
+
+        /* Construct target */
+        String $target = "";
+        if (! empty($found[3])) {
+            $target = " target='" + $found[3] + "'";
+            if ("_blank".equals($found[3])) {
+                $target += " rel='noopener noreferrer'";
+            }
+        }
+
+        String $url;
+        /* Construct url */
+        if ($found[1].startsWith("http")) {
+            $url = Core.linkURL($found[1], request, GLOBALS);
+        } else {
+            $url = $found[1];
+        }
+
+        return "<a href='" + $url + "'" + $target + ">";
+    }
 
     /**
      * Sanitizes message, taking into account our special codes
@@ -34,7 +130,8 @@ public class Sanitize {
      *
      * @return String   the sanitized message
      */
-    public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/)
+    public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/,
+    		HttpServletRequest request, GLOBALS GLOBALS)
     {
     	if (message == null) {
     		message = "";
@@ -63,24 +160,30 @@ public class Sanitize {
             // used in libraries/Util.php
         message = message.replace(    "[dochelpicon]" , Generator.getImage("b_help", __("Documentation"), null));
 
-        // TODO
-        /* Match links in bb code ([a@url@target], where @target is options) 
+        // Match links in bb code ([a@url@target], where @target is options) 
         String pattern = "/\\[a@([^]\"@]*)(@([^]\"]*))?\\]/";
 
-        /* Find and replace all links 
-        message = preg_replace_callback(pattern, void (match) {
-            return Sanitize.replaceBBLink(match);
+        // Find and replace all links 
+        message = preg_replace_callback(pattern, new Function<String, String>() {
+
+			@Override
+			public String apply(String match) {
+				return Sanitize.replaceBBLink(match, request, GLOBALS);
+			}
         }, message);
 
-        /* Replace documentation links 
+        // Replace documentation links 
         message = preg_replace_callback(
             "/\\[doc@([a-zA-Z0-9_-]+)(@([a-zA-Z0-9_-]*))?\\]/",
-            void (match) {
-                return Sanitize.replaceDocLink(match);
+            new Function<String, String>() {
+
+				@Override
+				public String apply(String match) {
+					return ""; //Unsupported Sanitize.replaceDocLink(match);
+				}
             },
             message
         );
-        */
 
         /* Possibly escape result */
         if (escape) {
@@ -90,7 +193,7 @@ public class Sanitize {
         return message;
     }
 
-    /**
+	/**
      * Removes all variables from request except whitelisted ones.
      *
      * @param string[] $whitelist list of variables to allow
