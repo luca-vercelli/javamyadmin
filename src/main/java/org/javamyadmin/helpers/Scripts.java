@@ -19,15 +19,31 @@ import static org.javamyadmin.php.Php.*;
  */
 public class Scripts {
 
+	/**
+	 * POJO with "has_onload", "filename", "params" attributes
+	 *
+	 */
 	public static class FStruct {
 		public boolean has_onload;
 		public String filename;
 		public Map<String, Object> params = new HashMap<>();
 
 		public FStruct(boolean has_onload, String filename, Map<String, Object> params) {
+			if (filename == null) {
+				throw new IllegalArgumentException("Null filename given");
+			}
 			this.filename = filename;
 			this.has_onload = has_onload;
 			this.params = params;
+		}
+		
+		/**
+		 * Used by List.contains
+		 * @return
+		 */
+		@Override
+		public boolean equals(Object other) {
+			return (other instanceof FStruct)&& ((FStruct)other).filename.equals(filename);
 		}
 
 	}
@@ -38,7 +54,7 @@ public class Scripts {
 	 * @access private
 	 * @var array of strings
 	 */
-	private Map<String, FStruct> _files;
+	private List<FStruct> _files;
 
 	/**
 	 * A String of discrete javascript code snippets
@@ -61,7 +77,7 @@ public class Scripts {
 	 */
 	public Scripts(GLOBALS GLOBALS) {
 		//this.template = new Template();
-		this._files = new HashMap<>();
+		this._files = new ArrayList<>();
 		this._code = "";
 		this.GLOBALS = GLOBALS;
 	}
@@ -77,13 +93,11 @@ public class Scripts {
 	 * @return void
 	 */
 	public void addFile(String filename, Map<String, Object> params) {
-		String hash = md5(filename);
-		if (!empty(this._files.get(hash))) {
+		FStruct struct = new FStruct(this._eventBlacklist(filename), filename, params);
+		if (this._files.contains(struct)) {
 			return;
 		}
-
-		FStruct struct = new FStruct(this._eventBlacklist(filename), filename, params);
-		this._files.put(hash, struct);
+		this._files.add(struct);
 	}
 
 	public void addFile(String filename) {
@@ -133,6 +147,10 @@ public class Scripts {
 		this._code += $code + "\n";
 	}
 
+	/**
+	 * POJO with  "fire" and "name" attributes
+	 *
+	 */
 	public static class FStruct2 {
 		public boolean fire;
 		public String name;
@@ -151,7 +169,7 @@ public class Scripts {
 	 */
 	public List<FStruct2> getFiles() {
 		List<FStruct2> retval = new ArrayList<FStruct2>();
-		for (FStruct $file : this._files.values()) {
+		for (FStruct $file : this._files) {
 			// If filename contains a "?", continue.
 			if ($file.filename.contains("?")) {
 				continue;
