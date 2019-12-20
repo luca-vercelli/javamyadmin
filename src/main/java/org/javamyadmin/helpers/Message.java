@@ -133,6 +133,9 @@ public class Message {
      */
     protected List<Object> addedMessages = new ArrayList<>();
 
+    private HttpServletRequest request;
+    private Globals GLOBALS;
+    
     /**
      * Constructor
      *
@@ -146,15 +149,21 @@ public class Message {
         String String /*= ""*/,
         int number /*= Message.NOTICE*/,
         List<Object> params /*= []*/,
-        int sanitize /*= Message.SANITIZE_NONE*/
+        int sanitize /*= Message.SANITIZE_NONE*/,
+        HttpServletRequest request,
+        Globals GLOBALS
     ) {
         this.setString(String, (sanitize & Message.SANITIZE_STRING) != 0);
         this.setNumber(number);
         this.setParams(params, (sanitize & Message.SANITIZE_PARAMS) != 0);
+        this.request = request;
+        this.GLOBALS = GLOBALS;
     }
 
-    public Message(String string, int success) {
-		this(string,success, new ArrayList<>(), SANITIZE_NONE);
+    public Message(String string, int success,
+    		HttpServletRequest request,
+            Globals GLOBALS) {
+		this(string,success, new ArrayList<>(), SANITIZE_NONE, request, GLOBALS);
 	}
 
 	/**
@@ -165,7 +174,7 @@ public class Message {
     @Override
     public String toString()
     {
-        return this.getMessage();
+        return this.getMessage(request, GLOBALS);
     }
 
     /**
@@ -181,13 +190,15 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message success(String string )
+    public static Message success(String string,
+    		HttpServletRequest request,
+            Globals GLOBALS )
     {
         if (empty(string)) {
             string = __("Your SQL query has been executed successfully.");
         }
 
-        return new Message(string, SUCCESS);
+        return new Message(string, SUCCESS, request, GLOBALS);
     }
 
     /**
@@ -201,13 +212,15 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message error(String string)
+    public static Message error(String string,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
         if (empty(string)) {
             string = __("Error");
         }
 
-        return new Message(string, ERROR);
+        return new Message(string, ERROR, request, GLOBALS);
     }
 
     /**
@@ -223,9 +236,11 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message notice(String String)
+    public static Message notice(String String,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
-        return new Message(String, NOTICE);
+        return new Message(String, NOTICE, request, GLOBALS);
     }
 
     /**
@@ -239,9 +254,11 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message raw(String message, int type /*= Message.NOTICE*/)
+    public static Message raw(String message, int type /*= Message.NOTICE*/,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
-    	Message r = new Message("", type);
+    	Message r = new Message("", type, request, GLOBALS);
         r.setMessage(message, false);
         r.setBBCode(false);
         return r;
@@ -257,10 +274,12 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForAffectedRows(int rows)
+    public static Message getMessageForAffectedRows(int rows,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
         Message message = success(
-            _ngettext("%1d row affected.", "%1d rows affected.", rows)
+            _ngettext("%1d row affected.", "%1d rows affected.", rows), request, GLOBALS
         );
         message.addParam(rows);
         return message;
@@ -276,10 +295,12 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForDeletedRows(int rows)
+    public static Message getMessageForDeletedRows(int rows,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
     	Message message = success(
-            _ngettext("%1d row deleted.", "%1d rows deleted.", rows)
+            _ngettext("%1d row deleted.", "%1d rows deleted.", rows), request, GLOBALS
         );
         message.addParam(rows);
         return message;
@@ -295,10 +316,12 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForInsertedRows(int rows)
+    public static Message getMessageForInsertedRows(int rows,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
     	Message message = success(
-            _ngettext("%1d row inserted.", "%1d rows inserted.", rows)
+            _ngettext("%1d row inserted.", "%1d rows inserted.", rows), request, GLOBALS
         );
         message.addParam(rows);
         return message;
@@ -314,9 +337,11 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawError(String message)
+    public static Message rawError(String message,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
-        return raw(message, ERROR);
+        return raw(message, ERROR, request, GLOBALS);
     }
 
     /**
@@ -329,9 +354,11 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawNotice(String message)
+    public static Message rawNotice(String message,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
-        return raw(message, NOTICE);
+        return raw(message, NOTICE, request, GLOBALS);
     }
 
     /**
@@ -344,9 +371,11 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawSuccess(String message)
+    public static Message rawSuccess(String message,
+    		HttpServletRequest request,
+            Globals GLOBALS)
     {
-        return raw(message, SUCCESS);
+        return raw(message, SUCCESS, request, GLOBALS);
     }
 
     /**
@@ -491,7 +520,7 @@ public class Message {
      */
     public void addParamHtml(String param)
     {
-        this.params.add(notice(param));
+        this.params.add(notice(param, request, GLOBALS));
     }
 
     /**
@@ -563,7 +592,7 @@ public class Message {
      */
     public void addText(String message, String separator /*= " "*/)
     {
-        this.addMessageToList(notice(htmlspecialchars(message)), separator);
+        this.addMessageToList(notice(htmlspecialchars(message), request, GLOBALS), separator);
     }
 
     /**
@@ -576,7 +605,7 @@ public class Message {
      */
     public void addHtml(String message, String separator)
     {
-        this.addMessageToList(rawNotice(message), separator);
+        this.addMessageToList(rawNotice(message, request, GLOBALS), separator);
     }
 
     /**
@@ -833,7 +862,7 @@ public class Message {
         } else {
             image = "s_notice";
         }
-        message = Message.notice(Generator.getImage(image, null, null)) + " " + message;
+        message = Message.notice(Generator.getImage(image, null, null), request, GLOBALS) + " " + message;
         return message;
     }
 

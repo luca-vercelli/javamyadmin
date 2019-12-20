@@ -169,7 +169,7 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommon(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
+    public static String getCommon(Map<String, String> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
     {
         return htmlspecialchars(
             Url.getCommonRaw(params, divider, req, GLOBALS)
@@ -179,7 +179,7 @@ public class Url {
     /**
      * Generates text with URL parameters.
      */
-    public static String getCommon(Map<String, Object> params, HttpServletRequest req, Globals GLOBALS) {
+    public static String getCommon(Map<String, String> params, HttpServletRequest req, Globals GLOBALS) {
     	return getCommon(params, "?", req, GLOBALS);
     }
 
@@ -213,7 +213,7 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommonRaw(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
+    public static String getCommonRaw(Map<String, String> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
     {
     	if (params == null) {
     		params = new HashMap<>();
@@ -228,7 +228,7 @@ public class Url {
             && ! params.containsKey("server")
             && GLOBALS.PMA_Config.get("is_setup").equals(false)
         ) {
-            params.put("server", GLOBALS.server);
+            params.put("server", Integer.toString(GLOBALS.server));
         }
 
         if (empty(GLOBALS.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
@@ -291,7 +291,7 @@ public class Url {
      * @param array  additionalParameters Additional URL parameters
      * @return string
      */
-    public static String getFromRoute(String route, Map<String, Object> additionalParameters /* = [] */, HttpServletRequest req, Globals GLOBALS)
+    public static String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */, HttpServletRequest req, Globals GLOBALS)
     {
         return "index.php?route=" + route + getCommon(additionalParameters, "&", req, GLOBALS);
     }

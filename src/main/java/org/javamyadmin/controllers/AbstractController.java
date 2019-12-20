@@ -254,7 +254,7 @@ public abstract class AbstractController extends HttpServlet {
 		    	pmaResponse.setRequestStatus(false);
 		    	pmaResponse.addJSON(
 		            "message",
-		            Message.error(__("Error: Token mismatch"))
+		            Message.error(__("Error: Token mismatch"), request, GLOBALS)
 		        );
 		        //exit();	// FIXME
 		    }

@@ -131,7 +131,7 @@ public class Php {
 	 * @return
 	 */
 	public static String _pgettext(String s, String context) {
-		return Gettext.__(s); //FIXME
+		return Gettext.__(s); // FIXME
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class Php {
 	 * Generates a URL-encoded query string from the associative (or indexed) array
 	 * provided
 	 */
-	public static String http_build_query(Map<String, Object> params) {
+	public static String http_build_query(Map<String, String> params) {
 		return http_build_query(params, "&");
 	}
 
@@ -203,18 +203,18 @@ public class Php {
 	 * Generates a URL-encoded query string from the associative (or indexed) array
 	 * provided
 	 */
-	public static String http_build_query(Map<String, ? extends Object> params, String separator) {
+	public static String http_build_query(Map<String, String> params, String separator) {
 
 		// TODO use Apache commons or sim.
 
 		StringBuilder s = new StringBuilder();
 		boolean firstGone = false;
-		for (String key : params.keySet()) {
+		for (Entry<String, String> entry : params.entrySet()) {
 			if (firstGone) {
 				s.append(separator);
 				firstGone = true;
 			}
-			s.append(key).append("=").append(params.get(key).toString());
+			s.append(entry.getKey()).append("=").append(urlencode(entry.getValue()));
 		}
 		return s.toString();
 	}
@@ -380,13 +380,11 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str
-	 *            The string to be escaped
-	 * @param charlist
-	 *            A list of characters to be escaped. If charlist contains
-	 *            characters \n, \r etc., they are converted in C-like style, while
-	 *            other non-alphanumeric characters with ASCII codes lower than 32
-	 *            and higher than 126 converted to octal representation.
+	 * @param str The string to be escaped
+	 * @param charlist A list of characters to be escaped. If charlist contains
+	 * characters \n, \r etc., they are converted in C-like style, while other
+	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
+	 * 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -448,20 +446,25 @@ public class Php {
 	/**
 	 * Perform a regular expression search and replace using a callback
 	 */
-	public static String preg_replace_callback(String $pattern, Function<String,String> $callback, String $subject) {
+	public static String preg_replace_callback(String $pattern, Function<String[], String> $callback, String $subject) {
 		Pattern pc = Pattern.compile($pattern);
 		Matcher matcher = pc.matcher($subject);
+
 		StringBuilder sb = new StringBuilder();
 		int lastMatchPos = 0;
 		while (matcher.find()) {
 			sb.append($subject.substring(lastMatchPos, matcher.start()));
+			String[] matches = new String[matcher.groupCount()];
+			for (int i = 0; i < matches.length; ++i) {
+				matches[i] = matcher.group(i+1); // group(0) is full match
+			}
 			lastMatchPos = matcher.end();
-			sb.append($callback.apply(matcher.group()));
+			sb.append($callback.apply(matches));
 		}
 		sb.append($subject.substring(lastMatchPos));
 		return sb.toString();
 	}
-	
+
 	/**
 	 * This is NOT a PHP function, this correspond to PHP construct:
 	 * 

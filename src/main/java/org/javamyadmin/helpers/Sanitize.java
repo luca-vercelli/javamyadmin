@@ -88,7 +88,7 @@ public class Sanitize {
             return $found[0];
         }
         /* a-z and _ allowed in target */
-        if (! empty($found[3]) && preg_match("/[^a-z_]+/i", $found[3])) {
+        if (! empty($found[3]) && $found[3].matches("/[^a-z_]+/i")) {
             return $found[0];
         }
 
@@ -104,7 +104,7 @@ public class Sanitize {
         String $url;
         /* Construct url */
         if ($found[1].startsWith("http")) {
-            $url = Core.linkURL($found[1], request, GLOBALS);
+            $url = Core.linkURL($found[1]);
         } else {
             $url = $found[1];
         }
@@ -164,10 +164,10 @@ public class Sanitize {
         String pattern = "/\\[a@([^]\"@]*)(@([^]\"]*))?\\]/";
 
         // Find and replace all links 
-        message = preg_replace_callback(pattern, new Function<String, String>() {
+        message = preg_replace_callback(pattern, new Function<String[], String>() {
 
 			@Override
-			public String apply(String match) {
+			public String apply(String[] match) {
 				return Sanitize.replaceBBLink(match, request, GLOBALS);
 			}
         }, message);
@@ -175,10 +175,10 @@ public class Sanitize {
         // Replace documentation links 
         message = preg_replace_callback(
             "/\\[doc@([a-zA-Z0-9_-]+)(@([a-zA-Z0-9_-]*))?\\]/",
-            new Function<String, String>() {
+            new Function<String[], String>() {
 
 				@Override
-				public String apply(String match) {
+				public String apply(String[] match) {
 					return ""; //Unsupported Sanitize.replaceDocLink(match);
 				}
             },

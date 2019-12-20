@@ -11,18 +11,19 @@ class TestPhp {
 
 	@Test
 	void test_preg_replace_callback() {
-		String s = "abc12def34g5";
-		Function<String, String> callback = new Function<String, String>() {
+		String s = "April fools day is 04/01/2002. Last christmas was 12/24/2001.";
+		String yearPattern = "(\\d{2}/\\d{2}/)(\\d{4})";
+		Function<String[], String> nextYear = new Function<String[], String>() {
 
 			@Override
-			public String apply(String t) {
-				return "x";
+			public String apply(String[] t) {
+				return t[0] + (new Integer(t[1]) + 1);
 			}
 
 		};
 
-		String repl = preg_replace_callback("[0-9]+", callback, s);
-		assertEquals("abcxdefxgx", repl);
+		String repl = preg_replace_callback(yearPattern, nextYear, s);
+		assertEquals("April fools day is 04/01/2003. Last christmas was 12/24/2002.", repl);
 	}
 
 }

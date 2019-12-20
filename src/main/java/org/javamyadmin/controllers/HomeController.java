@@ -65,7 +65,7 @@ public class HomeController extends AbstractController {
 		String partialLogout = "";
 		if (request.getSession().getAttribute("partial_logout") != null) {
 			partialLogout = Message.success(__("You were logged out from one server, to logout completely "
-					+ "from phpMyAdmin, you need to logout from all servers.")).getDisplay();
+					+ "from phpMyAdmin, you need to logout from all servers."), request, GLOBALS).getDisplay();
 			request.getSession().removeAttribute("partial_logout");
 		}
 

@@ -241,12 +241,12 @@ public class Core {
             && Globals.PMA_Config.get("is_setup").equals("false")
             && pmaResponse.isAjax()) {
         	pmaResponse.setRequestStatus(false);
-        	pmaResponse.addJSON("message", Message.error($error_message));
+        	pmaResponse.addJSON("message", Message.error($error_message, req, GLOBALS));
         } else if (! empty(req.getParameter("ajax_request"))) {
             // Generate JSON manually
             headerJSON(resp);
             try {
-				resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()))
+				resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message, req, GLOBALS).getDisplay()))
 				);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -622,26 +622,19 @@ public class Core {
      *
      * @return String URL for a link.
      */
-    public static String linkURL(String $url, HttpServletRequest req, Globals GLOBALS)
+    public static String linkURL(String $url)
     {
-        if (! $url.matches("#^https?://#")) {
+        if (! $url.matches("^https?://")) {
             return $url;
         }
-        Map $params = new HashMap();
-        $params.put("url", $url);
         
-        $url = Url.getCommon($params, req, GLOBALS);
-        //strip off token and such sensitive information. Just keep url.
-        $arr = parse_url($url);
-        parse_str($arr["query"], $vars);
-        Map<String, Object> map = new HashMap<>();
-        map.put("url", $vars.get("url"));
-        String $query = http_build_query(map);
-        
+        //FIXME not sure of what the original function did
+        $url = urlencode($url);
+        		
         if (Globals.PMA_Config != null && "true".equals(Globals.PMA_Config.get("is_setup"))) {
-            $url = "../url.php?" + $url;
+            $url = "../url.php?url=" + $url;
         } else {
-            $url = "./url.php?" + $url;
+            $url = "./url.php?url=" + $url;
         }
         return $url;
     }
