@@ -32,6 +32,8 @@ public class GLOBALS {
 	
 	public static final String LOCALE_PATH = "/"; // Where is it? files *.mo should be there
 	public static final String PMA_MINIMUM_COMMON = "";
+	public static final File PMA_PHP_SELF = new File("???"); // TODO
+	
 	public boolean IS_TRANSFORMATION_WRAPPER = false;
 	public Theme PMA_Theme;
 	public File pmaThemeFullPath;

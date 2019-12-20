@@ -127,7 +127,7 @@ public class Php {
 	 * 
 	 * <code>htmlentities</code> will encode ANY character that has an HTML entity
 	 * equivalent. <code>htmlspecialchars</code> ONLY encodes a small set of the
-	 * most problematic characters. It’s generally recommended to use
+	 * most problematic characters. Itï¿½s generally recommended to use
 	 * htmlspecialchars because htmlentities can cause display problems with your
 	 * text depending on what characters are being output.
 	 * 
@@ -146,7 +146,7 @@ public class Php {
 	 * 
 	 * <code>htmlentities</code> will encode ANY character that has an HTML entity
 	 * equivalent. <code>htmlspecialchars</code> ONLY encodes a small set of the
-	 * most problematic characters. It’s generally recommended to use
+	 * most problematic characters. Itï¿½s generally recommended to use
 	 * htmlspecialchars because htmlentities can cause display problems with your
 	 * text depending on what characters are being output.
 	 * 
@@ -191,7 +191,7 @@ public class Php {
 	 * Generates a URL-encoded query string from the associative (or indexed) array
 	 * provided
 	 */
-	public static String http_build_query(Map<String, Object> params, String separator) {
+	public static String http_build_query(Map<String, ? extends Object> params, String separator) {
 
 		// TODO use Apache commons or sim.
 

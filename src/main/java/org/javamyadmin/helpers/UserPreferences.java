@@ -1,6 +1,16 @@
 package org.javamyadmin.helpers;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.php.GLOBALS;
+
+import static org.javamyadmin.php.Php.*;
+
 
 /**
  * Functions for displaying user preferences pages
@@ -34,8 +44,10 @@ public class UserPreferences {
      *
      * @return void
      */
-    public void pageInit(ConfigFile $cf)
+    public void pageInit(/*ConfigFile $cf*/)
     {
+    	//TODO
+    	/*
         $forms_all_keys = UserFormList.getFields();
         $cf.resetConfigData(); // start with a clean instance
         $cf.setAllowedKeys($forms_all_keys);
@@ -46,6 +58,7 @@ public class UserPreferences {
             ]
         );
         $cf.updateWithGlobalConfig(GLOBALS.PMA_Config);
+        */
     }
 
     /**
@@ -58,8 +71,10 @@ public class UserPreferences {
      *
      * @return array
      */
-    public function load()
+    public Map load()
     {
+    	return null;
+    	/* TODO
         $cfgRelation = this.relation.getRelationsParam();
         if (! $cfgRelation["userconfigwork"]) {
             // no pmadb table, use session storage
@@ -89,7 +104,7 @@ public class UserPreferences {
             "config_data" => $row ? json_decode($row["config_data"], true) : [],
             "mtime" => $row ? $row["ts"] : time(),
             "type" => "db",
-        ];
+        ];*/
     }
 
     /**
@@ -99,8 +114,10 @@ public class UserPreferences {
      *
      * @return true|Message
      */
-    public function save(array $config_array)
+    public Message save(Map $config_array)
     {
+    	return null; //TODO
+    	/*
         $cfgRelation = this.relation.getRelationsParam();
         $server = isset($GLOBALS["server"])
             ? $GLOBALS["server"]
@@ -161,7 +178,7 @@ public class UserPreferences {
             );
             return $message;
         }
-        return true;
+        return true;*/
     }
 
     /**
@@ -172,8 +189,10 @@ public class UserPreferences {
      *
      * @return array
      */
-    public function apply(array $config_data)
+    public Map apply(Map $config_data)
     {
+    	return null;
+    	/* TODO
         $cfg = [];
         $blacklist = array_flip(GLOBALS.PMA_Config["UserprefsDisallow"]);
         $whitelist = array_flip(UserFormList.getFields());
@@ -189,7 +208,7 @@ public class UserPreferences {
             }
             Core.arrayWrite($path, $cfg, $value);
         }
-        return $cfg;
+        return $cfg;*/
     }
 
     /**
@@ -205,6 +224,8 @@ public class UserPreferences {
      */
     public Message persistOption(String $path, Object $value, Object $default_value)
     {
+    	return null;
+    	/* TODO
         $prefs = this.load();
         if ($value.equals($default_value)) {
             if (isset($prefs["config_data"][$path])) {
@@ -215,11 +236,14 @@ public class UserPreferences {
         } else {
             $prefs["config_data"][$path] = $value;
         }
-        return this.save($prefs["config_data"]);
+        return this.save($prefs["config_data"]);*/
     }
 
     /**
      * Redirects after saving new user preferences
+     * @param request 
+     * @param GLOBALS 
+     * @param response 
      *
      * @param String     $file_name Filename
      * @param array|null $params    URL parameters
@@ -227,44 +251,52 @@ public class UserPreferences {
      *
      * @return void
      */
-    public function redirect(
-        $file_name,
-        $params = null,
-        $hash = null
+    public void redirect(
+        String $file_name,
+        Map<String, Object> $params /*= null*/,
+        String $hash, HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS
     ) {
+    	Map<String, Object> $url_params = new HashMap<>();
+    	$url_params.put("saved", 1);
+    	
         // redirect
-        $url_params = ["saved" => 1];
-        if (is_array($params)) {
-            $url_params = array_merge($params, $url_params);
+        if ($params == null) {
+        	$url_params.putAll($params);
         }
-        if ($hash) {
+        
+        if ($hash != null) {
             $hash = "#" + urlencode($hash);
         }
         Core.sendHeaderLocation("./" + $file_name
-            + Url.getCommonRaw($url_params, strpos($file_name, "?") === false ? "?" : "&") + $hash);
+            + Url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash, request, GLOBALS),
+            false, request, response);
     }
-
+    
+    public void redirect(String $file_name, HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS) {
+    	redirect($file_name, null, null, request, response, GLOBALS);
+    }
+    
     /**
      * Shows form which allows to quickly load
      * settings stored in browser"s local storage
      *
      * @return String
      */
-    public function autoloadGetHeader()
+    public String autoloadGetHeader(HttpServletRequest request, GLOBALS GLOBALS)
     {
-        if (isset($_REQUEST["prefs_autoload"])
-            && $_REQUEST["prefs_autoload"] == "hide"
-        ) {
-            $_SESSION["userprefs_autoload"] = true;
+        if ("hide".equals(request.getParameter("prefs_autoload"))) {
+            request.getSession().setAttribute("userprefs_autoload", true);
             return "";
         }
 
-        $script_name = basename(basename($GLOBALS["PMA_PHP_SELF"]));
-        $return_url = $script_name + "?" + http_build_query($_GET, "", "&");
+        String $script_name = GLOBALS.PMA_PHP_SELF.getParentFile().getParent();
+        
+        String $return_url = $script_name + "?" + http_build_query($_REQUEST(request), "&");
 
-        return JtwigFactory.render("preferences/autoload", [
-            "hidden_inputs" => Url.getHiddenInputs(),
-            "return_url" => $return_url,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("hidden_inputs", Url.getHiddenInputs(request, GLOBALS));
+        model.put("return_url", $return_url);
+        
+        return JtwigFactory.render("preferences/autoload", model);
     }
 }
