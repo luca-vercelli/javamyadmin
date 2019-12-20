@@ -3,6 +3,12 @@ package org.javamyadmin.helpers;
 import org.javamyadmin.helpers.html.Generator;
 import static org.javamyadmin.php.Php.*;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * This class includes various sanitization methods that can be called statically
  *
@@ -151,5 +157,145 @@ public class Sanitize {
 	
 	public static String sanitizeFilename(String $filename) {
 		return sanitizeFilename($filename, false);
+	}
+
+    /**
+     * Formats a value for javascript code.
+     *
+     * @param string $value String to be formatted.
+     *
+     * @return string formatted value.
+     */
+    public static String formatJsVal(Object $value)
+    {
+        if ($value instanceof Boolean) {
+            if ((Boolean)$value) {
+                return "true";
+            }
+
+            return "false";
+        }
+
+        if (is_numeric($value)) {
+            return $value.toString();
+        }
+
+        return '"' + escapeJsString($value.toString()) + '"';
+    }
+
+    /**
+     * Formats an javascript assignment with proper escaping of a value
+     * and support for assigning array of strings.
+     *
+     * @param string $key    Name of value to set
+     * @param mixed  $value  Value to set, can be either string or array of strings
+     * @param bool   $escape Whether to escape value or keep it as it is
+     *                       (for inclusion of js code)
+     *
+     * @return string Javascript code.
+     */
+    @SuppressWarnings("rawtypes")
+	public static String getJsValue(String $key, Object $value, boolean $escape /*= true*/)
+    {
+        String $result = $key + " = ";
+        if (! $escape) {
+            $result += $value;
+        } else if ($value == null) {
+        	 $result += "null";
+        } else if ($value instanceof List) {
+            $result += '[';
+            for (Object $val : (List)$value) {
+                $result += formatJsVal($val) + ",";
+            }
+            $result += "];\n";
+        } else if ($value.getClass().isArray()) {
+            $result += '[';
+            for (Object $val : (Object[])$value) {
+                $result += formatJsVal($val) + ",";
+            }
+            $result += "];\n";
+        } else if ($value instanceof Map) {
+            $result += '[';
+            for (Object $val : ((Map)$value).values()) {
+                $result += formatJsVal($val) + ",";
+            }
+            $result += "];\n";
+        } else {
+            $result += formatJsVal($value) + ";\n";
+        }
+        return $result;
+    }
+    
+    public static String getJsValue(String $key, Object $value) {
+    	return getJsValue($key, $value, true);
+    }
+
+	/**
+     * Prints an javascript assignment with proper escaping of a value
+     * and support for assigning array of strings.
+     *
+     * @param string $key   Name of value to set
+     * @param mixed  $value Value to set, can be either string or array of strings
+     *
+     * @return void
+	 * @throws IOException 
+     */
+    public static void printJsValue(String string, Object obj, HttpServletResponse response) throws IOException {
+    	response.getWriter().write(getJsValue(string, obj));
+	}
+
+    /**
+     * Formats javascript assignment for form validation api
+     * with proper escaping of a value.
+     *
+     * @param string  $key   Name of value to set
+     * @param string  $value Value to set
+     * @param boolean $addOn Check if $.validator.format is required or not
+     * @param boolean $comma Check if comma is required
+     *
+     * @return string Javascript code.
+     */
+    public static String getJsValueForFormValidation(String $key, String $value, boolean $addOn, boolean $comma)
+    {
+        String $result = $key + ": ";
+        if ($addOn) {
+            $result += "$.validator.format(";
+        }
+        $result += formatJsVal($value);
+        if ($addOn) {
+            $result += ')';
+        }
+        if ($comma) {
+            $result += ", ";
+        }
+        return $result;
+    }
+
+
+    /**
+     * Prints javascript assignment for form validation api
+     * with proper escaping of a value.
+     *
+     * @param string  $key   Name of value to set
+     * @param string  $value Value to set
+     * @param boolean $addOn Check if $.validator.format is required or not
+     * @param boolean $comma Check if comma is required
+     *
+     * @return void
+     * @throws IOException 
+     */
+    public static void printJsValueForFormValidation(String $key, String $value, boolean $addOn /*= false*/, boolean $comma /*= true*/,
+    		HttpServletResponse response) throws IOException
+    {
+    	response.getWriter().write(getJsValueForFormValidation($key, $value, $addOn, $comma));
+    }
+
+	public static void printJsValueForFormValidation(String $key, String $value, HttpServletResponse response) throws IOException {
+		printJsValueForFormValidation($key, $value, false, true, response);
+		
+	}
+
+	public static void printJsValueForFormValidation(String $key, String $value, boolean $addOn, HttpServletResponse response) throws IOException {
+		printJsValueForFormValidation($key, $value, $addOn, true, response); 
 	}
 }

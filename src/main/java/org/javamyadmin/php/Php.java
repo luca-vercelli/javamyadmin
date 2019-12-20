@@ -123,6 +123,16 @@ public class Php {
 	}
 
 	/**
+	 * What is this?!?
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String _pgettext(String s, String context) {
+		return Gettext.__(s); //FIXME
+	}
+
+	/**
 	 * Convert special characters to HTML entities.<br/>
 	 * 
 	 * <code>htmlentities</code> will encode ANY character that has an HTML entity
