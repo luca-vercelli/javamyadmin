@@ -1,3 +1,4 @@
+#maven stuff
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -10,3 +11,8 @@ buildNumber.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+
+# npm stuff
+src/main/javascript/node_modules
+src/main/webapp/themes/**/*.css
+package-lock.json
