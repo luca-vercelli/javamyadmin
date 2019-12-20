@@ -1,6 +1,6 @@
 package org.javamyadmin.helpers;
 
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
 import java.util.Arrays;
@@ -110,7 +110,7 @@ public class Language implements Comparable<Language> {
      *
      * @return bool
      */
-    public boolean isActive(GLOBALS GLOBALS)
+    public boolean isActive(Globals GLOBALS)
     {
         return GLOBALS.lang.equals(this.code);  //FIXME wtf?!?
     }
@@ -161,7 +161,7 @@ public class Language implements Comparable<Language> {
      *
      * @return void
      */
-    public void activate(GLOBALS GLOBALS)
+    public void activate(Globals GLOBALS)
     {
         GLOBALS.lang = this.code;
 

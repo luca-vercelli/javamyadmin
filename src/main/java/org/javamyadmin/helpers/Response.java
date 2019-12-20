@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -75,12 +75,12 @@ public class Response {
 
     private HttpServletRequest request;
     private HttpServletResponse response;
-    private GLOBALS GLOBALS;
+    private Globals GLOBALS;
     
     /**
      * Creates a new class instance
      */
-    public Response(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, SessionMap session)
+    public Response(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, SessionMap session)
     {
         /*if (! defined("TESTSUITE")) {
             $buffer = OutputBuffering.getInstance();

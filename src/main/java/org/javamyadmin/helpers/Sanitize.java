@@ -1,7 +1,7 @@
 package org.javamyadmin.helpers;
 
 import org.javamyadmin.helpers.html.Generator;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -40,7 +40,7 @@ public class Sanitize {
             "./doc/html/",
             "./index.php?",
         });
-        boolean $is_setup = GLOBALS.PMA_Config != null && "true".equals(GLOBALS.PMA_Config.get("is_setup"));
+        boolean $is_setup = Globals.PMA_Config != null && "true".equals(Globals.PMA_Config.get("is_setup"));
         // Adjust path to setup script location
         if ($is_setup) {
             /* TODO foreach ($valid_starts as $key => $value) {
@@ -81,7 +81,7 @@ public class Sanitize {
      *
      * @return string Replaced string
      */
-    public static String replaceBBLink(String[] $found, HttpServletRequest request, GLOBALS GLOBALS)
+    public static String replaceBBLink(String[] $found, HttpServletRequest request, Globals GLOBALS)
     {
         /* Check for valid link */
         if (! checkLink($found[1])) {
@@ -131,7 +131,7 @@ public class Sanitize {
      * @return String   the sanitized message
      */
     public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/,
-    		HttpServletRequest request, GLOBALS GLOBALS)
+    		HttpServletRequest request, Globals GLOBALS)
     {
     	if (message == null) {
     		message = "";

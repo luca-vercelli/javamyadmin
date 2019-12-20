@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.java.SmartMap;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 
 /**
@@ -44,13 +44,13 @@ public class Menu {
 	private SessionMap session;
 	private SmartMap cfg;
 	private HttpServletRequest request;
-	private GLOBALS GLOBALS;
+	private Globals GLOBALS;
 
 	private static SmartMap menuProperties;
 	static {
 		menuProperties = new SmartMap();
         try {
-			InputStream is = GLOBALS.class.getClassLoader().getResourceAsStream("/menu.properties");
+			InputStream is = Globals.class.getClassLoader().getResourceAsStream("/menu.properties");
 			menuProperties.load(is);
 		} catch (NullPointerException e) {
 			throw new IllegalStateException("File menu.properties not found!");
@@ -130,7 +130,7 @@ public class Menu {
      * @param string $db    Database name
      * @param string $table Table name
      */
-    public Menu(String $db, String $table, HttpServletRequest request, GLOBALS GLOBALS, SessionMap session)
+    public Menu(String $db, String $table, HttpServletRequest request, Globals GLOBALS, SessionMap session)
     {
         this._db = $db;
         this._table = $table;
@@ -147,7 +147,7 @@ public class Menu {
      * @return void
      * @throws IOException 
      */
-    public void display(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS) throws IOException
+    public void display(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS) throws IOException
     {
         response.getWriter().write(this.getDisplay(request, GLOBALS));
     }
@@ -157,7 +157,7 @@ public class Menu {
      *
      * @return string
      */
-    public String getDisplay(HttpServletRequest request, GLOBALS GLOBALS)
+    public String getDisplay(HttpServletRequest request, Globals GLOBALS)
     {
         String  $retval  = this._getBreadcrumbs(request, GLOBALS);
         $retval += this._getMenu();
@@ -260,7 +260,7 @@ public class Menu {
      *
      * @return string HTML formatted breadcrumbs
      */
-    private String  _getBreadcrumbs(HttpServletRequest request, GLOBALS GLOBALS)
+    private String  _getBreadcrumbs(HttpServletRequest request, Globals GLOBALS)
     {
         String $retval = "";
         boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)

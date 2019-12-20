@@ -16,7 +16,7 @@ import org.javamyadmin.helpers.ThemeManager;
  * @author lucav
  *
  */
-public class GLOBALS {
+public class Globals {
 
 	public static final String PMA_PATH_TO_BASEDIR = ""; // Is it needed ?!?
 	public static final String PMA_VERSION = "5.1.1";
@@ -79,7 +79,7 @@ public class GLOBALS {
 	public int PMA_USR_BROWSER_VER;
 	
 
-	public GLOBALS(ServletContext context) {
+	public Globals(ServletContext context) {
 		if (ROOT_PATH == null) {
 			// only at first run
 			ROOT_PATH = context.getRealPath("/WEB-INF/..");

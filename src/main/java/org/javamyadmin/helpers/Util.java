@@ -23,7 +23,7 @@ import java.util.List;
 import org.javamyadmin.helpers.Menu.MenuStruct;
 import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 
 import static org.javamyadmin.php.Php.*;
@@ -41,7 +41,7 @@ public class Util {
      *
      * @return boolean Whether to show icons.
      */
-    public static boolean showIcons(String $value, GLOBALS GLOBALS)
+    public static boolean showIcons(String $value, Globals GLOBALS)
     {
     	String type = (String) GLOBALS.PMA_Config.get($value);
     	return "icons".equals(type) || "both".equals(type);
@@ -54,7 +54,7 @@ public class Util {
      *
      * @return boolean Whether to show text.
      */
-    public static boolean showText(String $value, GLOBALS GLOBALS)
+    public static boolean showText(String $value, Globals GLOBALS)
     {
     	String type = (String) GLOBALS.PMA_Config.get($value);
     	return "text".equals(type) || "both".equals(type);
@@ -80,7 +80,7 @@ public class Util {
         boolean $force_text /*= false*/,
         boolean $menu_icon /*= false*/,
         String $control_param /*= "ActionLinksMode"*/,
-        GLOBALS GLOBALS,
+        Globals GLOBALS,
         SessionMap session
     ) {
         boolean $include_icon = false;
@@ -113,7 +113,7 @@ public class Util {
     public static String getIcon(
             String $icon,
             String $alternate /*= ""*/,
-            GLOBALS GLOBALS,
+            Globals GLOBALS,
             SessionMap session
         ) {
     	return getIcon(
@@ -474,7 +474,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String showHint(String $message, GLOBALS GLOBALS)
+    public static String showHint(String $message, Globals GLOBALS)
     {
     	String $classClause;
         if (!empty(GLOBALS.PMA_Config.get("ShowHint"))) {
@@ -702,7 +702,7 @@ public class Util {
      * @return int the possibly modified row count
      *
      */
-    private static int _checkRowCount(String $db, Map $table, GLOBALS GLOBALS)
+    private static int _checkRowCount(String $db, Map $table, Globals GLOBALS)
     {
         int $rowCount = 0;
 
@@ -1243,7 +1243,7 @@ public class Util {
      *
      * @return boolean whether profiling is supported
      */
-    public static boolean profilingSupported(GLOBALS GLOBALS, SessionMap session)
+    public static boolean profilingSupported(Globals GLOBALS, SessionMap session)
     {
         if (! cacheExists("profiling_supported", GLOBALS, session)) {
             // 5.0.37 has profiling but for example, 5.1.20 does not
@@ -1536,7 +1536,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/, HttpServletRequest request, GLOBALS GLOBALS, SessionMap session)
+    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/, HttpServletRequest request, Globals GLOBALS, SessionMap session)
     {
         //$template = new Template();
         // default values
@@ -1642,7 +1642,7 @@ public class Util {
         Map<String, String> $url_params,
         String $menu_id,
         boolean $resizable, /*= false*/
-        HttpServletRequest request, GLOBALS GLOBALS, SessionMap session
+        HttpServletRequest request, Globals GLOBALS, SessionMap session
     ) {
         String $class = "";
         if ($resizable) {
@@ -1729,7 +1729,7 @@ public class Util {
         }*/
 
         List<String> $tag_params_strings = new ArrayList<>();
-        if (($url_length > new Integer((String) GLOBALS.PMA_Config.get("LinkLengthLimit")))
+        if (($url_length > new Integer((String) Globals.PMA_Config.get("LinkLengthLimit")))
             //|| ! $in_suhosin_limits
             // Has as sql_query without a signature
             || ( $url.contains( "sql_query=") && !$url.contains( "sql_signature="))
@@ -2093,7 +2093,7 @@ public class Util {
     	String $text,
     	String $image,
     	String $value, /*= ""*/
-    	GLOBALS GLOBALS,
+    	Globals GLOBALS,
         SessionMap session
     ) {
         if ($value == "") {
@@ -2405,7 +2405,7 @@ public class Util {
             $dir += "/";
         }
 
-        return $dir.replace("%u", Core.securePath((String) multiget(GLOBALS.PMA_Config.settings, "Server", "user")));
+        return $dir.replace("%u", Core.securePath((String) multiget(Globals.PMA_Config.settings, "Server", "user")));
     }
 
     /**
@@ -2416,7 +2416,7 @@ public class Util {
      *
      * @return String  html link to default db page
      */
-    public static String getDbLink(String $database /*= ""*/, HttpServletRequest request, GLOBALS GLOBALS)
+    public static String getDbLink(String $database /*= ""*/, HttpServletRequest request, Globals GLOBALS)
     {
         if (empty( $database) ) {
             if (empty(GLOBALS.db)) {
@@ -2608,7 +2608,7 @@ public class Util {
     {
         Map<String, Object> model = new HashMap<>();
         model.put("id" , $id);
-        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : GLOBALS.PMA_Config.get("InitialSlidersState"));
+        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : Globals.PMA_Config.get("InitialSlidersState"));
         model.put("message" , $message);
         
         return JtwigFactory.render("div_for_slider_effect", model);
@@ -2626,7 +2626,7 @@ public class Util {
      *
      * @return String   HTML code for the toggle button
      */
-    public static String toggleButton(String $action, String $select_name, List<Map> $options, String $callback, GLOBALS GLOBALS)
+    public static String toggleButton(String $action, String $select_name, List<Map> $options, String $callback, Globals GLOBALS)
     {
         
         // Do the logic first
@@ -2661,7 +2661,7 @@ public class Util {
      *
      * @return void
      */
-    public static void clearUserCache(GLOBALS GLOBALS, SessionMap session)
+    public static void clearUserCache(Globals GLOBALS, SessionMap session)
     {
         cacheUnset("is_superuser", GLOBALS, session);
         cacheUnset("is_createuser", GLOBALS, session);
@@ -2673,7 +2673,7 @@ public class Util {
      *
      * @return String
      */
-    public static String cacheKey(GLOBALS GLOBALS)
+    public static String cacheKey(Globals GLOBALS)
     {
         if (!empty(multiget(GLOBALS.PMA_Config.settings, "Server", "user"))) {
             return "server_" + GLOBALS.server + "_" + multiget(GLOBALS.PMA_Config.settings, "Server", "user");
@@ -2689,7 +2689,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean cacheExists(String $var, GLOBALS GLOBALS, SessionMap session)
+    public static boolean cacheExists(String $var, Globals GLOBALS, SessionMap session)
     {
         return !empty(multiget(session, "cache", cacheKey(GLOBALS), $var));
     }
@@ -2702,7 +2702,7 @@ public class Util {
      *
      * @return mixed
      */
-    public static Object cacheGet(String $var, Function $callback /*= null*/, GLOBALS GLOBALS, SessionMap session)
+    public static Object cacheGet(String $var, Function $callback /*= null*/, Globals GLOBALS, SessionMap session)
     {
         if (cacheExists($var, GLOBALS, session)) {
             return (Function) multiget(session, "cache", cacheKey(GLOBALS), $var);
@@ -2724,7 +2724,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheSet(String $var, Object $val /*= null*/, GLOBALS GLOBALS, SessionMap session)
+    public static void cacheSet(String $var, Object $val /*= null*/, Globals GLOBALS, SessionMap session)
     {
     	multiput(session, $val, "cache", cacheKey(GLOBALS), $var);
     }
@@ -2736,7 +2736,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheUnset(String $var, GLOBALS GLOBALS, SessionMap session)
+    public static void cacheUnset(String $var, Globals GLOBALS, SessionMap session)
     {
     	multiremove(session, "cache", cacheKey(GLOBALS), $var);
     }
@@ -3114,7 +3114,7 @@ public class Util {
      *
      * @return String script name corresponding to the config word
      */
-    public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, Globals GLOBALS)
     {
     	if ($target == null) {
     		return "";
@@ -3292,7 +3292,7 @@ public class Util {
     {
         String $block_html = "";
 
-        if (GLOBALS.is_upload && ! empty(GLOBALS.PMA_Config.get("UploadDir"))) {
+        if (Globals.is_upload && ! empty(Globals.PMA_Config.get("UploadDir"))) {
             $block_html += "<label for='radio_import_file'>";
         } else {
             $block_html += "<label for='input_import_file'>";
@@ -3379,7 +3379,7 @@ public class Util {
      *
      * @return array   the action titles
      */
-    public static Map<String,String> buildActionTitles(GLOBALS GLOBALS, SessionMap session)
+    public static Map<String,String> buildActionTitles(Globals GLOBALS, SessionMap session)
     {
     	Map<String,String> $titles = new HashMap<String,String>();
 
@@ -4420,7 +4420,7 @@ public class Util {
         ) {
             $rows = new Integer( (String) multiget(session,"tmpval","max_rows"));
         } else {
-            $rows = new Integer( (String) GLOBALS.PMA_Config.get("MaxRows"));
+            $rows = new Integer( (String) Globals.PMA_Config.get("MaxRows"));
             multiput(session,"tmpval","max_rows", $rows.toString());
         }
 

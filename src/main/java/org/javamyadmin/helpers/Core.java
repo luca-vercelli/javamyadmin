@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
 public class Core {
@@ -37,15 +37,15 @@ public class Core {
      * echo Core.ifSetOr($_REQUEST["db"], ""); // ""
      * // $_POST["sql_query"] not set
      * echo Core.ifSetOr($_POST["sql_query"]); // null
-     * // GLOBALS.PMA_Config["EnableFoo"] not set
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"]); // null
-     * // GLOBALS.PMA_Config["EnableFoo"] set to 1
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "similar"); // 1
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false); // 1
-     * // GLOBALS.PMA_Config["EnableFoo"] set to true
-     * echo Core.ifSetOr(GLOBALS.PMA_Config["EnableFoo"], false, "boolean"); // true
+     * // Globals.PMA_Config["EnableFoo"] not set
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"]); // null
+     * // Globals.PMA_Config["EnableFoo"] set to 1
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "similar"); // 1
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false); // 1
+     * // Globals.PMA_Config["EnableFoo"] set to true
+     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // true
      * </code>
      *
      * @param mixed $var     param to check
@@ -223,7 +223,7 @@ public class Core {
      * @return void
      */
     public static void fatalError(
-        HttpServletRequest req, HttpServletResponse resp, GLOBALS GLOBALS, Response pmaResponse,
+        HttpServletRequest req, HttpServletResponse resp, Globals GLOBALS, Response pmaResponse,
         String $error_message,
         Object $message_args /*= null*/
     ) {
@@ -237,8 +237,8 @@ public class Core {
          * Avoid using Response class as config does not have to be loaded yet
          * (this can happen on early fatal error)
          */
-        if (GLOBALS.dbi != null && GLOBALS.PMA_Config != null
-            && GLOBALS.PMA_Config.get("is_setup").equals("false")
+        if (GLOBALS.dbi != null && Globals.PMA_Config != null
+            && Globals.PMA_Config.get("is_setup").equals("false")
             && pmaResponse.isAjax()) {
         	pmaResponse.setRequestStatus(false);
         	pmaResponse.addJSON("message", Message.error($error_message));
@@ -261,7 +261,7 @@ public class Core {
     }
     
     public static void fatalError(
-            HttpServletRequest req, HttpServletResponse resp, GLOBALS GLOBALS, Response pmaResponse,
+            HttpServletRequest req, HttpServletResponse resp, Globals GLOBALS, Response pmaResponse,
             String $error_message)
     {
     	fatalError(req, resp, GLOBALS, pmaResponse, $error_message, null);
@@ -441,7 +441,7 @@ public class Core {
          * like /phpmyadmin/index.php/ which some web servers happily accept.
          */
         if ($uri.charAt(0) == '.') {
-            $uri = GLOBALS.PMA_Config.getRootPath(request) + $uri.substring(2);
+            $uri = Globals.PMA_Config.getRootPath(request) + $uri.substring(2);
         }
         response.addHeader("Location: ", $uri);
     }
@@ -501,7 +501,7 @@ public class Core {
         int $length /*= 0*/,
         boolean $no_cache, /*= true*/
         HttpServletResponse response,
-        GLOBALS GLOBALS
+        Globals GLOBALS
     ) {
         if ($no_cache) {
             noCacheHeader(response);
@@ -616,20 +616,20 @@ public class Core {
     /**
      * Returns link to (possibly) external site using defined redirector.
      * @param req 
-     * @param GLOBALS 
+     * @param Globals 
      *
      * @param String $url URL where to go.
      *
      * @return String URL for a link.
      */
-    public static String linkURL(String $url, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String linkURL(String $url, HttpServletRequest req, Globals GLOBALS)
     {
         if (! $url.matches("#^https?://#")) {
             return $url;
         }
-        /* TODO
         Map $params = new HashMap();
         $params.put("url", $url);
+        
         $url = Url.getCommon($params, req, GLOBALS);
         //strip off token and such sensitive information. Just keep url.
         $arr = parse_url($url);
@@ -637,8 +637,8 @@ public class Core {
         Map<String, Object> map = new HashMap<>();
         map.put("url", $vars.get("url"));
         String $query = http_build_query(map);
-        */
-        if (GLOBALS.PMA_Config != null && "true".equals(GLOBALS.PMA_Config.get("is_setup"))) {
+        
+        if (Globals.PMA_Config != null && "true".equals(Globals.PMA_Config.get("is_setup"))) {
             $url = "../url.php?" + $url;
         } else {
             $url = "./url.php?" + $url;
@@ -871,7 +871,7 @@ public class Core {
         }
         String $direct_ip = (String) session.get("REMOTE_ADDR");
         /* Do we trust this IP as a proxy? If yes we will use it"s header. */
-        if (! empty(multiget(GLOBALS.PMA_Config.settings, "TrustedProxies", $direct_ip))) {
+        if (! empty(multiget(Globals.PMA_Config.settings, "TrustedProxies", $direct_ip))) {
             /* Return true IP */
             return $direct_ip;
         }
@@ -880,7 +880,7 @@ public class Core {
          * X-Forwarded-For: client, proxy1, proxy2
          */
         // Get header content
-        String $value = getenv((String) multiget(GLOBALS.PMA_Config.settings,"TrustedProxies", $direct_ip));
+        String $value = getenv((String) multiget(Globals.PMA_Config.settings,"TrustedProxies", $direct_ip));
         // Grab first element what is client adddress
         $value = $value.split(",")[0];
         // checks that the header contains only one IP address,
@@ -1038,7 +1038,7 @@ public class Core {
      *
      * @return void
      */
-    public static void checkRequest(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Response pmaResponse)
+    public static void checkRequest(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, Response pmaResponse)
     {
         if (!empty(request.getParameter("GLOBALS")) ) {
             fatalError(request, response, GLOBALS, pmaResponse, __("GLOBALS overwrite attempt"));
@@ -1059,7 +1059,7 @@ public class Core {
     public static String signSqlQuery(String $sqlQuery, SessionMap session)
     {
     	return null; // TODO
-        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
+        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.PMA_Config.get("blowfish_secret"));
     }
     /**
      * Check that the sql query has a valid hmac signature
@@ -1071,7 +1071,7 @@ public class Core {
     public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
     {
     	return true; // TODO
-        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)GLOBALS.PMA_Config.get("blowfish_secret"));
+        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.PMA_Config.get("blowfish_secret"));
         //return hash_equals($hmac, $signature);
     }
 }

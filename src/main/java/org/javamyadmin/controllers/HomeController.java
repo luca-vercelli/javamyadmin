@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class HomeController extends AbstractController {
 	 * GET handler
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, GLOBALS GLOBALS)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, Globals GLOBALS)
 			throws ServletException, IOException {
 
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {

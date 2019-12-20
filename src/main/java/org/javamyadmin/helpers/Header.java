@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -123,7 +123,7 @@ public class Header {
      */
     // TODO private Navigation navigation;
 
-    private GLOBALS GLOBALS;
+    private Globals GLOBALS;
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 	private SessionMap session;
@@ -132,7 +132,7 @@ public class Header {
     /**
      * Creates a new class instance
      */
-    public Header(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, SessionMap session)
+    public Header(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, SessionMap session)
     {
     	this.request = request;
     	this.response = response;
@@ -741,7 +741,7 @@ public class Header {
      */
     public static String getVersionParameter()
     {
-        return "v=" + urlencode(org.javamyadmin.php.GLOBALS.PMA_VERSION);
+        return "v=" + urlencode(org.javamyadmin.php.Globals.PMA_VERSION);
     }
 
 }

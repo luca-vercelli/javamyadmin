@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -157,7 +157,7 @@ public class Theme {
         }
 
         // Version check
-        if (! ((List) data.get("supports")).contains(GLOBALS.PMA_MAJOR_VERSION)) {
+        if (! ((List) data.get("supports")).contains(Globals.PMA_MAJOR_VERSION)) {
             return false;
         }
 
@@ -208,7 +208,7 @@ public class Theme {
         }
 
         // try fallback theme
-        String fallback = GLOBALS.THEMES_PATH + ThemeManager.FALLBACK_THEME + "/img/";
+        String fallback = Globals.THEMES_PATH + ThemeManager.FALLBACK_THEME + "/img/";
         if (new File(fallback).isDirectory()) {
             this.setImgPath(fallback);
             return true;

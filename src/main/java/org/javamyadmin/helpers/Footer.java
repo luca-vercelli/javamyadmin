@@ -7,7 +7,7 @@ import java.util.Map;
 import org.javamyadmin.helpers.Scripts.FStruct2;
 import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -56,13 +56,13 @@ public class Footer {
      */
     //private Template template;
 
-    private GLOBALS GLOBALS;
+    private Globals GLOBALS;
 	private Response pmaResponse;
     
     /**
      * Creates a new class instance
      */
-    public Footer(GLOBALS GLOBALS, Response pmaResponse)
+    public Footer(Globals GLOBALS, Response pmaResponse)
     {
         this._isEnabled = true;
         this._scripts = new Scripts(GLOBALS);

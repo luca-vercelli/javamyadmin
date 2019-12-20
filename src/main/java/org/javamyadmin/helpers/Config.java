@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.java.SmartMap;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 public class Config {
 
@@ -336,7 +336,7 @@ public class Config {
      */
     public boolean loadDefaults()
     {
-        GLOBALS.pma_config_loading = true;
+        Globals.pma_config_loading = true;
         SmartMap cfg = new SmartMap();
         try {
             cfg.loadFromResource(default_source);
@@ -350,7 +350,7 @@ public class Config {
             return false;
 		}
 		
-        GLOBALS.pma_config_loading = false;
+        Globals.pma_config_loading = false;
        
 
         if ( cfg.isEmpty()) {
@@ -396,7 +396,7 @@ public class Config {
          * Parses the configuration file, we throw away any errors or
          * output.
          */
-        GLOBALS.pma_config_loading = true;
+        Globals.pma_config_loading = true;
         SmartMap cfg = new SmartMap();
         cfg.putAll(defaults);
         try {
@@ -410,7 +410,7 @@ public class Config {
 			this.error_config_file = true;
             return false;
 		}
-        GLOBALS.pma_config_loading = false;
+        Globals.pma_config_loading = false;
         
         //error_reporting(old_error_reporting);
         
@@ -691,7 +691,7 @@ public class Config {
      *
      * @return void
      */
-    public void checkErrors(HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS, Response pmaResponse)
+    public void checkErrors(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, Response pmaResponse)
     {
         if (this.error_config_default_file) {
             Core.fatalError(
@@ -761,7 +761,7 @@ public class Config {
      * @return int Summary of unix timestamps, to be unique on theme parameters
      *             change
      */
-    public String getThemeUniqueValue(GLOBALS GLOBALS)
+    public String getThemeUniqueValue(Globals GLOBALS)
     {
         return (
             "" + this.get("user_preferences_mtime") +

@@ -19,7 +19,7 @@ import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.jtwig.web.servlet.JtwigRenderer;
 
@@ -31,7 +31,7 @@ public abstract class AbstractController extends HttpServlet {
 
 	@Override
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		GLOBALS GLOBALS = new GLOBALS(getServletContext());
+		Globals GLOBALS = new Globals(getServletContext());
 		SessionMap $_SESSION = $_SESSION(request.getSession());
 		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
 		
@@ -272,7 +272,7 @@ public abstract class AbstractController extends HttpServlet {
 	/**
 	 * GET handler. Must be defined.
 	 */
-	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, GLOBALS GLOBALS)
+	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, Globals GLOBALS)
 			throws ServletException, IOException;
 
 

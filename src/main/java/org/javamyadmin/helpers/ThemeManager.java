@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -71,7 +71,7 @@ public class ThemeManager {
 	public final static String FALLBACK_THEME = "pmahomme";
 
 	private HttpServletRequest request;
-	private GLOBALS GLOBALS;
+	private Globals GLOBALS;
 	private Config cfg;
 
 	/**
@@ -82,7 +82,7 @@ public class ThemeManager {
 	 *
 	 * @access public
 	 */
-	public ThemeManager(HttpServletRequest req, GLOBALS GLOBALS) {
+	public ThemeManager(HttpServletRequest req, Globals GLOBALS) {
 		this.request = req;
 		this.GLOBALS = GLOBALS;
 		this.cfg = GLOBALS.PMA_Config;
@@ -344,7 +344,7 @@ public class ThemeManager {
 	 * @return void
 	 * @access public
 	 */
-	public static void initializeTheme(HttpServletRequest request, GLOBALS GLOBALS) {
+	public static void initializeTheme(HttpServletRequest request, Globals GLOBALS) {
 		ThemeManager tmanager = new ThemeManager(request, GLOBALS);
 
 		GLOBALS.themeManager = tmanager;

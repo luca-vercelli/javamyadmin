@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -254,7 +254,7 @@ public class UserPreferences {
     public void redirect(
         String $file_name,
         Map<String, Object> $params /*= null*/,
-        String $hash, HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS
+        String $hash, HttpServletRequest request, HttpServletResponse response, Globals GLOBALS
     ) {
     	Map<String, Object> $url_params = new HashMap<>();
     	$url_params.put("saved", 1);
@@ -272,7 +272,7 @@ public class UserPreferences {
             false, request, response);
     }
     
-    public void redirect(String $file_name, HttpServletRequest request, HttpServletResponse response, GLOBALS GLOBALS) {
+    public void redirect(String $file_name, HttpServletRequest request, HttpServletResponse response, Globals GLOBALS) {
     	redirect($file_name, null, null, request, response, GLOBALS);
     }
     
@@ -282,7 +282,7 @@ public class UserPreferences {
      *
      * @return String
      */
-    public String autoloadGetHeader(HttpServletRequest request, GLOBALS GLOBALS)
+    public String autoloadGetHeader(HttpServletRequest request, Globals GLOBALS)
     {
         if ("hide".equals(request.getParameter("prefs_autoload"))) {
             request.getSession().setAttribute("userprefs_autoload", true);

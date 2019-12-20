@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 /**
  * Static methods for URL/hidden inputs generating
@@ -18,7 +18,7 @@ import org.javamyadmin.php.GLOBALS;
  */
 public class Url {
 
-	public static String getHiddenInputs(HttpServletRequest req, GLOBALS GLOBALS) {
+	public static String getHiddenInputs(HttpServletRequest req, Globals GLOBALS) {
 		return getHiddenInputs(null, null, 0, null, req, GLOBALS);
 	}
 	
@@ -44,7 +44,7 @@ public class Url {
         String table /*= "" */,
         int indent /*= 0 */,
         List<String> skip /*= [] */,
-        HttpServletRequest req, GLOBALS GLOBALS
+        HttpServletRequest req, Globals GLOBALS
     ) {
         /** @var Config PMA_Config */
 
@@ -169,14 +169,17 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommon(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String getCommon(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
     {
         return htmlspecialchars(
             Url.getCommonRaw(params, divider, req, GLOBALS)
         );
     }
     
-    public static String getCommon(Map<String, Object> params, HttpServletRequest req, GLOBALS GLOBALS) {
+    /**
+     * Generates text with URL parameters.
+     */
+    public static String getCommon(Map<String, Object> params, HttpServletRequest req, Globals GLOBALS) {
     	return getCommon(params, "?", req, GLOBALS);
     }
 
@@ -210,7 +213,7 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommonRaw(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String getCommonRaw(Map<String, Object> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
     {
     	if (params == null) {
     		params = new HashMap<>();
@@ -241,9 +244,12 @@ public class Url {
         return "";
     }
     
-    public static String getCommonRaw(HttpServletRequest req, GLOBALS GLOBALS) {
+    public static String getCommonRaw(HttpServletRequest req, Globals GLOBALS) {
     	return getCommonRaw(null, "?", req, GLOBALS);
     }
+    
+    private static String $separator = null;
+    private static String $html_separator = null;
     
 	/**
      * Returns url separator
@@ -259,36 +265,24 @@ public class Url {
      */
     public static String getArgSeparator(String encode /*= "none"*/)
     {
-    	return "&";
-    	/*
-        if (null === separator) {
-            // use separators defined by php, but prefer ";"
-            // as recommended by W3C
-            // (see https://www.w3.org/TR/1999/REC-html401-19991224/appendix
-            // /notes.html#h-B.2.2)
-            arg_separator = ini_get("arg_separator.input");
-            if (mb_strpos(arg_separator, ";") !== false) {
-                separator = ";";
-            } elseif (strlen(arg_separator) > 0) {
-                separator = arg_separator[0];
-            } else {
-                separator = "&";
-            }
-            html_separator = htmlentities(separator);
+        if ($separator == null) {
+        	// Here. PhpMyAdmin uses separator defined in ini_get("arg_separator.input")
+            $separator = ";";
+            $html_separator = htmlentities($separator);
         }
 
         switch (encode) {
             case "html":
-                return html_separator;
+                return $html_separator;
             case "text":
             case "none":
             default:
-                return separator;
-        }*/
+                return $separator;
+        }
     }
 
     public static String getArgSeparator() {
-    	return getArgSeparator(null);
+    	return getArgSeparator("none");
     }
     
     /**
@@ -297,12 +291,12 @@ public class Url {
      * @param array  additionalParameters Additional URL parameters
      * @return string
      */
-    public static String getFromRoute(String route, Map<String, Object> additionalParameters /* = [] */, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String getFromRoute(String route, Map<String, Object> additionalParameters /* = [] */, HttpServletRequest req, Globals GLOBALS)
     {
         return "index.php?route=" + route + getCommon(additionalParameters, "&", req, GLOBALS);
     }
     
-    public static String getFromRoute(String route, HttpServletRequest req, GLOBALS GLOBALS)
+    public static String getFromRoute(String route, HttpServletRequest req, Globals GLOBALS)
     {
         return getFromRoute(route, null, req, GLOBALS);
     }

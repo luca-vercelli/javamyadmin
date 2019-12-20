@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -69,13 +69,13 @@ public class Scripts {
 	 */
 	//private Template template;
 
-	private GLOBALS GLOBALS;
+	private Globals GLOBALS;
 
 	/**
 	 * Generates new Scripts objects
 	 *
 	 */
-	public Scripts(GLOBALS GLOBALS) {
+	public Scripts(Globals GLOBALS) {
 		//this.template = new Template();
 		this._files = new ArrayList<>();
 		this._code = "";

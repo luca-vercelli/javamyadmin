@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.EnvironmentConfiguration;
@@ -248,7 +248,7 @@ public class JtwigFactory {
 	 * @see https://github.com/phpmyadmin/phpmyadmin/blob/master/libraries/classes/Template.php
 	 */
 	public static JtwigTemplate getTemplate(String templateName) {
-		return JtwigTemplate.fileTemplate(GLOBALS.TEMPLATES_PATH + templateName + ".twig", getConfiguration());
+		return JtwigTemplate.fileTemplate(Globals.TEMPLATES_PATH + templateName + ".twig", getConfiguration());
 	}
 
 	/**

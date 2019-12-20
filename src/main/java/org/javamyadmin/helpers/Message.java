@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.html.Generator;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -657,7 +657,7 @@ public class Message {
      * @access  public
      * @static
      */
-    public static String decodeBB(String message, HttpServletRequest request, GLOBALS GLOBALS)
+    public static String decodeBB(String message, HttpServletRequest request, Globals GLOBALS)
     {
         return Sanitize.sanitizeMessage(message, false, true, request, GLOBALS);
     }
@@ -691,7 +691,7 @@ public class Message {
      *
      * @return String complete message
      */
-    public String getMessage(HttpServletRequest request, GLOBALS GLOBALS)
+    public String getMessage(HttpServletRequest request, Globals GLOBALS)
     {
         String message = this.message;
 

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
-import org.javamyadmin.php.GLOBALS;
+import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 
 import static org.javamyadmin.php.Php.*;
@@ -31,7 +31,7 @@ public class MessagesJs extends AbstractController {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			SessionMap $_SESSION, GLOBALS GLOBALS) throws ServletException, IOException {
+			SessionMap $_SESSION, Globals GLOBALS) throws ServletException, IOException {
 
 		response.setHeader("Content-Type", "text/javascript; charset=UTF-8");
 		// TODO header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) + " GMT"));
