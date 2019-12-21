@@ -40,9 +40,9 @@ public abstract class AbstractController extends HttpServlet {
 		// ContainerBuilder.
 		// $containerBuilder = new ContainerBuilder();
 		// GLOBALS.error_handler = $containerBuilder.get("error_handler");
-		// GLOBALS.PMA_Config = $containerBuilder.get("config");
+		// Globals.PMA_Config = $containerBuilder.get("config");
 		if (! GLOBALS.PMA_NO_SESSION == true) {
-		    // TODO Session.setUp(GLOBALS.PMA_Config, GLOBALS.error_handler);
+		    // TODO Session.setUp(Globals.PMA_Config, GLOBALS.error_handler);
 		}
 		
 		boolean $token_provided = false, $token_mismatch = false;
@@ -118,8 +118,8 @@ public abstract class AbstractController extends HttpServlet {
 		 * check for errors occurred while loading configuration
 		 * this check is done here after loading language files to present errors in locale
 		 */
-		GLOBALS.PMA_Config.checkPermissions();
-		GLOBALS.PMA_Config.checkErrors(request, response, GLOBALS, pmaResponse);
+		Globals.PMA_Config.checkPermissions();
+		Globals.PMA_Config.checkErrors(request, response, GLOBALS, pmaResponse);
 		
 		/* setup themes                                          LABEL_theme_setup    */
 
@@ -130,9 +130,9 @@ public abstract class AbstractController extends HttpServlet {
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
-		    GLOBALS.PMA_Config.setCookie("pma_lang", GLOBALS.lang, request, response);
+		    Globals.PMA_Config.setCookie("pma_lang", GLOBALS.lang, request, response);
 		    GLOBALS.themeManager.setThemeCookie(request, response);
-		    if (! empty(GLOBALS.PMA_Config.get("Server"))) {
+		    if (! empty(Globals.PMA_Config.get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
 		         */
@@ -149,7 +149,7 @@ public abstract class AbstractController extends HttpServlet {
 		        ) {
 		            String $value
 		                = (String) request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
-		            GLOBALS.PMA_Config.set("LoginCookieValidity", $value);
+		            Globals.PMA_Config.set("LoginCookieValidity", $value);
 		        }
 		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
 		        // and run authentication
@@ -261,12 +261,14 @@ public abstract class AbstractController extends HttpServlet {
 		    //$containerBuilder.set("response", Response.getInstance());
 		}
 		// load user preferences
-		GLOBALS.PMA_Config.loadUserPreferences();
+		Globals.PMA_Config.loadUserPreferences();
 		
 		// We override standard service request! Always call doGet
 		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS);
 
-		pmaResponse.response();
+		if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
+			pmaResponse.response();
+		}
 	}
 
 	/**

@@ -33,6 +33,8 @@ public class MessagesJs extends AbstractController {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
 			SessionMap $_SESSION, Globals GLOBALS) throws ServletException, IOException {
 
+		GLOBALS.PMA_MINIMUM_COMMON = "true";
+
 		response.setHeader("Content-Type", "text/javascript; charset=UTF-8");
 		// TODO header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) + " GMT"));
 
