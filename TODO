@@ -3,12 +3,12 @@ upper menù, left side menu
 
 
 server_databases.php
-server_sql.php
+server_sql.php				-> Server\SqlController
 server_export.php
 server_privileges.php
 
-db_structure.php
-db_sql.php
+db_structure.php			-> Database\StructureController
+db_sql.php					-> Database\SqlController
 db_export.php
 db_import.php
 db_operations.php
