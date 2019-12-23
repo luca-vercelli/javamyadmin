@@ -253,11 +253,11 @@ public class UserPreferences {
      */
     public void redirect(
         String $file_name,
-        Map<String, Object> $params /*= null*/,
+        Map<String, String> $params /*= null*/,
         String $hash, HttpServletRequest request, HttpServletResponse response, Globals GLOBALS
     ) {
-    	Map<String, Object> $url_params = new HashMap<>();
-    	$url_params.put("saved", 1);
+    	Map<String, String> $url_params = new HashMap<>();
+    	$url_params.put("saved", "1");
     	
         // redirect
         if ($params == null) {
@@ -289,7 +289,7 @@ public class UserPreferences {
             return "";
         }
 
-        String $script_name = GLOBALS.PMA_PHP_SELF.getParentFile().getParent();
+        String $script_name = Globals.PMA_PHP_SELF.getParentFile().getParent();
         
         String $return_url = $script_name + "?" + http_build_query($_REQUEST(request), "&");
 

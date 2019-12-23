@@ -1561,7 +1561,7 @@ public class Util {
             ) {
                 $tab.put("class", "active");
             } else if ($tab.get("active") == null && empty(GLOBALS.active_page)
-                /*&& (basename(GLOBALS.PMA_PHP_SELF).equals($tab.get("link")))*/
+                /*&& (basename(Globals.PMA_PHP_SELF).equals($tab.get("link")))*/
             ) {
             	$tab.put("class", "active");
             }
