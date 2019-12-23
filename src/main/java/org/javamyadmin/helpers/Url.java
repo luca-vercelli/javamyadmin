@@ -121,10 +121,14 @@ public class Url {
 
         for (String name : values.keySet()) {
         	Object value = values.get(name);
+            if (value == null) {
+            	value = "";
+            }
+            
             if (! empty(pre)) {
                 name = pre + "[" + name + "]";
             }
-
+            
             if (value instanceof Map) {
                 fields += Url.getHiddenFields((Map)value, name, true, sess);
             } else {
