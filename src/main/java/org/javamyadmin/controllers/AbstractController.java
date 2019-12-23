@@ -123,7 +123,7 @@ public abstract class AbstractController extends HttpServlet {
 		
 		/* setup themes                                          LABEL_theme_setup    */
 
-		ThemeManager.initializeTheme(request, GLOBALS);
+		ThemeManager.initializeTheme(request, GLOBALS, $_SESSION);
 		
 		if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
 		    /**

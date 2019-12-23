@@ -72,6 +72,7 @@ public class ThemeManager {
 
 	private HttpServletRequest request;
 	private Globals GLOBALS;
+	private SessionMap $_SESSION;
 	private Config cfg;
 
 	/**
@@ -82,15 +83,16 @@ public class ThemeManager {
 	 *
 	 * @access public
 	 */
-	public ThemeManager(HttpServletRequest req, Globals GLOBALS) {
+	public ThemeManager(HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION) {
 		this.request = req;
 		this.GLOBALS = GLOBALS;
-		this.cfg = GLOBALS.PMA_Config;
+		this.$_SESSION = $_SESSION;
+		this.cfg = Globals.PMA_Config;
 
 		this.theme_default = FALLBACK_THEME;
 		this.active_theme = "";
 
-		setThemesPath(GLOBALS.THEMES_PATH);
+		setThemesPath(Globals.THEMES_PATH);
 
 		this.setThemePerServer("true".equals(cfg.get("ThemePerServer")));
 
@@ -298,7 +300,7 @@ public class ThemeManager {
 		if (form) {
 			select_box += "<form name='setTheme' method='post'";
 			select_box += " action='index.php?route=/set-theme' class='disableAjax'>";
-			select_box += Url.getHiddenInputs(request, GLOBALS);
+			select_box += Url.getHiddenInputs(request, GLOBALS, $_SESSION);
 		}
 
 		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null, request, GLOBALS)
@@ -324,6 +326,10 @@ public class ThemeManager {
 		return select_box;
 	}
 
+	public String getHtmlSelectBox() {
+		return getHtmlSelectBox(true);
+	}
+	
 	/**
 	 * Renders the previews for all themes
 	 *
@@ -344,8 +350,8 @@ public class ThemeManager {
 	 * @return void
 	 * @access public
 	 */
-	public static void initializeTheme(HttpServletRequest request, Globals GLOBALS) {
-		ThemeManager tmanager = new ThemeManager(request, GLOBALS);
+	public static void initializeTheme(HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) {
+		ThemeManager tmanager = new ThemeManager(request, GLOBALS, $_SESSION);
 
 		GLOBALS.themeManager = tmanager;
 

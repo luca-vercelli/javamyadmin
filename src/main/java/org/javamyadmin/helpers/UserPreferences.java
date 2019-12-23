@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.javamyadmin.php.Php.SessionMap;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -279,10 +280,11 @@ public class UserPreferences {
     /**
      * Shows form which allows to quickly load
      * settings stored in browser"s local storage
+     * @param $_SESSION 
      *
      * @return String
      */
-    public String autoloadGetHeader(HttpServletRequest request, Globals GLOBALS)
+    public String autoloadGetHeader(HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION)
     {
         if ("hide".equals(request.getParameter("prefs_autoload"))) {
             request.getSession().setAttribute("userprefs_autoload", true);
@@ -294,7 +296,7 @@ public class UserPreferences {
         String $return_url = $script_name + "?" + http_build_query($_REQUEST(request), "&");
 
         Map<String, Object> model = new HashMap<>();
-        model.put("hidden_inputs", Url.getHiddenInputs(request, GLOBALS));
+        model.put("hidden_inputs", Url.getHiddenInputs(request, GLOBALS, $_SESSION));
         model.put("return_url", $return_url);
         
         return JtwigFactory.render("preferences/autoload", model);

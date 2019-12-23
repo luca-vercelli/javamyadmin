@@ -3,6 +3,7 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +14,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
+import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 
@@ -56,62 +59,182 @@ public class HomeController extends AbstractController {
 			// TODO include ROOT_PATH . "libraries/server_common.inc.php";
 		}
 
-		String displayMessage = "";
+		String $displayMessage = "";
 		if (!empty(GLOBALS.message)) {
-			displayMessage = GLOBALS.message; // Util.getMessage(message);
+			$displayMessage = GLOBALS.message; // Util.getMessage(message);
 			GLOBALS.message = null;
 		}
 
-		String partialLogout = "";
+		String $partialLogout = "";
 		if (request.getSession().getAttribute("partial_logout") != null) {
-			partialLogout = Message.success(__("You were logged out from one server, to logout completely "
+			$partialLogout = Message.success(__("You were logged out from one server, to logout completely "
 					+ "from phpMyAdmin, you need to logout from all servers."), request, GLOBALS).getDisplay();
 			request.getSession().removeAttribute("partial_logout");
 		}
 
-		String syncFavoriteTables = "";
+		String $syncFavoriteTables = "";
 		// TODO syncFavoriteTables = RecentFavoriteTable.getInstance("favorite")
 		// .getHtmlSyncFavoriteTables();
 
-		boolean hasServer = false;
-		boolean hasServerSelection = false;
-		String serverSelection = "";
-		String changePassword = "";
-		List<String> charsetsList = new ArrayList<>();
-		String userPreferences = "";
-		String languageSelector = "";
-		String themeSelection = "";
-		Map<String, Object> webServer = new HashMap<>();
-		List<String> databaseServer = new ArrayList<>();
+		boolean $hasServerSelection = false;
+		String $serverSelection = "";
+		String $changePassword = "";
+		List<String> $charsetsList = new ArrayList<>();
+		String $userPreferences = "";
+		
+		boolean $hasServer = GLOBALS.server > 0 || !empty(Globals.PMA_Config.get("Servers")) && ((Map)Globals.PMA_Config.get("Servers")).size() > 1;
+        if ($hasServer) {
+            $hasServerSelection = "0".equals(Globals.PMA_Config.get("ServerDefault"))
+                || ("false".equals(Globals.PMA_Config.get("NavigationDisplayServers"))
+                		&& ((Map)Globals.PMA_Config.get("Servers")).size() > 1
+                		|| (GLOBALS.server == 0 && ((Map)Globals.PMA_Config.get("Servers")).size() == 1));
+            if ($hasServerSelection) {
+                $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, request);
+            }
 
-		// hasServer = GLOBALS.server > 0 || ((List)GLOBALS.cfg.get("Servers")).size() >
-		// 1;
+            /* TODO
+            if ($server > 0) {
+                $checkUserPrivileges = new CheckUserPrivileges(this.dbi);
+                $checkUserPrivileges.getPrivileges();
 
-		// TODO
+                if ((Globals.PMA_Config.get("Server"]["auth_type"] != "config") && Globals.PMA_Config.get("ShowChgPassword"]) {
+                    $changePassword = this.template.render("list/item", [
+                        "content" => Util.getImage("s_passwd") . " " . __(
+                            "Change password"
+                        ),
+                        "id" => "li_change_password",
+                        "class" => "no_bullets",
+                        "url" => [
+                            "href" => Url.getFromRoute("/user_password"),
+                            "target" => null,
+                            "id" => "change_password_anchor",
+                            "class" => "ajax",
+                        ],
+                        "mysql_help_page" => null,
+                    ]);
+                }
 
+                $charsets = Charsets.getCharsets(this.dbi, Globals.PMA_Config.get("Server"]["DisableIS"]);
+                $collations = Charsets.getCollations(this.dbi, Globals.PMA_Config.get("Server"]["DisableIS"]);
+                $charsetsList = [];
+                // @var Charset $charset
+                foreach ($charsets as $charset) {
+                    $collationsList = [];
+                    // @var Collation $collation
+                    foreach ($collations[$charset.getName()] as $collation) {
+                        $collationsList[] = [
+                            "name" => $collation.getName(),
+                            "description" => $collation.getDescription(),
+                            "is_selected" => $collation_connection === $collation.getName(),
+                        ];
+                    }
+                    $charsetsList[] = [
+                        "name" => $charset.getName(),
+                        "description" => $charset.getDescription(),
+                        "collations" => $collationsList,
+                    ];
+                }
+
+                $userPreferences = this.template.render("list/item", [
+                    "content" => Util.getImage("b_tblops") . " " . __(
+                        "More settings"
+                    ),
+                    "id" => "li_user_preferences",
+                    "class" => "no_bullets",
+                    "url" => [
+                        "href" => Url.getFromRoute("/preferences/manage"),
+                        "target" => null,
+                        "id" => null,
+                        "class" => null,
+                    ],
+                    "mysql_help_page" => null,
+                ]);
+            }*/
+        }
+		
+		LanguageManager $languageManager = LanguageManager.getInstance();
+		String $languageSelector = "";
+        if (empty(Globals.PMA_Config.get("Lang")) && $languageManager.hasChoice()) {
+            $languageSelector = $languageManager.getSelectorDisplay(GLOBALS);
+        }
+
+        String $themeSelection = "";
+        if (!empty(Globals.PMA_Config.get("ThemeManager"))) {
+            $themeSelection = GLOBALS.themeManager.getHtmlSelectBox();
+        }
+
+        List<String> $databaseServer = new ArrayList<>();
+        if (GLOBALS.server > 0 && "true".equals(Globals.PMA_Config.get("ShowServerInfo"))) {
+            String $hostInfo = "";
+            if (! empty(((Map) Globals.PMA_Config.get("Server")).get("verbose"))) {
+                $hostInfo += ((Map) Globals.PMA_Config.get("Server")).get("verbose");
+                if ("true".equals(Globals.PMA_Config.get("ShowServerInfo"))) {
+                    $hostInfo += " (";
+                }
+            }
+            if ("true".equals(Globals.PMA_Config.get("ShowServerInfo")) || empty(((Map) Globals.PMA_Config.get("Server")).get("verbose"))) {
+                // TODO $hostInfo += this.dbi.getHostInfo();
+            }
+            if (! empty(((Map) Globals.PMA_Config.get("Server")).get("verbose")) && "true".equals(Globals.PMA_Config.get("ShowServerInfo"))) {
+                $hostInfo += ")";
+            }
+
+            /*
+            String $serverCharset = Charsets.getServerCharset($this.dbi, Globals.PMA_Config.get("Server").get("DisableIS"));
+            $databaseServer = [
+                "host" => $hostInfo,
+                "type" => Util.getServerType(),
+                "connection" => Util.getServerSSL(),
+                "version" => $this.dbi.getVersionString() . " - " . $this.dbi.getVersionComment(),
+                "protocol" => $this.dbi.getProtoInfo(),
+                "user" => $this.dbi.fetchValue("SELECT USER();"),
+                "charset" => $serverCharset.getDescription() + " (" + $serverCharset.getName() + ")",
+            ];*/
+        }
+
+		WebServer $webServer = new WebServer();
+        if ("true".equals(Globals.PMA_Config.get("ShowServerInfo"))) {
+            $webServer.setSoftware(InetAddress.getLocalHost().getHostName());
+            // More properties not supported
+        }
+        
 		Map<String, Object> model = new HashMap<>();
-		model.put("message", displayMessage);
-		model.put("partial_logout", partialLogout);
+		model.put("message", $displayMessage);
+		model.put("partial_logout", $partialLogout);
 		model.put("is_git_revision", false);
 		model.put("server", GLOBALS.server);
-		model.put("sync_favorite_tables", syncFavoriteTables);
-		model.put("has_server", hasServer);
-		model.put("is_demo", GLOBALS.PMA_Config.get("DBG.demo"));
-		model.put("has_server_selection", hasServerSelection);
-		model.put("server_selection", serverSelection != null ? serverSelection : "");
-		model.put("change_password", changePassword);
-		model.put("charsets", charsetsList);
-		model.put("language_selector", languageSelector);
-		model.put("theme_selection", themeSelection);
-		model.put("user_preferences", userPreferences);
-		model.put("database_server", databaseServer);
-		model.put("web_server", webServer);
+		model.put("sync_favorite_tables", $syncFavoriteTables);
+		model.put("has_server", $hasServer);
+		model.put("is_demo", Globals.PMA_Config.get("DBG.demo"));
+		model.put("has_server_selection", $hasServerSelection);
+		model.put("server_selection", $serverSelection != null ? $serverSelection : "");
+		model.put("change_password", $changePassword);
+		model.put("charsets", $charsetsList);
+		model.put("language_selector", $languageSelector);
+		model.put("theme_selection", $themeSelection);
+		model.put("user_preferences", $userPreferences);
+		model.put("database_server", $databaseServer);
+		model.put("web_server", $webServer);
 		model.put("php_info", null);
-		model.put("is_version_checked", GLOBALS.PMA_Config.get("VersionCheck"));
-		model.put("phpmyadmin_version", GLOBALS.PMA_VERSION);
+		model.put("is_version_checked", Globals.PMA_Config.get("VersionCheck"));
+		model.put("phpmyadmin_version", Globals.PMA_VERSION);
 		model.put("config_storage_message", null);
 
 		String html = JtwigFactory.render("home/index", model);
 		pmaResponse.addHTML(html);
+	}
+	
+	public final static class WebServer {
+
+		private String software;
+
+		public String getSoftware() {
+			return software;
+		}
+
+		public void setSoftware(String software) {
+			this.software = software;
+		}
+		
 	}
 }

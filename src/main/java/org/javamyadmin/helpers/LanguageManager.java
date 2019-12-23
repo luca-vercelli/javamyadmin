@@ -407,4 +407,8 @@ public class LanguageManager {
 
 		return JtwigFactory.render("select_lang", model);
 	}
+	
+	public String getSelectorDisplay(Globals GLOBALS) {
+		return getSelectorDisplay(false, true, GLOBALS);
+	}
 }

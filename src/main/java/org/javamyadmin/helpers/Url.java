@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.javamyadmin.php.Globals;
+import org.javamyadmin.php.Php.SessionMap;
 
 /**
  * Static methods for URL/hidden inputs generating
@@ -18,8 +18,8 @@ import org.javamyadmin.php.Globals;
  */
 public class Url {
 
-	public static String getHiddenInputs(HttpServletRequest req, Globals GLOBALS) {
-		return getHiddenInputs(null, null, 0, null, req, GLOBALS);
+	public static String getHiddenInputs(HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION) {
+		return getHiddenInputs(null, null, 0, null, req, GLOBALS, $_SESSION);
 	}
 	
     /**
@@ -44,7 +44,7 @@ public class Url {
         String table /*= "" */,
         int indent /*= 0 */,
         List<String> skip /*= [] */,
-        HttpServletRequest req, Globals GLOBALS
+        HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION
     ) {
         /** @var Config PMA_Config */
 
@@ -62,11 +62,11 @@ public class Url {
         }
 
         if (GLOBALS.server != null
-            && GLOBALS.server != GLOBALS.PMA_Config.get("ServerDefault")
+            && GLOBALS.server != Globals.PMA_Config.get("ServerDefault")
         ) {
             params.put("server", GLOBALS.server);
         }
-        if (empty(GLOBALS.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
+        if (empty(Globals.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
             params.put("lang", GLOBALS.lang);
         }
 
@@ -76,7 +76,7 @@ public class Url {
 	        }
         }
 
-        return Url.getHiddenFields(params, "", false, req.getSession());
+        return Url.getHiddenFields(params, "", false, $_SESSION);
     }
 
     /**
@@ -110,13 +110,17 @@ public class Url {
      *
      * @return string form fields of type hidden
      */
-    public static String getHiddenFields(Map<String,Object> values, String pre /*= ""*/, boolean is_token /*= false*/, HttpSession sess)
+    public static String getHiddenFields(Map<String,Object> values, String pre /*= ""*/, boolean is_token /*= false*/, SessionMap $_SESSION)
     {
         String fields = "";
+        
+        if (values == null) {
+        	values = new HashMap<>();
+        }
 
         /* Always include token in plain forms */
         if (!is_token) {
-            values.put("token", sess.getAttribute(" PMA_token "));
+            values.put("token", $_SESSION.get(" PMA_token "));
         }
 
         for (String name : values.keySet()) {
@@ -130,7 +134,7 @@ public class Url {
             }
             
             if (value instanceof Map) {
-                fields += Url.getHiddenFields((Map)value, name, true, sess);
+                fields += Url.getHiddenFields((Map)value, name, true, $_SESSION);
             } else {
                 // do not generate an ending "\n" because
                 // Url.getHiddenInputs() is sometimes called
@@ -143,6 +147,14 @@ public class Url {
         return fields;
     }
 
+    public static String getHiddenFields(Map<String,Object> values, String pre, SessionMap $_SESSION) {
+    	return getHiddenFields(values, pre, false, $_SESSION);
+    }
+    
+    public static String getHiddenFields(Map<String,Object> values, SessionMap $_SESSION) {
+    	return getHiddenFields(values, "", false, $_SESSION);
+    }
+    
     /**
      * Generates text with URL parameters.
      *
@@ -228,14 +240,14 @@ public class Url {
 
         // avoid overwriting when creating navi panel links to servers
         if (GLOBALS.server != null
-            && GLOBALS.server != GLOBALS.PMA_Config.get("ServerDefault")
+            && GLOBALS.server != Globals.PMA_Config.get("ServerDefault")
             && ! params.containsKey("server")
-            && GLOBALS.PMA_Config.get("is_setup").equals(false)
+            && Globals.PMA_Config.get("is_setup").equals(false)
         ) {
             params.put("server", Integer.toString(GLOBALS.server));
         }
 
-        if (empty(GLOBALS.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
+        if (empty(Globals.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
             params.put("lang", GLOBALS.lang);
         }
 
