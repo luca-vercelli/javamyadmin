@@ -67,7 +67,7 @@ public class Footer {
         this._isEnabled = true;
         this._scripts = new Scripts(GLOBALS);
         this._isMinimal = false;
-        // TODO this.relation = new Relation(GLOBALS.dbi);
+        // TODO this.relation = new Relation(GLOBALS.getDbi());
         
         this.GLOBALS = GLOBALS;
         this.pmaResponse = pmaResponse;
@@ -255,12 +255,12 @@ public class Footer {
         /* TODO if (! Core.isValid(request.getParameter("no_history"))
             && empty(GLOBALS.error_message)
             && ! empty(GLOBALS.sql_query)
-            && GLOBALS.dbi != null
-            && GLOBALS.dbi.isUserType("logged")
+            && GLOBALS.getDbi() != null
+            && GLOBALS.getDbi().isUserType("logged")
         ) {
             this.relation.setHistory(
-                Core.ifSetOr(GLOBALS.db, ""),
-                Core.ifSetOr(GLOBALS.table, ""),
+                Core.ifSetOr(GLOBALS.getDb(), ""),
+                Core.ifSetOr(GLOBALS.getTable(), ""),
                 GLOBALS.cfg.get("Server.user"),
                 GLOBALS.sql_query
             );
@@ -368,7 +368,7 @@ public class Footer {
                 $errorMessages = this.getErrorMessages();
                 $scripts = this._scripts.getDisplay();
 
-                if ("true".equals(multiget(GLOBALS.PMA_Config.settings, "DBG" , "demo"))) {
+                if ("true".equals(multiget(Globals.getConfig().settings, "DBG" , "demo"))) {
                     $demoMessage = this._getDemoMessage();
                 }
 
@@ -380,7 +380,7 @@ public class Footer {
             model.put("self_link", $selfLink);
             model.put("error_messages",  $errorMessages);
             model.put("scripts", $scripts);
-            model.put("is_demo", multiget(GLOBALS.PMA_Config.settings, "DBG", "demo"));
+            model.put("is_demo", multiget(Globals.getConfig().settings, "DBG", "demo"));
             model.put("demo_message", $demoMessage);
             model.put("footer", $footer);
             

@@ -134,9 +134,9 @@ public class Menu {
     {
         this._db = $db;
         this._table = $table;
-        //this.relation = new Relation(GLOBALS.dbi);
+        //this.relation = new Relation(GLOBALS.getDbi());
         this.session = session;
-        this.cfg = GLOBALS.PMA_Config.settings;
+        this.cfg = Globals.getConfig().settings;
         this.request = request;
         this.GLOBALS = GLOBALS;
     }
@@ -238,11 +238,11 @@ public class Menu {
                 + " AND `tab` LIKE '" + $level + "%'"
                 + " AND `usergroup` = (SELECT usergroup FROM "
                 + $userTable + " WHERE `username` = '"
-                + GLOBALS.dbi.escapeString(cfg.get("Server")["user"]) + "')";
+                + GLOBALS.getDbi().escapeString(cfg.get("Server")["user"]) + "')";
 
             $result = this.relation.queryAsControlUser($sql_query, false);
             if ($result) {
-                while ($row = GLOBALS.dbi.fetchAssoc($result)) {
+                while ($row = GLOBALS.getDbi().fetchAssoc($result)) {
                     $tabName = mb_substr(
                         $row["tab"],
                         mb_strpos($row["tab"], "_") + 1
@@ -263,7 +263,7 @@ public class Menu {
     private String  _getBreadcrumbs(HttpServletRequest request, Globals GLOBALS)
     {
         String $retval = "";
-        boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)
+        boolean $tbl_is_view = GLOBALS.getDbi().getTable(this._db, this._table)
             .isView();
         if (empty(multiget(cfg, "Server", "host"))) {
             multiput(cfg, "Server", "host", "");
@@ -333,9 +333,9 @@ public class Menu {
             if (! empty(this._table))
                 && ! ("1".equals(request.getParameter("purge")))
             ) {
-                Object $table_class_object = GLOBALS.dbi.getTable(
-                    GLOBALS.db,
-                    GLOBALS.table
+                Object $table_class_object = GLOBALS.getDbi().getTable(
+                    GLOBALS.getDb(),
+                    GLOBALS.getTable()
                 );
                 if ($table_class_object.isView()) {
                     $tbl_is_view = true;
@@ -420,17 +420,17 @@ public class Menu {
     private Map _getTableTabs()
     {
 
-        boolean $db_is_system_schema = GLOBALS.dbi.isSystemSchema(this._db);
-        boolean $tbl_is_view = GLOBALS.dbi.getTable(this._db, this._table)
+        boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
+        boolean $tbl_is_view = GLOBALS.getDbi().getTable(this._db, this._table)
             .isView();
         boolean $updatable_view = false;
         if ($tbl_is_view) {
-            $updatable_view = GLOBALS.dbi.getTable(this._db, this._table)
+            $updatable_view = GLOBALS.getDbi().getTable(this._db, this._table)
                 .isUpdatableView();
         }
-        boolean $is_superuser = GLOBALS.dbi.isSuperuser();
-        boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
-            || GLOBALS.dbi.isUserType("create");
+        boolean $is_superuser = GLOBALS.getDbi().isSuperuser();
+        boolean $isCreateOrGrantUser = GLOBALS.getDbi().isUserType("grant")
+            || GLOBALS.getDbi().isUserType("create");
 
         Map $tabs = new HashMap<>();
 
@@ -553,11 +553,11 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getDbTabs()
     {
-        boolean $db_is_system_schema = GLOBALS.dbi.isSystemSchema(this._db);
-        int $num_tables = GLOBALS.dbi.getTables(this._db).size();
-        boolean $is_superuser = GLOBALS.dbi.isSuperuser();
-        boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
-            || GLOBALS.dbi.isUserType("create");
+        boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
+        int $num_tables = GLOBALS.getDbi().getTables(this._db).size();
+        boolean $is_superuser = GLOBALS.getDbi().isSuperuser();
+        boolean $isCreateOrGrantUser = GLOBALS.getDbi().isUserType("grant")
+            || GLOBALS.getDbi().isUserType("create");
 
         /**
          * Gets the relation settings
@@ -675,16 +675,16 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getServerTabs()
     {
-    	boolean $is_superuser = GLOBALS.dbi.isSuperuser();
-    	boolean $isCreateOrGrantUser = GLOBALS.dbi.isUserType("grant")
-            || GLOBALS.dbi.isUserType("create");
+    	boolean $is_superuser = GLOBALS.getDbi().isSuperuser();
+    	boolean $isCreateOrGrantUser = GLOBALS.getDbi().isUserType("grant")
+            || GLOBALS.getDbi().isUserType("create");
         
     	/* MYSQL Specific!!!
     	Map $binary_logs;
     	if (Util.cacheExists("binary_logs", session)) {
             $binary_logs = (Map) Util.cacheGet("binary_logs", null, session);
         } else {
-            $binary_logs = GLOBALS.dbi.fetchResult(
+            $binary_logs = GLOBALS.getDbi().fetchResult(
                 "SHOW MASTER LOGS",
                 "Log_name",
                 null,

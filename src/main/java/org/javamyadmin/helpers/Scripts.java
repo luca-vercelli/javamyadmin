@@ -187,7 +187,7 @@ public class Scripts {
 	public String getDisplay() {
 		Map<String, Object> model = new HashMap<>();
 		model.put("files", this._files);
-		model.put("version", GLOBALS.PMA_VERSION);
+		model.put("version", Globals.getPmaVersion());
 		model.put("code", this._code);
 
 		return JtwigFactory.render("scripts", model);

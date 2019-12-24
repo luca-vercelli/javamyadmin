@@ -19,8 +19,6 @@ import org.javamyadmin.php.Php.SessionMap;
  */
 public class StructureController extends AbstractController {
 
-	private static final long serialVersionUID = 8146583993048177980L;
-
     /**
      * @var int Number of tables
      */
@@ -61,11 +59,11 @@ public class StructureController extends AbstractController {
      */
     //private Replication $replication; //TODO ?
     
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
+	/*@Override
+	protected void service(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
 			SessionMap $_SESSION, Globals GLOBALS, Connection $db) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 
 }

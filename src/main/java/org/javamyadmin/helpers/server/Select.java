@@ -37,14 +37,14 @@ public class Select {
         // Show as list?
         boolean $list = false;
         if ($not_only_options) {
-            $list = "true".equals(Globals.PMA_Config.get("DisplayServersList"));
+            $list = "true".equals(Globals.getConfig().get("DisplayServersList"));
             $not_only_options = ! $list;
         }
 
         if ($not_only_options) {
             $retval += "<form method='post' action='"
                 + Util.getScriptNameForOption(
-                	(String) Globals.PMA_Config.get("DefaultTabServer"),
+                	(String) Globals.getConfig().get("DefaultTabServer"),
                     "server", request, GLOBALS
                 )
                 + "' class='disableAjax'>";
@@ -64,7 +64,7 @@ public class Select {
             $retval += "<ul id='list_server'>";
         }
 
-        Map<String, Object> servers = (Map<String, Object>) Globals.PMA_Config.get("Servers");
+        Map<String, Object> servers = (Map<String, Object>) Globals.getConfig().get("Servers");
         for (Entry<String, Object> entry : servers.entrySet()) {
         	String $key = entry.getKey();
         	Map $server = (Map) entry.getValue();
@@ -73,7 +73,7 @@ public class Select {
             }
 
             boolean $selected;
-            if (GLOBALS.server != null && GLOBALS.server.equals(new Integer($key))) {
+            if (GLOBALS.getServer() != null && GLOBALS.getServer().equals(new Integer($key))) {
                 $selected = true;
             } else {
                 $selected = false;
@@ -105,7 +105,7 @@ public class Select {
                     $retval += "<strong>" + htmlspecialchars($label) + "</strong>";
                 } else {
                     String $scriptName = Util.getScriptNameForOption(
-                    	(String)Globals.PMA_Config.get("DefaultTabServer"),
+                    	(String)Globals.getConfig().get("DefaultTabServer"),
                         "server", request, GLOBALS
                     );
                     Map<String, String> serverMap = new HashMap<>();

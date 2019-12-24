@@ -61,13 +61,13 @@ public class Url {
             }
         }
 
-        if (GLOBALS.server != null
-            && GLOBALS.server != Globals.PMA_Config.get("ServerDefault")
+        if (GLOBALS.getServer() != null
+            && GLOBALS.getServer() != Globals.getConfig().get("ServerDefault")
         ) {
-            params.put("server", GLOBALS.server);
+            params.put("server", GLOBALS.getServer());
         }
-        if (empty(Globals.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
-            params.put("lang", GLOBALS.lang);
+        if (empty(Globals.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
+            params.put("lang", GLOBALS.getLang());
         }
 
         if (skip != null) {
@@ -239,16 +239,16 @@ public class Url {
         String separator = getArgSeparator("none");
 
         // avoid overwriting when creating navi panel links to servers
-        if (GLOBALS.server != null
-            && GLOBALS.server != Globals.PMA_Config.get("ServerDefault")
+        if (GLOBALS.getServer() != null
+            && GLOBALS.getServer() != Globals.getConfig().get("ServerDefault")
             && ! params.containsKey("server")
-            && Globals.PMA_Config.get("is_setup").equals(false)
+            && Globals.getConfig().get("is_setup").equals(false)
         ) {
-            params.put("server", Integer.toString(GLOBALS.server));
+            params.put("server", Integer.toString(GLOBALS.getServer()));
         }
 
-        if (empty(Globals.PMA_Config.getCookie("pma_lang", req)) && ! empty(GLOBALS.lang)) {
-            params.put("lang", GLOBALS.lang);
+        if (empty(Globals.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
+            params.put("lang", GLOBALS.getLang());
         }
 
         String query = http_build_query(params, separator);

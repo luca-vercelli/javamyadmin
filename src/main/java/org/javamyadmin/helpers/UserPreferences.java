@@ -58,7 +58,7 @@ public class UserPreferences {
                 "Server/only_db" => "Servers/1/only_db",
             ]
         );
-        $cf.updateWithGlobalConfig(GLOBALS.PMA_Config);
+        $cf.updateWithGlobalConfig(Globals.getConfig());
         */
     }
 
@@ -122,7 +122,7 @@ public class UserPreferences {
         $cfgRelation = this.relation.getRelationsParam();
         $server = isset($GLOBALS["server"])
             ? $GLOBALS["server"]
-            : GLOBALS.PMA_Config["ServerDefault"];
+            : Globals.getConfig()["ServerDefault"];
         $cache_key = "server_" + $server;
         if (! $cfgRelation["userconfigwork"]) {
             // no pmadb table, use session storage
@@ -195,7 +195,7 @@ public class UserPreferences {
     	return null;
     	/* TODO
         $cfg = [];
-        $blacklist = array_flip(GLOBALS.PMA_Config["UserprefsDisallow"]);
+        $blacklist = array_flip(Globals.getConfig()["UserprefsDisallow"]);
         $whitelist = array_flip(UserFormList.getFields());
         // whitelist some additional fields which are custom handled
         $whitelist["ThemeDefault"] = true;
@@ -291,7 +291,7 @@ public class UserPreferences {
             return "";
         }
 
-        String $script_name = Globals.PMA_PHP_SELF.getParentFile().getParent();
+        String $script_name = Globals.get_PMA_PHP_SELF().getParentFile().getParent();
         
         String $return_url = $script_name + "?" + http_build_query($_REQUEST(request), "&");
 

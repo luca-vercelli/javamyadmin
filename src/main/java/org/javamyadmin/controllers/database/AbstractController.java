@@ -13,9 +13,7 @@ import org.javamyadmin.php.Php.SessionMap;
 
 public abstract class AbstractController  extends org.javamyadmin.controllers.AbstractController {
 
-	private static final long serialVersionUID = -1;
-
-	@Override
+	/*@Override
 	final protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
 			SessionMap $_SESSION, Globals GLOBALS) throws ServletException, IOException {
 
@@ -27,5 +25,5 @@ public abstract class AbstractController  extends org.javamyadmin.controllers.Ab
 
 	abstract protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
 			SessionMap $_SESSION, Globals GLOBALS, Connection $db) throws ServletException, IOException;
-	
+	*/
 }

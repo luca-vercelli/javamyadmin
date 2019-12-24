@@ -248,7 +248,7 @@ public class JtwigFactory {
 	 * @see https://github.com/phpmyadmin/phpmyadmin/blob/master/libraries/classes/Template.php
 	 */
 	public static JtwigTemplate getTemplate(String templateName) {
-		return JtwigTemplate.fileTemplate(Globals.TEMPLATES_PATH + templateName + ".twig", getConfiguration());
+		return JtwigTemplate.fileTemplate(Globals.getTemplatesPath() + templateName + ".twig", getConfiguration());
 	}
 
 	/**

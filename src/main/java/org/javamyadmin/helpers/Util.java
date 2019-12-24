@@ -43,7 +43,7 @@ public class Util {
      */
     public static boolean showIcons(String $value, Globals GLOBALS)
     {
-    	String type = (String) GLOBALS.PMA_Config.get($value);
+    	String type = (String) Globals.getConfig().get($value);
     	return "icons".equals(type) || "both".equals(type);
     }
 
@@ -56,7 +56,7 @@ public class Util {
      */
     public static boolean showText(String $value, Globals GLOBALS)
     {
-    	String type = (String) GLOBALS.PMA_Config.get($value);
+    	String type = (String) Globals.getConfig().get($value);
     	return "text".equals(type) || "both".equals(type);
     }
 
@@ -345,8 +345,8 @@ public class Util {
         }
         $mysql = "5.5";
         $lang = "en";
-        if (!empty(GLOBALS.dbi)) {
-            $serverVersion = GLOBALS.dbi.getVersion();
+        if (!empty(GLOBALS.getDbi())) {
+            $serverVersion = GLOBALS.getDbi().getVersion();
             if ($serverVersion >= 50700) {
                 $mysql = "5.7";
             } else if ($serverVersion >= 50600) {
@@ -477,7 +477,7 @@ public class Util {
     public static String showHint(String $message, Globals GLOBALS)
     {
     	String $classClause;
-        if (!empty(GLOBALS.PMA_Config.get("ShowHint"))) {
+        if (!empty(Globals.getConfig().get("ShowHint"))) {
             $classClause = " class='pma_hint'";
         } else {
             $classClause = "";
@@ -525,7 +525,7 @@ public class Util {
 
         // Checking for any server errors.
         if (empty($server_msg)) {
-            $server_msg = GLOBALS.dbi.getError();
+            $server_msg = GLOBALS.getDbi().getError();
         }
 
         // Finding the query that failed, if not specified.
@@ -718,8 +718,8 @@ public class Util {
             // set this because Table.countRecords() can use it
             boolean $tbl_is_view = $table.get("TABLE_TYPE") == "VIEW"; //FIXME
 
-            if ($tbl_is_view || GLOBALS.dbi.isSystemSchema($db)) {
-                $rowCount = GLOBALS.dbi
+            if ($tbl_is_view || GLOBALS.getDbi().isSystemSchema($db)) {
+                $rowCount = GLOBALS.getDbi()
                     .getTable($db, (String) $table.get("Name"))
                     .countRecords();
             }
@@ -745,17 +745,17 @@ public class Util {
     ) {
     	return null;
     	/* TODO
-        String $sep = GLOBALS.PMA_Config.get("NavigationTreeTableSeparator");
+        String $sep = Globals.getConfig().get("NavigationTreeTableSeparator");
 
         if ($tables === null) {
-            $tables = GLOBALS.dbi.getTablesFull(
+            $tables = GLOBALS.getDbi().getTablesFull(
                 $db,
                 "",
                 false,
                 $limit_offset,
                 $limit_count
             );
-            if (GLOBALS.PMA_Config["NaturalOrder"]) {
+            if (Globals.getConfig()["NaturalOrder"]) {
                 uksort($tables, "strnatcasecmp");
             }
         }
@@ -778,7 +778,7 @@ public class Util {
 
             // in $group we save the reference to the place in $table_groups
             // where to store the table info
-            if (GLOBALS.PMA_Config["NavigationTreeEnableGrouping"]
+            if (Globals.getConfig()["NavigationTreeEnableGrouping"]
                 && $sep && mb_strstr($table_name, $sep)
             ) {
                 $parts = explode($sep, $table_name);
@@ -789,7 +789,7 @@ public class Util {
                 $parts_cnt = count($parts) - 1;
 
                 while (($i < $parts_cnt)
-                    && ($i < GLOBALS.PMA_Config["NavigationTreeTableLevel"])
+                    && ($i < Globals.getConfig()["NavigationTreeTableLevel"])
                 ) {
                     $group_name = $parts[$i] + $sep;
                     $group_name_full += $group_name;
@@ -1209,11 +1209,11 @@ public class Util {
     {
     	return null; //TODO
         /*$ret = "";
-        $result = GLOBALS.dbi.query($sqlQuery);
+        $result = GLOBALS.getDbi().query($sqlQuery);
         if ($result) {
             $devider = "+";
             $columnNames = "|";
-            $fieldsMeta = GLOBALS.dbi.getFieldsMeta($result);
+            $fieldsMeta = GLOBALS.getDbi().getFieldsMeta($result);
             foreach ($fieldsMeta as $meta) {
                 $devider += "---+";
                 $columnNames += " " + $meta.name + " |";
@@ -1221,7 +1221,7 @@ public class Util {
             $devider += "\n";
 
             $ret += $devider + $columnNames + "\n" + $devider;
-            while ($row = GLOBALS.dbi.fetchRow($result)) {
+            while ($row = GLOBALS.getDbi().fetchRow($result)) {
                 $values = "|";
                 foreach ($row as $value) {
                     if ($value === null) {
@@ -1249,7 +1249,7 @@ public class Util {
             // 5.0.37 has profiling but for example, 5.1.20 does not
             // (avoid a trip to the server for MySQL before 5.0.37)
             // and do not set a constant as we might be switching servers
-            if (GLOBALS.dbi.fetchValue("SELECT @@have_profiling")
+            if (GLOBALS.getDbi().fetchValue("SELECT @@have_profiling")
             ) {
                 cacheSet("profiling_supported", true, GLOBALS, session);
             } else {
@@ -1557,10 +1557,10 @@ public class Util {
         // determine additional style-class
         if (empty($tab.get("class"))) {
             if (! empty($tab.get("active"))
-                || Core.isValid(GLOBALS.active_page, "identical", $tab.get("link"))
+                || Core.isValid(GLOBALS.getActivePage(), "identical", $tab.get("link"))
             ) {
                 $tab.put("class", "active");
-            } else if ($tab.get("active") == null && empty(GLOBALS.active_page)
+            } else if ($tab.get("active") == null && empty(GLOBALS.getActivePage())
                 /*&& (basename(Globals.PMA_PHP_SELF).equals($tab.get("link")))*/
             ) {
             	$tab.put("class", "active");
@@ -1709,7 +1709,7 @@ public class Util {
 
         /* Suhosin: Check that each query parameter is not above maximum
         boolean $in_suhosin_limits = true;
-        if ($url_length <= new Integer(GLOBALS.PMA_Config.get("LinkLengthLimit"))) {
+        if ($url_length <= new Integer(Globals.getConfig().get("LinkLengthLimit"))) {
             $suhosin_get_MaxValueLength = ini_get("suhosin.get.max_value_length");
             if ($suhosin_get_MaxValueLength) {
                 $query_parts = splitURLQuery($url);
@@ -1729,7 +1729,7 @@ public class Util {
         }*/
 
         List<String> $tag_params_strings = new ArrayList<>();
-        if (($url_length > new Integer((String) Globals.PMA_Config.get("LinkLengthLimit")))
+        if (($url_length > new Integer((String) Globals.getConfig().get("LinkLengthLimit")))
             //|| ! $in_suhosin_limits
             // Has as sql_query without a signature
             || ( $url.contains( "sql_query=") && !$url.contains( "sql_signature="))
@@ -1906,7 +1906,7 @@ public class Util {
 
         for ($i = 0; $i < $fields_cnt; ++$i) {
             $con_val     = "";
-            $field_flags = GLOBALS.dbi.fieldFlags($handle, $i);
+            $field_flags = GLOBALS.getDbi().fieldFlags($handle, $i);
             $meta        = $fields_meta[$i];
 
             // do not use a column alias in a condition
@@ -1939,7 +1939,7 @@ public class Util {
             // because there is some caching in the function).
             if (!empty($meta.orgtable)
                 && ($meta.table != $meta.orgtable)
-                && ! GLOBALS.dbi.getTable(GLOBALS["db"], $meta.table).isView()
+                && ! GLOBALS.getDbi().getTable(GLOBALS["db"], $meta.table).isView()
             ) {
                 $meta.table = $meta.orgtable;
             }
@@ -2008,7 +2008,7 @@ public class Util {
                         + printableBitValue((int) $row[$i], (int) $meta.length) + "'";
                 } else {
                     $con_val = "= \""
-                        + GLOBALS.dbi.escapeString($row[$i]) + "\"";
+                        + GLOBALS.getDbi().escapeString($row[$i]) + "\"";
                 }
             }
 
@@ -2099,7 +2099,7 @@ public class Util {
         if ($value == "") {
             $value = $text;
         }
-        if (GLOBALS.PMA_Config.get("ActionLinksMode") == "text") {
+        if (Globals.getConfig().get("ActionLinksMode") == "text") {
             return " <input class='btn btn-link' type='submit' name='" + $button_name + "'"
                 + " value='" + htmlspecialchars($value) + "'"
                 + " title='" + htmlspecialchars($text) + "'>" + "\n";
@@ -2405,7 +2405,7 @@ public class Util {
             $dir += "/";
         }
 
-        return $dir.replace("%u", Core.securePath((String) multiget(Globals.PMA_Config.settings, "Server", "user")));
+        return $dir.replace("%u", Core.securePath((String) multiget(Globals.getConfig().settings, "Server", "user")));
     }
 
     /**
@@ -2419,16 +2419,16 @@ public class Util {
     public static String getDbLink(String $database /*= ""*/, HttpServletRequest request, Globals GLOBALS)
     {
         if (empty( $database) ) {
-            if (empty(GLOBALS.db)) {
+            if (empty(GLOBALS.getDb())) {
                 return "";
             }
-            $database = GLOBALS.db;
+            $database = GLOBALS.getDb();
         } else {
             $database = unescapeMysqlWildcards($database);
         }
 
         String $scriptName = getScriptNameForOption(
-            (String)GLOBALS.PMA_Config.get("DefaultTabDatabase"),
+            (String)Globals.getConfig().get("DefaultTabDatabase"),
             "database", request, GLOBALS
         );
         Map params = new HashMap();
@@ -2466,7 +2466,7 @@ public class Util {
     	return ""; // Unsupported
     	/* 
         $ext_but_html = "";
-        if (($component == "mysql") && (GLOBALS.dbi.getVersion() < $minimum_version)) {
+        if (($component == "mysql") && (GLOBALS.getDbi().getVersion() < $minimum_version)) {
             $ext_but_html += showHint(
                 sprintf(
                     __("The %s functionality is affected by a known bug, see %s"),
@@ -2608,7 +2608,7 @@ public class Util {
     {
         Map<String, Object> model = new HashMap<>();
         model.put("id" , $id);
-        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : Globals.PMA_Config.get("InitialSlidersState"));
+        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : Globals.getConfig().get("InitialSlidersState"));
         model.put("message" , $message);
         
         return JtwigFactory.render("div_for_slider_effect", model);
@@ -2644,8 +2644,8 @@ public class Util {
         }
 
         Map<String, Object> model = new HashMap<>();
-        model.put("pma_theme_image" , GLOBALS.pmaThemeImage);
-        model.put("text_dir" , GLOBALS.text_dir);
+        model.put("pma_theme_image" , GLOBALS.getPmaThemeImage());
+        model.put("text_dir" , GLOBALS.getTextDir());
         model.put("link_on" , $link_on);
         model.put("link_off" , $link_off);
         model.put("toggle_on" , $options.get(1).get("label"));
@@ -2675,11 +2675,11 @@ public class Util {
      */
     public static String cacheKey(Globals GLOBALS)
     {
-        if (!empty(multiget(GLOBALS.PMA_Config.settings, "Server", "user"))) {
-            return "server_" + GLOBALS.server + "_" + multiget(GLOBALS.PMA_Config.settings, "Server", "user");
+        if (!empty(multiget(Globals.getConfig().settings, "Server", "user"))) {
+            return "server_" + GLOBALS.getServer() + "_" + multiget(Globals.getConfig().settings, "Server", "user");
         }
 
-        return "server_" + GLOBALS.server;
+        return "server_" + GLOBALS.getServer();
     }
 
     /**
@@ -2901,13 +2901,13 @@ public class Util {
 
         // for the case ENUM("&#8211;","&ldquo;")
         $displayed_type = htmlspecialchars($printtype);
-        if (mb_strlen($printtype) > GLOBALS.PMA_Config["LimitChars"]) {
+        if (mb_strlen($printtype) > Globals.getConfig()["LimitChars"]) {
             $displayed_type  = "<abbr title='" + htmlspecialchars($printtype) + "'>";
             $displayed_type += htmlspecialchars(
                 mb_substr(
                     $printtype,
                     0,
-                    GLOBALS.PMA_Config["LimitChars"]
+                    Globals.getConfig()["LimitChars"]
                 ) + "..."
             );
             $displayed_type += "</abbr>";
@@ -2943,7 +2943,7 @@ public class Util {
             return true;
         } else if ($engine == "NDBCLUSTER" || $engine == "NDB") {
             $ndbver = strtolower(
-                GLOBALS.dbi.fetchValue("SELECT @@ndb_version_string")
+                GLOBALS.getDbi().fetchValue("SELECT @@ndb_version_string")
             );
             if (substr($ndbver, 0, 4) == "ndb-") {
                 $ndbver = substr($ndbver, 4);
@@ -2963,12 +2963,12 @@ public class Util {
     {
     	return false; //TODO
     	/*
-        if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "enable") {
+        if (Globals.getConfig()["DefaultForeignKeyChecks"] === "enable") {
             return true;
-        } else if (GLOBALS.PMA_Config["DefaultForeignKeyChecks"] === "disable") {
+        } else if (Globals.getConfig()["DefaultForeignKeyChecks"] === "disable") {
             return false;
         }
-        return (GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON");*/
+        return (GLOBALS.getDbi().getVariable("FOREIGN_KEY_CHECKS") == "ON");*/
     }
 
     /**
@@ -2993,14 +2993,14 @@ public class Util {
     	return false; //TODO
     	/*
         boolean $default_fk_check_value
-            = GLOBALS.dbi.getVariable("FOREIGN_KEY_CHECKS") == "ON";
+            = GLOBALS.getDbi().getVariable("FOREIGN_KEY_CHECKS") == "ON";
         if (!empty($_REQUEST["fk_checks"])) {
             if (empty($_REQUEST["fk_checks"])) {
                 // Disable foreign key checks
-                GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "OFF");
+                GLOBALS.getDbi().setVariable("FOREIGN_KEY_CHECKS", "OFF");
             } else {
                 // Enable foreign key checks
-                GLOBALS.dbi.setVariable("FOREIGN_KEY_CHECKS", "ON");
+                GLOBALS.getDbi().setVariable("FOREIGN_KEY_CHECKS", "ON");
             }
         } // else do nothing, go with default
         return $default_fk_check_value;*/
@@ -3016,7 +3016,7 @@ public class Util {
     public static void handleDisableFKCheckCleanup(boolean $default_fk_check_value)
     {
     	//TODO
-    	/*GLOBALS.dbi.setVariable(
+    	/*GLOBALS.getDbi().setVariable(
             "FOREIGN_KEY_CHECKS",
             $default_fk_check_value ? "ON" : "OFF"
         );*/
@@ -3038,7 +3038,7 @@ public class Util {
         $hex = bin2hex($data);
         $spatialAsText = "ASTEXT";
         $spatialSrid = "SRID";
-        if (GLOBALS.dbi.getVersion() >= 50600) {
+        if (GLOBALS.getDbi().getVersion() >= 50600) {
             $spatialAsText = "ST_ASTEXT";
             $spatialSrid = "ST_SRID";
         }
@@ -3047,17 +3047,17 @@ public class Util {
             $wktsql += ", $spatialSrid(x'" + $hex + "')";
         }
 
-        $wktresult  = GLOBALS.dbi.tryQuery(
+        $wktresult  = GLOBALS.getDbi().tryQuery(
             $wktsql
         );
-        $wktarr     = GLOBALS.dbi.fetchRow($wktresult, 0);
+        $wktarr     = GLOBALS.getDbi().fetchRow($wktresult, 0);
         $wktval     = $wktarr[0] ?? null;
 
         if ($includeSRID) {
             $srid = $wktarr[1] ?? null;
             $wktval = "'" + $wktval + ""," + $srid;
         }
-        @GLOBALS.dbi.freeResult($wktresult);
+        @GLOBALS.getDbi().freeResult($wktresult);
 
         return $wktval;*/
     }
@@ -3191,13 +3191,13 @@ public class Util {
         // Content
         $vars = [];
         $vars["http_host"] = Core.getenv("HTTP_HOST");
-        $vars["server_name"] = GLOBALS.PMA_Config["Server"]["host"];
-        $vars["server_verbose"] = GLOBALS.PMA_Config["Server"]["verbose"];
+        $vars["server_name"] = Globals.getConfig()["Server"]["host"];
+        $vars["server_verbose"] = Globals.getConfig()["Server"]["verbose"];
 
-        if (empty(GLOBALS.PMA_Config["Server"]["verbose"])) {
-            $vars["server_verbose_or_name"] = GLOBALS.PMA_Config["Server"]["host"];
+        if (empty(Globals.getConfig()["Server"]["verbose"])) {
+            $vars["server_verbose_or_name"] = Globals.getConfig()["Server"]["host"];
         } else {
-            $vars["server_verbose_or_name"] = GLOBALS.PMA_Config["Server"]["verbose"];
+            $vars["server_verbose_or_name"] = Globals.getConfig()["Server"]["verbose"];
         }
 
         $vars["database"] = GLOBALS["db"];
@@ -3249,7 +3249,7 @@ public class Util {
 
         // Fetch columns list if required 
         if (mb_strpos($String, "@COLUMNS@") !== false) {
-            $columns_list = GLOBALS.dbi.getColumns(
+            $columns_list = GLOBALS.getDbi().getColumns(
                 GLOBALS["db"],
                 GLOBALS["table"]
             );
@@ -3288,11 +3288,11 @@ public class Util {
      *
      * @return String
      */
-    public static String getBrowseUploadFileBlock(int $max_upload_size)
+    public static String getBrowseUploadFileBlock(int $max_upload_size, Globals GLOBALS)
     {
         String $block_html = "";
 
-        if (Globals.is_upload && ! empty(Globals.PMA_Config.get("UploadDir"))) {
+        if (GLOBALS.isUpload() && ! empty(Globals.getConfig().get("UploadDir"))) {
             $block_html += "<label for='radio_import_file'>";
         } else {
             $block_html += "<label for='input_import_file'>";
@@ -3427,14 +3427,14 @@ public class Util {
             // NOTE: the SELECT tag in not included in this snippet.
             $retval = "";
 
-            foreach (GLOBALS.dbi.types.getColumns() as $key => $value) {
+            foreach (GLOBALS.getDbi().types.getColumns() as $key => $value) {
                 if (is_array($value)) {
                     $retval += "<optgroup label='" + htmlspecialchars($key) + "'>";
                     foreach ($value as $subvalue) {
                         if ($subvalue == $selected) {
                             $retval += sprintf(
                                 "<option selected="selected" title="%s">%s</option>",
-                                GLOBALS.dbi.types.getTypeDescription($subvalue),
+                                GLOBALS.getDbi().types.getTypeDescription($subvalue),
                                 $subvalue
                             );
                         } else if ($subvalue === "-") {
@@ -3444,7 +3444,7 @@ public class Util {
                         } else {
                             $retval += sprintf(
                                 "<option title="%s">%s</option>",
-                                GLOBALS.dbi.types.getTypeDescription($subvalue),
+                                GLOBALS.getDbi().types.getTypeDescription($subvalue),
                                 $subvalue
                             );
                         }
@@ -3454,13 +3454,13 @@ public class Util {
                     if ($selected == $value) {
                         $retval += sprintf(
                             "<option selected="selected" title="%s">%s</option>",
-                            GLOBALS.dbi.types.getTypeDescription($value),
+                            GLOBALS.getDbi().types.getTypeDescription($value),
                             $value
                         );
                     } else {
                         $retval += sprintf(
                             "<option title="%s">%s</option>",
-                            GLOBALS.dbi.types.getTypeDescription($value),
+                            GLOBALS.getDbi().types.getTypeDescription($value),
                             $value
                         );
                     }
@@ -3468,7 +3468,7 @@ public class Util {
             }
         } else {
             $retval = [];
-            foreach (GLOBALS.dbi.types.getColumns() as $value) {
+            foreach (GLOBALS.getDbi().types.getColumns() as $value) {
                 if (is_array($value)) {
                     foreach ($value as $subvalue) {
                         if ($subvalue !== "-") {
@@ -3684,7 +3684,7 @@ public class Util {
                 $funcs[] = ["display" => "--------"];
             }
 
-            if (GLOBALS.dbi.getVersion() < 50601) {
+            if (GLOBALS.getDbi().getVersion() < 50601) {
                 $funcs["Crosses"]    = [
                     "params" => 2,
                     "type" => "int",
@@ -3813,7 +3813,7 @@ public class Util {
         $default_function   = "";
 
         // Can we get field class based values?
-        $current_class = GLOBALS.dbi.types.getTypeClass($field["True_Type"]);
+        $current_class = GLOBALS.getDbi().types.getTypeClass($field["True_Type"]);
         if (! empty($current_class)) {
             if (!empty($cfg["DefaultFunctions"]["FUNC_" + $current_class])) {
                 $default_function
@@ -3872,7 +3872,7 @@ public class Util {
         $retval = "<option></option>" + "\n";
         // loop on the dropdown array and print all available options for that
         // field.
-        $functions = GLOBALS.dbi.types.getFunctions($field["True_Type"]);
+        $functions = GLOBALS.getDbi().types.getFunctions($field["True_Type"]);
         foreach ($functions as $function) {
             $retval += "<option";
             if (!empty($foreignData["foreign_link"]) && $foreignData["foreign_link"] !== false && $default_function === $function) {
@@ -3891,7 +3891,7 @@ public class Util {
         // For compatibility"s sake, do not let out all other functions. Instead
         // print a separator (blank) and then show ALL functions which weren"t
         // shown yet.
-        $functions = GLOBALS.dbi.types.getAllFunctions();
+        $functions = GLOBALS.getDbi().types.getAllFunctions();
         foreach ($functions as $function) {
             // Skip already included functions
             if (!empty($dropdown_built[$function])) {
@@ -3932,7 +3932,7 @@ public class Util {
     	/*
         // Get the username for the current user in the format
         // required to use in the information schema database.
-        list($user, $host) = GLOBALS.dbi.getCurrentUserAndHost();
+        list($user, $host) = GLOBALS.getDbi().getCurrentUserAndHost();
 
         if ($user === "") { // MySQL is started with --skip-grant-tables
             return true;
@@ -3949,7 +3949,7 @@ public class Util {
                + "WHERE GRANTEE="%s" AND PRIVILEGE_TYPE="%s"";
 
         // Check global privileges first.
-        $user_privileges = GLOBALS.dbi.fetchValue(
+        $user_privileges = GLOBALS.getDbi().fetchValue(
             sprintf(
                 $query,
                 "USER_PRIVILEGES",
@@ -3964,13 +3964,13 @@ public class Util {
         // required global privilege, try database-wise permissions.
         if ($db !== null) {
             $query += " AND "%s" LIKE `TABLE_SCHEMA`";
-            $schema_privileges = GLOBALS.dbi.fetchValue(
+            $schema_privileges = GLOBALS.getDbi().fetchValue(
                 sprintf(
                     $query,
                     "SCHEMA_PRIVILEGES",
                     $username,
                     $priv,
-                    GLOBALS.dbi.escapeString($db)
+                    GLOBALS.getDbi().escapeString($db)
                 )
             );
             if ($schema_privileges) {
@@ -3987,14 +3987,14 @@ public class Util {
             // need to escape wildcards in db and table names, see bug #3518484
             $tbl = str_replace(["%", "_"], ["\%", "\_"], $tbl);
             $query += " AND TABLE_NAME="%s"";
-            $table_privileges = GLOBALS.dbi.fetchValue(
+            $table_privileges = GLOBALS.getDbi().fetchValue(
                 sprintf(
                     $query,
                     "TABLE_PRIVILEGES",
                     $username,
                     $priv,
-                    GLOBALS.dbi.escapeString($db),
-                    GLOBALS.dbi.escapeString($tbl)
+                    GLOBALS.getDbi().escapeString($db),
+                    GLOBALS.getDbi().escapeString($tbl)
                 )
             );
             if ($table_privileges) {
@@ -4017,11 +4017,11 @@ public class Util {
     {
     	return null; //Unsupported
     	/*
-        if (GLOBALS.dbi.isMariaDB()) {
+        if (GLOBALS.getDbi().isMariaDB()) {
             return "MariaDB";
         }
 
-        if (GLOBALS.dbi.isPercona()) {
+        if (GLOBALS.getDbi().isPercona()) {
             return "Percona Server";
         }
 
@@ -4037,7 +4037,7 @@ public class Util {
     {
     	return null; // Unsupported
     	/*
-        $server = GLOBALS.PMA_Config["Server"];
+        $server = Globals.getConfig()["Server"];
         $class = "caution";
         if (! $server["ssl"]) {
             $message = __("SSL is not being used");
@@ -4338,7 +4338,7 @@ public class Util {
     {
     	return ""; //TODO
     	/*
-        $names = GLOBALS.dbi.getLowerCaseNames();
+        $names = GLOBALS.getDbi().getLowerCaseNames();
         if ($names === "0") {
             return "COLLATE utf8_bin";
         } else if ($names === "2") {
@@ -4420,7 +4420,7 @@ public class Util {
         ) {
             $rows = new Integer( (String) multiget(session,"tmpval","max_rows"));
         } else {
-            $rows = new Integer( (String) Globals.PMA_Config.get("MaxRows"));
+            $rows = new Integer( (String) Globals.getConfig().get("MaxRows"));
             multiput(session,"tmpval","max_rows", $rows.toString());
         }
 
@@ -4454,7 +4454,7 @@ public class Util {
     	return false; // TODO
     	/*
         $serverType = getServerType();
-        $serverVersion = GLOBALS.dbi.getVersion();
+        $serverVersion = GLOBALS.getDbi().getVersion();
         return in_array($serverType, ["MySQL", "Percona Server"]) && $serverVersion >= 50705
              || ($serverType == "MariaDB" && $serverVersion >= 50200);*/
     }
@@ -4499,7 +4499,7 @@ public class Util {
          *
         $db_is_system_schema = false;
 
-        if (GLOBALS.dbi.isSystemSchema($db)) {
+        if (GLOBALS.getDbi().isSystemSchema($db)) {
             $is_show_stats = false;
             $db_is_system_schema = true;
         }
@@ -4514,15 +4514,15 @@ public class Util {
 
         // Special speedup for newer MySQL Versions (in 4.0 format changed)
         if (true === $cfg["SkipLockedTables"]) {
-            $db_info_result = GLOBALS.dbi.query(
+            $db_info_result = GLOBALS.getDbi().query(
                 "SHOW OPEN TABLES FROM " + backquote($db) + " WHERE In_use > 0;"
             );
 
             // Blending out tables in use
-            if ($db_info_result && GLOBALS.dbi.numRows($db_info_result) > 0) {
+            if ($db_info_result && GLOBALS.getDbi().numRows($db_info_result) > 0) {
                 $tables = getTablesWhenOpen($db, $db_info_result);
             } else if ($db_info_result) {
-                GLOBALS.dbi.freeResult($db_info_result);
+                GLOBALS.getDbi().freeResult($db_info_result);
             }
         }
 
@@ -4570,7 +4570,7 @@ public class Util {
                     $tbl_group = $_REQUEST["tbl_group"];
                     // include the table with the exact name of the group if such
                     // exists
-                    $groupTable = GLOBALS.dbi.getTablesFull(
+                    $groupTable = GLOBALS.getDbi().getTablesFull(
                         $db,
                         $tbl_group,
                         false,
@@ -4581,13 +4581,13 @@ public class Util {
                         $tbl_type
                     );
                     $groupWithSeparator = $tbl_group
-                        + GLOBALS.PMA_Config["NavigationTreeTableSeparator"];
+                        + Globals.getConfig()["NavigationTreeTableSeparator"];
                 }
             } else {
                 // all tables in db
                 // - get the total number of tables
                 //  (needed for proper working of the MaxTableList feature)
-                $tables = GLOBALS.dbi.getTables($db);
+                $tables = GLOBALS.getDbi().getTables($db);
                 $total_num_tables = count($tables);
                 if (! (!empty($sub_part) && $sub_part == "_export")) {
                     // fetch the details for a possible limited subset
@@ -4597,7 +4597,7 @@ public class Util {
             }
             $tables = array_merge(
                 $groupTable,
-                GLOBALS.dbi.getTablesFull(
+                GLOBALS.getDbi().getTablesFull(
                     $db,
                     $groupWithSeparator,
                     $groupWithSeparator !== false,
@@ -4654,10 +4654,10 @@ public class Util {
         $sot_cache = [];
         $tables = [];
 
-        while ($tmp = GLOBALS.dbi.fetchAssoc($db_info_result)) {
+        while ($tmp = GLOBALS.getDbi().fetchAssoc($db_info_result)) {
             $sot_cache[$tmp["Table"]] = true;
         }
-        GLOBALS.dbi.freeResult($db_info_result);
+        GLOBALS.getDbi().freeResult($db_info_result);
 
         // is there at least one "in use" table?
         if (count($sot_cache) > 0) {
@@ -4667,7 +4667,7 @@ public class Util {
                 $group = escapeMysqlWildcards($_REQUEST["tbl_group"]);
                 $groupWithSeparator = escapeMysqlWildcards(
                     $_REQUEST["tbl_group"]
-                    + GLOBALS.PMA_Config["NavigationTreeTableSeparator"]
+                    + Globals.getConfig()["NavigationTreeTableSeparator"]
                 );
                 $tblGroupSql += " WHERE ("
                     + backquote("Tables_in_" + $db)
@@ -4685,16 +4685,16 @@ public class Util {
                     $tblGroupSql += " `Table_type` IN ("BASE TABLE", "SYSTEM VERSIONED")";
                 }
             }
-            $db_info_result = GLOBALS.dbi.query(
+            $db_info_result = GLOBALS.getDbi().query(
                 "SHOW FULL TABLES FROM " + backquote($db) + $tblGroupSql,
                 DatabaseInterface.CONNECT_USER,
                 DatabaseInterface.QUERY_STORE
             );
             unset($tblGroupSql, $whereAdded);
 
-            if ($db_info_result && GLOBALS.dbi.numRows($db_info_result) > 0) {
+            if ($db_info_result && GLOBALS.getDbi().numRows($db_info_result) > 0) {
                 $names = [];
-                while ($tmp = GLOBALS.dbi.fetchRow($db_info_result)) {
+                while ($tmp = GLOBALS.getDbi().fetchRow($db_info_result)) {
                     if (! !empty($sot_cache[$tmp[0]])) {
                         $names[] = $tmp[0];
                     } else { // table in use
@@ -4710,14 +4710,14 @@ public class Util {
                 if (count($names) > 0) {
                     $tables = array_merge(
                         $tables,
-                        GLOBALS.dbi.getTablesFull($db, $names)
+                        GLOBALS.getDbi().getTablesFull($db, $names)
                     );
                 }
-                if (GLOBALS.PMA_Config["NaturalOrder"]) {
+                if (Globals.getConfig()["NaturalOrder"]) {
                     uksort($tables, "strnatcasecmp");
                 }
             } else if ($db_info_result) {
-                GLOBALS.dbi.freeResult($db_info_result);
+                GLOBALS.getDbi().freeResult($db_info_result);
             }
             unset($sot_cache);
         }
@@ -4797,7 +4797,7 @@ public class Util {
     	//Unsupported
         // The function can be disabled in php.ini
         /*if (function_exists("set_time_limit")) {
-            @set_time_limit(GLOBALS.PMA_Config["ExecTimeLimit"]);
+            @set_time_limit(Globals.getConfig()["ExecTimeLimit"]);
         }*/
     }
 

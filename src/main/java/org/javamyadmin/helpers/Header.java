@@ -138,7 +138,7 @@ public class Header {
     	this.response = response;
     	this.GLOBALS = GLOBALS;
     	this.session = session;
-    	this.cfg = GLOBALS.PMA_Config.settings;
+    	this.cfg = Globals.getConfig().settings;
     	
         //this.template = new Template();
 
@@ -147,8 +147,8 @@ public class Header {
         this._bodyId = "";
         this._title = "";
         // TODO this._console = new Console();
-        String $db = GLOBALS.db; // FIXME col xxx che sono globali
-        String $table = GLOBALS.table;
+        String $db = GLOBALS.getDb(); // FIXME col xxx che sono globali
+        String $table = GLOBALS.getTable();
         this._menu = new Menu(
             $db,
             $table,
@@ -176,8 +176,8 @@ public class Header {
         this.userPreferences = new UserPreferences();
         this.navigation = new Navigation(
             this.template,
-            new Relation(GLOBALS.dbi),
-            GLOBALS.dbi
+            new Relation(GLOBALS.getDbi()),
+            GLOBALS.getDbi()
         );*/
     }
 
@@ -221,7 +221,7 @@ public class Header {
         // the user preferences have not been merged at this point
 
         Map<String, Object> params = new HashMap<>();
-        params.put("l", GLOBALS.lang);
+        params.put("l", GLOBALS.getLang());
         this._scripts.addFile("messages.php", params);
         this._scripts.addFile("config.js");
         this._scripts.addFile("doclinks.js");
@@ -233,7 +233,7 @@ public class Header {
         if ("true".equals(cfg.get("enable_drag_drop_import"))) {
             this._scripts.addFile("drag_drop_import.js");
         }
-        if (empty(GLOBALS.PMA_Config.get("DisableShortcutKeys"))) {
+        if (empty(Globals.getConfig().get("DisableShortcutKeys"))) {
             this._scripts.addFile("shortcuts_handler.js");
         }
         this._scripts.addCode(this.getJsParamsCode());
@@ -249,8 +249,8 @@ public class Header {
     {
     	Map<String, Object> $params = new HashMap<String, Object>();
     	
-    	String $db = !empty(GLOBALS.db) ? GLOBALS.db : "";
-    	String $table = !empty(GLOBALS.table) ? GLOBALS.table : "";
+    	String $db = !empty(GLOBALS.getDb()) ? GLOBALS.getDb() : "";
+    	String $table = !empty(GLOBALS.getTable()) ? GLOBALS.getTable() : "";
         String $pftext = (String) multiget(session, "tmpval", "pftext");
 
         $params.put("common_query", Url.getCommonRaw(request, GLOBALS));
@@ -258,11 +258,11 @@ public class Header {
                 (String) cfg.get("DefaultTabDatabase"),
                 "database", request, GLOBALS
             ));
-        $params.put("lang", GLOBALS.lang);
+        $params.put("lang", GLOBALS.getLang());
         $params.put("table", $table);
         $params.put("db", $db);
         $params.put("token", session.get(" PMA_token "));
-        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.getTextDir());
         $params.put("show_databases_navigation_as_tree", cfg.get("ShowDatabasesNavigationAsTree"));
         $params.put("pma_text_default_tab", Util.getTitleForTarget(
                 (String) cfg.get("DefaultTabTable")
@@ -273,21 +273,21 @@ public class Header {
         $params.put("pma_text_left_default_tab2", Util.getTitleForTarget(
                 (String) cfg.get("NavigationTreeDefaultTabTable2")
             ));
-        $params.put("text_dir", GLOBALS.text_dir);
-        $params.put("text_dir", GLOBALS.text_dir);
-        $params.put("text_dir", GLOBALS.text_dir);
-        $params.put("text_dir", GLOBALS.text_dir);
-        $params.put("text_dir", GLOBALS.text_dir);
+        $params.put("text_dir", GLOBALS.getTextDir());
+        $params.put("text_dir", GLOBALS.getTextDir());
+        $params.put("text_dir", GLOBALS.getTextDir());
+        $params.put("text_dir", GLOBALS.getTextDir());
+        $params.put("text_dir", GLOBALS.getTextDir());
         $params.put("LimitChars", cfg.get("LimitChars"));
         $params.put("pftext", $pftext);
         $params.put("confirm", cfg.get("Confirm"));
         $params.put("LoginCookieValidity", cfg.get("LoginCookieValidity"));
         $params.put("session_gc_maxlifetime", -1); // Java Unsupported
-        $params.put("logged_in", GLOBALS.dbi != null && GLOBALS.dbi.isUserType("logged"));
-        $params.put("is_https", GLOBALS.PMA_Config.isHttps());
-        $params.put("rootPath", GLOBALS.PMA_Config.getRootPath(request));
+        $params.put("logged_in", GLOBALS.getDbi() != null && GLOBALS.getDbi().isUserType("logged"));
+        $params.put("is_https", Globals.getConfig().isHttps());
+        $params.put("rootPath", Globals.getConfig().getRootPath(request));
         $params.put("arg_separator", Url.getArgSeparator());
-        $params.put("PMA_VERSION", GLOBALS.PMA_VERSION);
+        $params.put("PMA_VERSION", Globals.getPmaVersion());
         
         $params.put("auth_type", multiget(cfg, "Server", "auth_type"));
         $params.put("user", multiget(cfg, "Server", "user"));
@@ -413,7 +413,7 @@ public class Header {
     public void enablePrintView()
     {
         this.disableMenuAndConsole();
-        this.setTitle(__("Print view") + " - phpMyAdmin " + GLOBALS.PMA_VERSION);
+        this.setTitle(__("Print view") + " - phpMyAdmin " + Globals.getPmaVersion());
         this._isPrintView = true;
     }
 
@@ -440,9 +440,9 @@ public class Header {
             if (! this._isAjax && this._isEnabled) {
                 this.sendHttpHeaders();
 
-                $baseDir = GLOBALS.PMA_PATH_TO_BASEDIR;
-                $uniqueValue = GLOBALS.PMA_Config.getThemeUniqueValue(GLOBALS);
-                $themePath = GLOBALS.pmaThemeUrlPath;
+                $baseDir = Globals.getPmaPathToBasedir();
+                $uniqueValue = Globals.getConfig().getThemeUniqueValue(GLOBALS);
+                $themePath = GLOBALS.getPmaThemeUrlPath();
                 $version = getVersionParameter();
 
                 // The user preferences have been merged at this point
@@ -469,7 +469,7 @@ public class Header {
                     this._scripts.addFile("config.js");
                 }
 
-                if (this._menuEnabled && GLOBALS.server > 0) {
+                if (this._menuEnabled && GLOBALS.getServer() > 0) {
                     // TODO $navigation = this.navigation.getDisplay();
                 }
 
@@ -480,7 +480,7 @@ public class Header {
                     // TODO $loadUserPreferences = this.userPreferences.autoloadGetHeader();
                 }
 
-                if (this._menuEnabled && GLOBALS.server > 0) {
+                if (this._menuEnabled && GLOBALS.getServer() > 0) {
                     $menu = this._menu.getDisplay(request, GLOBALS);
                 }
                 // TODO $console = this._console.getDisplay();
@@ -488,23 +488,23 @@ public class Header {
             }
             if (this._isEnabled && empty(request.getParameter("recent_table"))) {
                 $recentTable = this._addRecentTable(
-                    GLOBALS.db,
-                    GLOBALS.table
+                    GLOBALS.getDb(),
+                    GLOBALS.getTable()
                 );
             }
             
             Map<String, Object> model = new HashMap<>();
             model.put("is_ajax", this._isAjax);
             model.put("is_enabled", this._isEnabled);
-            model.put("lang", GLOBALS.lang);
+            model.put("lang", GLOBALS.getLang());
             model.put("allow_third_party_framing", cfg.get("AllowThirdPartyFraming"));
             model.put("is_print_view" , this._isPrintView);
 			model.put("base_dir", $baseDir);
 			model.put("unique_value", $uniqueValue);
 			model.put("theme_path", $themePath);
 			model.put("version", $version);
-			model.put("text_dir", GLOBALS.text_dir);
-			model.put("server", GLOBALS.server > 0 ? GLOBALS.server : null);
+			model.put("text_dir", GLOBALS.getTextDir());
+			model.put("server", GLOBALS.getServer() > 0 ? GLOBALS.getServer() : null);
 			model.put("title", this.getPageTitle());
 			model.put("scripts", this._scripts.getDisplay());
 			model.put("body_id", this._bodyId);
@@ -535,20 +535,20 @@ public class Header {
     {
         String $retval = "";
         String $message = "";
-        if (! empty(GLOBALS.message)) {
-            $message = GLOBALS.message;
-            GLOBALS.message = null;
+        if (! empty(GLOBALS.getMessage())) {
+            $message = GLOBALS.getMessage();
+            GLOBALS.setMessage(null);
         } else if (! empty(request.getParameter("message"))) {
             $message = request.getParameter("message");
         }
         if (! empty($message)) {
         	String $buffer_message = null;
-            if (GLOBALS.buffer_message != null) {
-                $buffer_message = GLOBALS.buffer_message;
+            if (GLOBALS.getBufferMessage() != null) {
+                $buffer_message = GLOBALS.getBufferMessage();
             }
             $retval += Util.getMessage($message);
             if (!empty($buffer_message)) {
-                GLOBALS.buffer_message = $buffer_message;
+                GLOBALS.setBufferMessage($buffer_message);
             }
         }
         return $retval;
@@ -665,7 +665,7 @@ public class Header {
             "X-Robots-Tag", "noindex, nofollow"
         );
         Core.noCacheHeader(response);
-        if (!GLOBALS.IS_TRANSFORMATION_WRAPPER) {
+        if (!GLOBALS.isTransformationWrapper()) {
             // Define the charset to be used
             response.addHeader("Content-Type", "text/html; charset=utf-8");
         }
@@ -681,11 +681,11 @@ public class Header {
     public String getPageTitle()
     {
         if ((empty(this._title))) {
-            if (GLOBALS.server > 0) {
+            if (GLOBALS.getServer() > 0) {
             	String $temp_title;
-                if (! empty(GLOBALS.table)) {
+                if (! empty(GLOBALS.getTable())) {
                     $temp_title = (String) cfg.get("TitleTable");
-                } else if (!empty(GLOBALS.db)) {
+                } else if (!empty(GLOBALS.getDb())) {
                     $temp_title = (String) cfg.get("TitleDatabase");
                 } else if (!empty(((Map<String,Object>) cfg.get("Server")).get("host"))) {
                     $temp_title = (String) cfg.get("TitleServer");
@@ -741,7 +741,7 @@ public class Header {
      */
     public static String getVersionParameter()
     {
-        return "v=" + urlencode(org.javamyadmin.php.Globals.PMA_VERSION);
+        return "v=" + urlencode(Globals.getPmaVersion());
     }
 
 }

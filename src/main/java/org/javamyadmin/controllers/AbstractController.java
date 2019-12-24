@@ -4,8 +4,8 @@ import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,27 +22,49 @@ import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.jtwig.web.servlet.JtwigRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractController extends HttpServlet {
-
-	private static final long serialVersionUID = 1L;
+public abstract class AbstractController {
 
 	protected final JtwigRenderer renderer = JtwigFactory.getRenderer();
-
-	@Override
+	
+	@Autowired
+	Globals GLOBALS;
+	
+	@Autowired
+	Response pmaResponse;
+	
+	@Autowired
+	SessionMap $_SESSION;
+	
+	/**
+	 * Prepare global variables.
+	 * 
+	 * This could be an Interceptor. 
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Globals GLOBALS = new Globals(getServletContext());
-		SessionMap $_SESSION = $_SESSION(request.getSession());
-		Response pmaResponse = new Response(request, response, GLOBALS, $_SESSION);
+		
+		if (GLOBALS.getRootPath() == null) {
+			// this is executed only at first run
+			ServletContext servletContext = request.getServletContext();
+			Globals.setRootPath(servletContext.getRealPath("/WEB-INF/.."));
+			Globals.setThemesPath(servletContext.getRealPath("/themes/"));
+			Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
+		}
 		
 		// cfr. commons.inc.php
 		
 		// ContainerBuilder.
 		// $containerBuilder = new ContainerBuilder();
 		// GLOBALS.error_handler = $containerBuilder.get("error_handler");
-		// Globals.PMA_Config = $containerBuilder.get("config");
-		if (! GLOBALS.PMA_NO_SESSION == true) {
-		    // TODO Session.setUp(Globals.PMA_Config, GLOBALS.error_handler);
+		// Globals.getConfig() = $containerBuilder.get("config");
+		if (! GLOBALS.get_PMA_NO_SESSION() == true) {
+		    // TODO Session.setUp(Globals.getConfig(), GLOBALS.error_handler);
 		}
 		
 		boolean $token_provided = false, $token_mismatch = false;
@@ -118,21 +140,21 @@ public abstract class AbstractController extends HttpServlet {
 		 * check for errors occurred while loading configuration
 		 * this check is done here after loading language files to present errors in locale
 		 */
-		Globals.PMA_Config.checkPermissions();
-		Globals.PMA_Config.checkErrors(request, response, GLOBALS, pmaResponse);
+		Globals.getConfig().checkPermissions();
+		Globals.getConfig().checkErrors(request, response, GLOBALS, pmaResponse);
 		
 		/* setup themes                                          LABEL_theme_setup    */
 
 		ThemeManager.initializeTheme(request, GLOBALS, $_SESSION);
 		
-		if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
+		if (empty(GLOBALS.get_PMA_MINIMUM_COMMON())) {
 		    /**
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
-		    Globals.PMA_Config.setCookie("pma_lang", GLOBALS.lang, request, response);
-		    GLOBALS.themeManager.setThemeCookie(request, response);
-		    if (! empty(Globals.PMA_Config.get("Server"))) {
+		    Globals.getConfig().setCookie("pma_lang", GLOBALS.getLang(), request, response);
+		    GLOBALS.getThemeManager().setThemeCookie(request, response);
+		    if (! empty(Globals.getConfig().get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
 		         */
@@ -144,12 +166,12 @@ public abstract class AbstractController extends HttpServlet {
 		        // need to be kept for processing in
 		        // PhpMyAdmin\Config.loadUserPreferences()
 		        
-		    	String $cache_key = "server_" + GLOBALS.server;
+		    	String $cache_key = "server_" + GLOBALS.getServer();
 		        if (!empty(request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity"))
 		        ) {
 		            String $value
 		                = (String) request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
-		            Globals.PMA_Config.set("LoginCookieValidity", $value);
+		            Globals.getConfig().set("LoginCookieValidity", $value);
 		        }
 		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
 		        // and run authentication
@@ -261,21 +283,12 @@ public abstract class AbstractController extends HttpServlet {
 		    //$containerBuilder.set("response", Response.getInstance());
 		}
 		// load user preferences
-		Globals.PMA_Config.loadUserPreferences();
-		
-		// We override standard service request! Always call doGet
-		this.doGet(request, response, pmaResponse, $_SESSION, GLOBALS);
+		Globals.getConfig().loadUserPreferences();
 
-		if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
+		/*if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
 			pmaResponse.response();
-		}
+		}*/
 	}
-
-	/**
-	 * GET handler. Must be defined.
-	 */
-	protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse, SessionMap $_SESSION, Globals GLOBALS)
-			throws ServletException, IOException;
 
 
 }

@@ -157,7 +157,7 @@ public class Theme {
         }
 
         // Version check
-        if (! ((List) data.get("supports")).contains(Globals.PMA_MAJOR_VERSION)) {
+        if (! ((List) data.get("supports")).contains(Globals.getPmaMajorVersion())) {
             return false;
         }
 
@@ -208,7 +208,7 @@ public class Theme {
         }
 
         // try fallback theme
-        String fallback = Globals.THEMES_PATH + ThemeManager.FALLBACK_THEME + "/img/";
+        String fallback = Globals.getThemesPath() + ThemeManager.FALLBACK_THEME + "/img/";
         if (new File(fallback).isDirectory()) {
             this.setImgPath(fallback);
             return true;

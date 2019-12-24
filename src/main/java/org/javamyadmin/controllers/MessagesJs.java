@@ -1,21 +1,20 @@
 package org.javamyadmin.controllers;
 
+import static org.javamyadmin.php.Php.__;
+import static org.javamyadmin.php.Php._pgettext;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.php.Globals;
-import org.javamyadmin.php.Php.SessionMap;
-
-import static org.javamyadmin.php.Php.*;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Exporting of translated messages from PHP to Javascript
@@ -24,16 +23,15 @@ import static org.javamyadmin.php.Php.*;
  * @see messages.php
  *
  */
-@WebServlet(urlPatterns = "/js/messages.php", name = "MessagesJs")
 public class MessagesJs extends AbstractController {
 
-	private static final long serialVersionUID = -5104865747886536865L;
-
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			SessionMap $_SESSION, Globals GLOBALS) throws ServletException, IOException {
+	@RequestMapping(value = "/js/messages.php")
+	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		GLOBALS.PMA_MINIMUM_COMMON = "true";
+		super.service(request, response);
+		
+		GLOBALS.set_PMA_MINIMUM_COMMON("true");
 
 		response.setHeader("Content-Type", "text/javascript; charset=UTF-8");
 		// TODO header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) + " GMT"));
@@ -556,7 +554,7 @@ public class MessagesJs extends AbstractController {
 		$js_messages.put("back", __("Back"));
 
 		// this approach does not work when the parameter is changed via user prefs
-		switch ((String) GLOBALS.PMA_Config.get("GridEditing")) {
+		switch ((String) Globals.getConfig().get("GridEditing")) {
 		case "double-click":
 			$js_messages.put("strGridEditFeatureHint",
 					__("You can also edit most values<br>by double-clicking directly on them."));
@@ -626,7 +624,7 @@ public class MessagesJs extends AbstractController {
 				"<div class='alert alert-danger' role='alert'>" + __("Some errors have been detected on the server!")
 						+ "<br>"
 						+ __("As per your settings, they are being submitted currently, please be " + "patient.")
-						+ "<br>" + "<img src='" + GLOBALS.PMA_Theme.getImgPath("ajax_clock_small.gif", null)
+						+ "<br>" + "<img src='" + GLOBALS.getTheme().getImgPath("ajax_clock_small.gif", null)
 						+ "' width='16' height='16' alt='ajax clock'>" + "</div>");
 		$js_messages.put("strCopyQueryButtonSuccess", __("Successfully copied!"));
 		$js_messages.put("strCopyQueryButtonFailure", __("Copying failed!"));
@@ -674,14 +672,14 @@ public class MessagesJs extends AbstractController {
 		}
 
 		/* Calendar */
-		response.getWriter().write("var themeCalendarImage = '" + GLOBALS.pmaThemeImage + "b_calendar.png" + "';\n");
+		response.getWriter().write("var themeCalendarImage = '" + GLOBALS.getPmaThemeImage() + "b_calendar.png" + "';\n");
 
 		/* Calendar First Day */
 		response.getWriter()
-				.write("var firstDayOfCalendar = '" + GLOBALS.PMA_Config.get("FirstDayOfCalendar") + "';\n");
+				.write("var firstDayOfCalendar = '" + Globals.getConfig().get("FirstDayOfCalendar") + "';\n");
 
 		/* Image path */
-		response.getWriter().write("var pmaThemeImage = '" + GLOBALS.pmaThemeImage + "';\n");
+		response.getWriter().write("var pmaThemeImage = '" + GLOBALS.getPmaThemeImage() + "';\n");
 
 		response.getWriter().write("var mysqlDocTemplate = '';\n"); // Unsupported
 

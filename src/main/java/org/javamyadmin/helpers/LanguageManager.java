@@ -186,7 +186,7 @@ public class LanguageManager {
 	public List<String> listLocaleDir() {
 		List<String> $result = Arrays.asList(new String[] { "en" });
 
-		File localePath = new File(Globals.LOCALE_PATH);
+		File localePath = new File(Globals.getLocalePath());
 
 		/* Check for existing directory */
 		if (!localePath.isDirectory()) {
@@ -212,10 +212,10 @@ public class LanguageManager {
 	 */
 	public List<String> availableLocales() {
 		if (this._available_locales == null) {
-			if (Globals.PMA_Config == null || empty(Globals.PMA_Config.get("FilterLanguages"))) {
+			if (Globals.getConfig() == null || empty(Globals.getConfig().get("FilterLanguages"))) {
 				this._available_locales = this.listLocaleDir();
 			} else {
-				this._available_locales = preg_grep("@" + Globals.PMA_Config.get("FilterLanguages") + "@",
+				this._available_locales = preg_grep("@" + Globals.getConfig().get("FilterLanguages") + "@",
 						this.listLocaleDir());
 			}
 		}
@@ -283,7 +283,7 @@ public class LanguageManager {
 	 * @return Language Language object
 	 */
 	public Language getCurrentLanguage(Globals GLOBALS) {
-		return this._available_languages.get(GLOBALS.lang.toLowerCase());
+		return this._available_languages.get(GLOBALS.getLang().toLowerCase());
 	}
 
 	/**
@@ -295,8 +295,8 @@ public class LanguageManager {
 	 */
 	public Language selectLanguage(HttpServletRequest request, HttpServletResponse response) {
 		// check forced language
-		if (!empty(Globals.PMA_Config.get("Lang"))) {
-			Language $lang = this.getLanguage((String) Globals.PMA_Config.get("Lang"), request);
+		if (!empty(Globals.getConfig().get("Lang"))) {
+			Language $lang = this.getLanguage((String) Globals.getConfig().get("Lang"), request);
 			if ($lang != null) {
 				return $lang;
 			}
@@ -314,8 +314,8 @@ public class LanguageManager {
 		}
 
 		// check previous set language
-		if (!empty(Globals.PMA_Config.getCookie("pma_lang", request))) {
-			Language $lang = this.getLanguage(Globals.PMA_Config.getCookie("pma_lang", request), request);
+		if (!empty(Globals.getConfig().getCookie("pma_lang", request))) {
+			Language $lang = this.getLanguage(Globals.getConfig().getCookie("pma_lang", request), request);
 			if ($lang != null) {
 				return $lang;
 			}
@@ -349,8 +349,8 @@ public class LanguageManager {
 		}
 
 		// Didn"t catch any valid lang : we use the default settings
-		if (!empty(Globals.PMA_Config.get("DefaultLang")) && !empty($langs.get(Globals.PMA_Config.get("DefaultLang")))) {
-			return $langs.get(Globals.PMA_Config.get("DefaultLang"));
+		if (!empty(Globals.getConfig().get("DefaultLang")) && !empty($langs.get(Globals.getConfig().get("DefaultLang")))) {
+			return $langs.get(Globals.getConfig().get("DefaultLang"));
 		}
 
 		// Fallback to English
@@ -384,8 +384,8 @@ public class LanguageManager {
 	public String getSelectorDisplay(boolean $use_fieldset /* = false */,
 			boolean $show_doc /* = true */, Globals GLOBALS) {
 		Map<String, String> $_form_params = new HashMap<String, String>();
-		$_form_params.put("db", GLOBALS.db);
-		$_form_params.put("table", GLOBALS.table);
+		$_form_params.put("db", GLOBALS.getDb());
+		$_form_params.put("table", GLOBALS.getTable());
 
 		// For non-English, display "Language" with emphasis because it"s
 		// not a proper word in the current language; we show it to help

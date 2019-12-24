@@ -15,15 +15,12 @@ import org.javamyadmin.helpers.Response;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 
-@WebServlet(urlPatterns = "/databases", name = "DatabasesController")
+//@WebServlet(urlPatterns = "/databases", name = "DatabasesController")
 public class DatabasesController extends AbstractController {
-
-	private static final long serialVersionUID = -1213696383394487453L;
 
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			SessionMap $_SESSION, Globals GLOBALS) throws ServletException, IOException {
+	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		Map<String, Object> model = new HashMap<>();
 //	      'is_create_database_shown' => $cfg['ShowCreateDb'],

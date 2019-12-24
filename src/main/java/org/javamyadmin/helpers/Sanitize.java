@@ -40,7 +40,7 @@ public class Sanitize {
             "./doc/html/",
             "./index.php?",
         });
-        boolean $is_setup = Globals.PMA_Config != null && "true".equals(Globals.PMA_Config.get("is_setup"));
+        boolean $is_setup = Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"));
         // Adjust path to setup script location
         if ($is_setup) {
             /* TODO foreach ($valid_starts as $key => $value) {

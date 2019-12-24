@@ -77,6 +77,8 @@ public class Response {
     private HttpServletResponse response;
     private Globals GLOBALS;
     
+    private static final String FUCK = "";
+    
     /**
      * Creates a new class instance
      */
@@ -281,7 +283,7 @@ public class Response {
         if (this._isSuccess) {
             this.addJSON("title", "<title>" + this.getHeader().getPageTitle() + "</title>");
 
-            if (GLOBALS.dbi != null) {
+            if (GLOBALS.getDbi() != null) {
                 String $menuHash = this.getHeader().getMenu().getHash();
                 this.addJSON("menuHash", $menuHash);
                 List<String> $hashes = Collections.emptyList();
@@ -316,28 +318,28 @@ public class Response {
             // Unsupported String $promptPhpErrors = GLOBALS.error_handler.hasErrorsForPrompt();
             // this.addJSON("promptPhpErrors", $promptPhpErrors);
 
-            if (empty(GLOBALS.error_message)) {
+            if (empty(GLOBALS.getErrorMessage())) {
                 // set current db, table and sql query in the querywindow
                 // (this is for the bottom console)
                 String $query = "";
-                Integer $maxChars = new Integer((String) GLOBALS.PMA_Config.get("MaxCharactersInDisplayedSQL"));
-                if (!empty(GLOBALS.sql_query)
-                    && GLOBALS.sql_query.length() < $maxChars
+                Integer $maxChars = new Integer((String) Globals.getConfig().get("MaxCharactersInDisplayedSQL"));
+                if (!empty(GLOBALS.getSqlQuery())
+                    && GLOBALS.getSqlQuery().length() < $maxChars
                 ) {
-                    $query = GLOBALS.sql_query;
+                    $query = GLOBALS.getSqlQuery();
                 }
                 Map<String, Object> params = new HashMap<>();
-                params.put("db", Core.ifSetOr(GLOBALS.db, ""));
-                params.put("table", Core.ifSetOr(GLOBALS.table, ""));
+                params.put("db", Core.ifSetOr(GLOBALS.getDb(), ""));
+                params.put("table", Core.ifSetOr(GLOBALS.getTable(), ""));
                 params.put("sql_query", $query);
                 this.addJSON(
                     "reloadQuerywindow",
                     params
                 );
-                if (! empty(GLOBALS.focus_querywindow)) {
+                if (! empty(GLOBALS.getFocus_querywindow())) {
                     this.addJSON("_focusQuerywindow", $query);
                 }
-                if (! empty(GLOBALS.reload)) {
+                if (! empty(GLOBALS.getReload())) {
                     this.addJSON("reloadNavigation", 1);
                 }
                 this.addJSON("params", this.getHeader().getJsParams());

@@ -37,15 +37,15 @@ public class Core {
      * echo Core.ifSetOr($_REQUEST["db"], ""); // ""
      * // $_POST["sql_query"] not set
      * echo Core.ifSetOr($_POST["sql_query"]); // null
-     * // Globals.PMA_Config["EnableFoo"] not set
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"]); // null
-     * // Globals.PMA_Config["EnableFoo"] set to 1
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "similar"); // 1
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false); // 1
-     * // Globals.PMA_Config["EnableFoo"] set to true
-     * echo Core.ifSetOr(Globals.PMA_Config["EnableFoo"], false, "boolean"); // true
+     * // Globals.getConfig()["EnableFoo"] not set
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"]); // null
+     * // Globals.getConfig()["EnableFoo"] set to 1
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "similar"); // 1
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false); // 1
+     * // Globals.getConfig()["EnableFoo"] set to true
+     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // true
      * </code>
      *
      * @param mixed $var     param to check
@@ -237,8 +237,8 @@ public class Core {
          * Avoid using Response class as config does not have to be loaded yet
          * (this can happen on early fatal error)
          */
-        if (GLOBALS.dbi != null && Globals.PMA_Config != null
-            && Globals.PMA_Config.get("is_setup").equals("false")
+        if (GLOBALS.getDbi() != null && Globals.getConfig() != null
+            && Globals.getConfig().get("is_setup").equals("false")
             && pmaResponse.isAjax()) {
         	pmaResponse.setRequestStatus(false);
         	pmaResponse.addJSON("message", Message.error($error_message, req, GLOBALS));
@@ -254,8 +254,8 @@ public class Core {
         } else {
             $error_message = $error_message.replace("<br>", "[br]");
             String $error_header = __("Error");
-            String $lang = GLOBALS.lang != null ? GLOBALS.lang : "en";
-            String $dir = GLOBALS.text_dir != null ? GLOBALS.text_dir : "ltr";
+            String $lang = GLOBALS.getLang() != null ? GLOBALS.getLang() : "en";
+            String $dir = GLOBALS.getTextDir() != null ? GLOBALS.getTextDir() : "ltr";
             /* TODO echo(DisplayError.display(new Template(), $lang, $dir, $error_header, $error_message));*/
         }
     }
@@ -441,7 +441,7 @@ public class Core {
          * like /phpmyadmin/index.php/ which some web servers happily accept.
          */
         if ($uri.charAt(0) == '.') {
-            $uri = Globals.PMA_Config.getRootPath(request) + $uri.substring(2);
+            $uri = Globals.getConfig().getRootPath(request) + $uri.substring(2);
         }
         response.addHeader("Location: ", $uri);
     }
@@ -515,8 +515,8 @@ public class Core {
         response.addHeader("Content-Type", $mimetype);
         // inform the server that compression has been done,
         // to avoid a double compression (for example with Apache + mod_deflate)
-        boolean $notChromeOrLessThan43 = !"CHROME".equals(GLOBALS.PMA_USR_BROWSER_AGENT)  // see bug #4942
-            || ("CHROME".equals(GLOBALS.PMA_USR_BROWSER_AGENT) && GLOBALS.PMA_USR_BROWSER_VER < 43);
+        boolean $notChromeOrLessThan43 = !"CHROME".equals(GLOBALS.getPMA_USR_BROWSER_AGENT())  // see bug #4942
+            || ("CHROME".equals(GLOBALS.getPMA_USR_BROWSER_AGENT()) && GLOBALS.getPMA_USR_BROWSER_VER() < 43);
         if ($mimetype.contains("gzip") && $notChromeOrLessThan43) {
         	response.addHeader("Content-Encoding", "gzip");
         }
@@ -631,7 +631,7 @@ public class Core {
         //FIXME not sure of what the original function did
         $url = urlencode($url);
         		
-        if (Globals.PMA_Config != null && "true".equals(Globals.PMA_Config.get("is_setup"))) {
+        if (Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"))) {
             $url = "../url.php?url=" + $url;
         } else {
             $url = "./url.php?url=" + $url;
@@ -864,7 +864,7 @@ public class Core {
         }
         String $direct_ip = (String) session.get("REMOTE_ADDR");
         /* Do we trust this IP as a proxy? If yes we will use it"s header. */
-        if (! empty(multiget(Globals.PMA_Config.settings, "TrustedProxies", $direct_ip))) {
+        if (! empty(multiget(Globals.getConfig().settings, "TrustedProxies", $direct_ip))) {
             /* Return true IP */
             return $direct_ip;
         }
@@ -873,7 +873,7 @@ public class Core {
          * X-Forwarded-For: client, proxy1, proxy2
          */
         // Get header content
-        String $value = getenv((String) multiget(Globals.PMA_Config.settings,"TrustedProxies", $direct_ip));
+        String $value = getenv((String) multiget(Globals.getConfig().settings,"TrustedProxies", $direct_ip));
         // Grab first element what is client adddress
         $value = $value.split(",")[0];
         // checks that the header contains only one IP address,
@@ -1052,7 +1052,7 @@ public class Core {
     public static String signSqlQuery(String $sqlQuery, SessionMap session)
     {
     	return null; // TODO
-        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.PMA_Config.get("blowfish_secret"));
+        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.getConfig().get("blowfish_secret"));
     }
     /**
      * Check that the sql query has a valid hmac signature
@@ -1064,7 +1064,7 @@ public class Core {
     public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
     {
     	return true; // TODO
-        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.PMA_Config.get("blowfish_secret"));
+        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.getConfig().get("blowfish_secret"));
         //return hash_equals($hmac, $signature);
     }
 }

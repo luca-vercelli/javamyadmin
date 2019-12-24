@@ -112,7 +112,7 @@ public class Language implements Comparable<Language> {
      */
     public boolean isActive(Globals GLOBALS)
     {
-        return GLOBALS.lang.equals(this.code);  //FIXME wtf?!?
+        return GLOBALS.getLang().equals(this.code);  //FIXME wtf?!?
     }
 
     /**
@@ -163,7 +163,7 @@ public class Language implements Comparable<Language> {
      */
     public void activate(Globals GLOBALS)
     {
-        GLOBALS.lang = this.code;
+        GLOBALS.setLang(this.code);
 
       //FIXME
         
@@ -179,9 +179,9 @@ public class Language implements Comparable<Language> {
 
         // Text direction for language 
         if (this.isRTL()) {
-            GLOBALS.text_dir = "rtl";
+            GLOBALS.getTextDir() = "rtl";
         } else {
-            GLOBALS.text_dir = "ltr";
+            GLOBALS.getTextDir() = "ltr";
         }
 
         // TCPDF 

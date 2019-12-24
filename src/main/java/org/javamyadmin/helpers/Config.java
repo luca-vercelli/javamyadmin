@@ -336,7 +336,7 @@ public class Config {
      */
     public boolean loadDefaults()
     {
-        Globals.pma_config_loading = true;
+        Globals.setConfigLoading(true);
         SmartMap cfg = new SmartMap();
         try {
             cfg.loadFromResource(default_source);
@@ -350,7 +350,7 @@ public class Config {
             return false;
 		}
 		
-        Globals.pma_config_loading = false;
+        Globals.setConfigLoading(false);
        
 
         if ( cfg.isEmpty()) {
@@ -396,7 +396,7 @@ public class Config {
          * Parses the configuration file, we throw away any errors or
          * output.
          */
-        Globals.pma_config_loading = true;
+        Globals.setConfigLoading(true);
         SmartMap cfg = new SmartMap();
         cfg.putAll(defaults);
         try {
@@ -410,7 +410,7 @@ public class Config {
 			this.error_config_file = true;
             return false;
 		}
-        Globals.pma_config_loading = false;
+        Globals.setConfigLoading(false);
         
         //error_reporting(old_error_reporting);
         
@@ -765,8 +765,8 @@ public class Config {
     {
         return (
             "" + this.get("user_preferences_mtime") +
-            GLOBALS.PMA_Theme.mtime_info +
-            GLOBALS.PMA_Theme.filesize_info
+            GLOBALS.getTheme().mtime_info +
+            GLOBALS.getTheme().filesize_info
         );
     }
 

@@ -87,12 +87,12 @@ public class ThemeManager {
 		this.request = req;
 		this.GLOBALS = GLOBALS;
 		this.$_SESSION = $_SESSION;
-		this.cfg = Globals.PMA_Config;
+		this.cfg = Globals.getConfig();
 
 		this.theme_default = FALLBACK_THEME;
 		this.active_theme = "";
 
-		setThemesPath(Globals.THEMES_PATH);
+		setThemesPath(Globals.getThemesPath());
 
 		this.setThemePerServer("true".equals(cfg.get("ThemePerServer")));
 
@@ -191,8 +191,8 @@ public class ThemeManager {
 	 */
 	public String getThemeCookieName() {
 		// Allow different theme per server
-		if (GLOBALS.server != null && this.per_server) {
-			return this.cookie_name + "-" + GLOBALS.server;
+		if (GLOBALS.getServer() != null && this.per_server) {
+			return this.cookie_name + "-" + GLOBALS.getServer();
 		}
 
 		return this.cookie_name;
@@ -353,14 +353,14 @@ public class ThemeManager {
 	public static void initializeTheme(HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) {
 		ThemeManager tmanager = new ThemeManager(request, GLOBALS, $_SESSION);
 
-		GLOBALS.themeManager = tmanager;
+		GLOBALS.setThemeManager(tmanager);
 
 		/**
 		 * the theme object
 		 *
 		 * @global Theme GLOBALS["PMA_Theme"]
 		 */
-		GLOBALS.PMA_Theme = tmanager.theme;
+		GLOBALS.setTheme(tmanager.theme);
 
 		// BC
 		/**
@@ -368,15 +368,15 @@ public class ThemeManager {
 		 * 
 		 * @global String GLOBALS["pmaThemePath"]
 		 */
-		GLOBALS.pmaThemeFullPath = tmanager.theme.getPath();
-		GLOBALS.pmaThemeUrlPath = "themes/" + tmanager.theme.getPath().getName(); // TODO improve this...
+		GLOBALS.setPmaThemeFullPath(tmanager.theme.getPath());
+		GLOBALS.setPmaThemeUrlPath("themes/" + tmanager.theme.getPath().getName()); // TODO improve this...
 		
 		/**
 		 * the theme image path
 		 * 
 		 * @global String GLOBALS["pmaThemeImage"]
 		 */
-		GLOBALS.pmaThemeImage = tmanager.theme.getImgPath(null, null);
+		GLOBALS.setPmaThemeImage(tmanager.theme.getImgPath(null, null));
 	}
 
 }
