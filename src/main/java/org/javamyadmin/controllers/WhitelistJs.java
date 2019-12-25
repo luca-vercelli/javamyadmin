@@ -3,8 +3,6 @@ package org.javamyadmin.controllers;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Core;
 import org.springframework.stereotype.Controller;
@@ -17,11 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class WhitelistJs extends AbstractController {
 
-	@Override
 	@RequestMapping(value = "/js/whitelist.php")
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void whitelist() throws ServletException, IOException {
 
-		super.service(request, response);
+		super.prepareResponse();
 		
 		GLOBALS.set_PMA_MINIMUM_COMMON("true");
 

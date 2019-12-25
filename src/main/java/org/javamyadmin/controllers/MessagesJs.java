@@ -1,7 +1,6 @@
 package org.javamyadmin.controllers;
 
-import static org.javamyadmin.php.Php.__;
-import static org.javamyadmin.php.Php._pgettext;
+import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -9,8 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.php.Globals;
@@ -27,11 +24,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class MessagesJs extends AbstractController {
 
-	@Override
 	@RequestMapping(value = "/js/messages.php")
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void messages() throws ServletException, IOException {
 
-		super.service(request, response);
+		super.prepareResponse();
 		
 		GLOBALS.set_PMA_MINIMUM_COMMON("true");
 

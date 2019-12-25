@@ -11,12 +11,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Handles database structure logic
  *
  * @package PhpMyAdmin\Controllers
  */
+@Controller
 public class StructureController extends AbstractController {
 
     /**
@@ -59,11 +62,10 @@ public class StructureController extends AbstractController {
      */
     //private Replication $replication; //TODO ?
     
-	/*@Override
-	protected void service(HttpServletRequest request, HttpServletResponse response, Response pmaResponse,
-			SessionMap $_SESSION, Globals GLOBALS, Connection $db) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		
-	}*/
+	@RequestMapping(value = "/structure")
+	public void index() throws ServletException, IOException {
+		super.prepareResponse();
+		// TODO
+	}
 
 }

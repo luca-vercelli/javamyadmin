@@ -35,7 +35,7 @@ public class HomeController extends AbstractController {
 	public void index(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		
-		super.service(request, response);
+		super.prepareResponse();
 		
 		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
 			return;

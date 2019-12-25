@@ -7,20 +7,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-//@WebServlet(urlPatterns = "/databases", name = "DatabasesController")
+@Controller
 public class DatabasesController extends AbstractController {
 
+	@RequestMapping(value = "/databases")
+	public void databases() throws ServletException, IOException {
 
-	@Override
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		super.prepareResponse();
 		
 		Map<String, Object> model = new HashMap<>();
 //	      'is_create_database_shown' => $cfg['ShowCreateDb'],

@@ -37,6 +37,12 @@ public abstract class AbstractController {
 	@Autowired
 	SessionMap $_SESSION;
 	
+	@Autowired
+	HttpServletRequest request;
+	
+	@Autowired
+	HttpServletResponse response;
+	
 	/**
 	 * Prepare global variables.
 	 * 
@@ -47,7 +53,7 @@ public abstract class AbstractController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void prepareResponse() throws ServletException, IOException {
 		
 		if (Globals.getRootPath() == null) {
 			// this is executed only at first run
