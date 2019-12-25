@@ -49,7 +49,7 @@ public abstract class AbstractController {
 	 */
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		if (GLOBALS.getRootPath() == null) {
+		if (Globals.getRootPath() == null) {
 			// this is executed only at first run
 			ServletContext servletContext = request.getServletContext();
 			Globals.setRootPath(servletContext.getRealPath("/WEB-INF/.."));
