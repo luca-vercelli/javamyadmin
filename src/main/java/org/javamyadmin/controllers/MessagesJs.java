@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.php.Globals;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @see messages.php
  *
  */
+@Controller
 public class MessagesJs extends AbstractController {
 
 	@Override

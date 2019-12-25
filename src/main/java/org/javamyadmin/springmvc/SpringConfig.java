@@ -29,10 +29,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	    	.addResourceHandler("/favicon.ico")
 	    	.addResourceLocations("/favicon.ico");
         registry
-        	//.addResourceHandler("/js{pattern:/(?!whitelist|messages)([a-z0-9]+)\\.js.*}")
-			//.addResourceHandler("/js/**/{pattern:([a-z0-9]+)}.js")
-        	.addResourceHandler("/js/**")
-    		.addResourceLocations("/js/");
+    		//.addResourceHandler("/js{pattern:/(?!whitelist|messages)([a-z0-9]+)\\.js.*}")
+        	.addResourceHandler("/js/**/*.js")
+        	.addResourceLocations("/js/");
+        registry
+    		.addResourceHandler("/js/**/*.css")
+			.addResourceLocations("/js/");
         registry
         	.addResourceHandler("/themes/**")
         	.addResourceLocations("/themes/"); 
