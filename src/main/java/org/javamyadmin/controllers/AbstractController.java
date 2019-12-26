@@ -29,19 +29,19 @@ public abstract class AbstractController {
 	protected final JtwigRenderer renderer = JtwigFactory.getRenderer();
 	
 	@Autowired
-	Globals GLOBALS;
+	protected Globals GLOBALS;
 	
 	@Autowired
-	Response pmaResponse;
+	protected Response pmaResponse;
 	
 	@Autowired
-	SessionMap $_SESSION;
+	protected SessionMap $_SESSION;
 	
 	@Autowired
-	HttpServletRequest request;
+	protected HttpServletRequest request;
 	
 	@Autowired
-	HttpServletResponse response;
+	protected HttpServletResponse response;
 	
 	/**
 	 * Prepare global variables.

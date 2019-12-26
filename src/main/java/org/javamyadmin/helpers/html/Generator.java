@@ -61,5 +61,11 @@ public class Generator {
         String template = "<img src='themes/dot.gif' title='%s' alt='%s'%s>";
         return String.format(template, title, alt, attr_str);
     }
+
+	public static String getListNavigator(int totalNumTables, int position, Map $urlParams, String fromRoute,
+			String string, Object object) {
+		// TODO Auto-generated method stub
+		return "";
+	}
     
 }

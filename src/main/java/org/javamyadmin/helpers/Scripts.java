@@ -118,6 +118,12 @@ public class Scripts {
 		}
 	}
 
+	public void addFiles(String[] filelist) {
+		for (String $filename : filelist) {
+			this.addFile($filename);
+		}
+	}
+
 	/**
 	 * Determines whether to fire up an onload event for a file
 	 *
