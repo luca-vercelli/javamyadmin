@@ -158,6 +158,17 @@ public class DatabaseInterface {
         return $this->_extension->realMultiQuery($this->_links[$linkIndex], $multiQuery);*/
     }
     
+    public Array getTables(String $catalogName, String $database,
+    		int $link /*= DatabaseInterface::CONNECT_USER*/
+    ) throws SQLException
+    {
+		ResultSet metadata = this._links.get($link).getMetaData()
+				.getTables($catalogName, $database, null, new String[] {"TABLE"});
+		return fetchResult(metadata);
+		
+    	/* TODO see $GLOBALS['cfg']['NaturalOrder'] */
+    }
+
     /**
      * returns array with table names for given db
      *
@@ -165,25 +176,15 @@ public class DatabaseInterface {
      * @param mixed  $link     mysql link resource|object
      *
      * @return array   tables names
+     * @throws SQLException 
      */
-    public Array getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/)
+    public Array getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/) throws SQLException
     {
-		return null;
-    	/* TODO
-        $tables = $this->fetchResult(
-            'SHOW TABLES FROM ' . Util::backquote($database) . ';',
-            null,
-            0,
-            $link,
-            self::QUERY_STORE
-        );
-        if ($GLOBALS['cfg']['NaturalOrder']) {
-            usort($tables, 'strnatcasecmp');
-        }
-        return $tables;*/
+    	return getTables(null, $database, $link);
+    	/* TODO see $GLOBALS['cfg']['NaturalOrder'] */
     }
 
-	public Array getTables(String $database) {
+	public Array getTables(String $database) throws SQLException {
 		return getTables($database, DatabaseInterface.CONNECT_USER);
 	}
 
@@ -262,12 +263,14 @@ public class DatabaseInterface {
      * @param mixed           $link         link type
      *
      * @return array           list of tables in given db(s)
+     * @throws SQLException 
      *
      * @todo    move into Table
      */
-    public List getTablesFull(
+    public Array getTablesFull(
+    	String $catalogName,
         String $database,
-        String $table /*= ''*/,
+        String $table /*= null*/,
         boolean $tbl_is_group /*= false*/,
         int $limit_offset /*= 0*/,
         Integer $limit_count /*= false*/,
@@ -275,10 +278,30 @@ public class DatabaseInterface {
         String $sort_order /*= 'ASC'*/,
         String $table_type /*= null*/,
         int $link /*= DatabaseInterface::CONNECT_USER*/
-    ) {
-		return null;
-        	/* TODO */
+    ) throws SQLException {
+    	
+    	ResultSet metadata = this._links.get($link).getMetaData()
+				.getTables($catalogName, $database, $table, new String[] {"TABLE"});
+		return fetchResult(metadata);
+		
+		// TODO respect parameters
     }
+    
+    public Array getTablesFull(
+        	String $database,
+            String $table /*= null*/,
+            boolean $tbl_is_group /*= false*/,
+            int $limit_offset /*= 0*/,
+            Integer $limit_count /*= false*/,
+            String $sort_by /*= 'Name'*/,
+            String $sort_order /*= 'ASC'*/,
+            String $table_type /*= null*/,
+            int $link /*= DatabaseInterface::CONNECT_USER*/
+        ) throws SQLException {
+        	
+        	return getTablesFull(null, $database, $table, $tbl_is_group, $limit_offset,
+        			$limit_count, $sort_by, $sort_order, $table_type, $link);
+        }
 
 	public boolean isSystemSchema(String _db) {
 		// TODO Auto-generated method stub
@@ -411,7 +434,65 @@ public class DatabaseInterface {
 		 */
 	}
 
-	/**
+	public Array fetchResult(
+        ResultSet $result,
+        Object $key /*= null*/,
+        Object $value /*= null*/
+    ) throws SQLException {
+    	
+    	//FIXME why query whole table and then filter on $value only ?!?
+
+    	Array $resultrows = new Array();
+
+        // return empty array if result is empty or false
+        if ($result == null) {
+            return $resultrows;
+        }
+
+        if (null == $key) {
+        	// Will return an Array with Integer keys
+        	Array $row;
+            while (($row = this.fetchAssoc($result)) != null) {
+                $resultrows.add(_fetchValue($row, $value));
+            }
+            return $resultrows;
+        } else {
+            if ($key instanceof Object[]) {
+            	Array $row;
+                while (($row = this.fetchAssoc($result)) != null) {
+                	// Es. $row = (group => admin, name => john)
+                    Array $result_target = $resultrows;
+                    for (Object $key_index : (Object[])$key) {
+                        if (null == $key_index) {
+                            continue;
+                        }
+
+                        if (! ($result_target.containsKey($row.get($key_index)))) {
+                            $result_target.put($row.get($key_index), new Array());
+                        }
+                        $result_target = (Array) $result_target.get($row.get($key_index));
+                    }
+                    $result_target.add(_fetchValue($row, $value));
+                }
+            } else {
+            	Array $row;
+                while (($row = this.fetchAssoc($result)) != null) {
+                    $resultrows.put($row.get($key), _fetchValue($row, $value));
+                }
+            }
+            return $resultrows;
+        }
+    }
+
+	public Array fetchResult(ResultSet $result) throws SQLException {
+    	return fetchResult($result, null, null);
+    }
+	
+    public Array fetchResult(String $query) throws SQLException {
+    	return fetchResult($query, null, null, DatabaseInterface.CONNECT_USER, 0);
+    }
+
+    /**
      * returns all rows in the resultset in one array
      *
      * <code>
@@ -466,63 +547,16 @@ public class DatabaseInterface {
 	 * @throws SQLException 
      */
     public Array fetchResult(
-        String $query,
-        Object $key /*= null*/,
-        Object $value /*= null*/,
-        int $link /*= DatabaseInterface.CONNECT_USER*/,
-        int $options /*= 0*/
-    ) throws SQLException {
-    	
-    	//FIXME why query whole table and then filter on $value only ?!?
-
-    	Array $resultrows = new Array();
-    	
+    		String $query,
+            Object $key /*= null*/,
+            Object $value /*= null*/,
+            int $link /*= DatabaseInterface.CONNECT_USER*/,
+            int $options /*= 0*/
+        ) throws SQLException {
         ResultSet $result = this.tryQuery($query, $link, $options, false);
-
-        // return empty array if result is empty or false
-        if ($result == null) {
-            return $resultrows;
-        }
-
-        if (null == $key) {
-        	// Will return an Array with Integer keys
-        	Array $row;
-            while (($row = this.fetchAssoc($result)) != null) {
-                $resultrows.add(_fetchValue($row, $value));
-            }
-            return $resultrows;
-        } else {
-            if ($key instanceof Object[]) {
-            	Array $row;
-                while (($row = this.fetchAssoc($result)) != null) {
-                	// Es. $row = (group => admin, name => john)
-                    Array $result_target = $resultrows;
-                    for (Object $key_index : (Object[])$key) {
-                        if (null == $key_index) {
-                            continue;
-                        }
-
-                        if (! ($result_target.containsKey($row.get($key_index)))) {
-                            $result_target.put($row.get($key_index), new Array());
-                        }
-                        $result_target = (Array) $result_target.get($row.get($key_index));
-                    }
-                    $result_target.add(_fetchValue($row, $value));
-                }
-            } else {
-            	Array $row;
-                while (($row = this.fetchAssoc($result)) != null) {
-                    $resultrows.put($row.get($key), _fetchValue($row, $value));
-                }
-            }
-            return $resultrows;
-        }
+        return fetchResult($result, $key, $value);
     }
-
-    public Array fetchResult(String $query) throws SQLException {
-    	return fetchResult($query, null, null, DatabaseInterface.CONNECT_USER, 0);
-    }
-
+    
     /**
      * Returns row or element of a row
      *
@@ -657,8 +691,7 @@ public class DatabaseInterface {
     }
 
 	public Array fetchSingleRow(String $query) throws SQLException {
-				return fetchSingleRow($query, "ASSOC", DatabaseInterface.CONNECT_USER);
-    	
+		return fetchSingleRow($query, "ASSOC", DatabaseInterface.CONNECT_USER);
     }
     
     /**
@@ -671,6 +704,7 @@ public class DatabaseInterface {
      */
     public Array fetchArray(ResultSet $result) throws SQLException
     {
+    	//currently: 1 row only, and the resultset must be open
     	Array map = new Array();
     	int $n = $result.getMetaData().getColumnCount();
     	for (int i = 0; i < $n; ++i) {
@@ -691,6 +725,7 @@ public class DatabaseInterface {
      */
     public Array fetchAssoc(ResultSet $result) throws SQLException
     {
+    	//currently: 1 row only, and the resultset must be open
     	Array map = new Array();
     	int $n = $result.getMetaData().getColumnCount();
     	for (int i = 0; i < $n; ++i) {
@@ -709,6 +744,7 @@ public class DatabaseInterface {
      */
     public Array fetchRow(ResultSet $result) throws SQLException
     {
+    	//currently: 1 row only, and the resultset must be open
     	Array map = new Array();
     	int $n = $result.getMetaData().getColumnCount();
     	for (int i = 0; i < $n; ++i) {
@@ -716,9 +752,6 @@ public class DatabaseInterface {
     	}
     	return map;
     }
-
-
-	// TODO
 
 
     /**
