@@ -60,7 +60,7 @@ public class DatabaseInterface {
      *
      * @var array
      */
-    private Map<Integer, Connection> _links = new HashMap<>();
+    public Map<Integer, Connection> _links = new HashMap<>();
     
     /**
      * runs a query
@@ -128,6 +128,14 @@ public class DatabaseInterface {
     
     public ResultSet tryQuery(String $query) throws SQLException {
     	return tryQuery($query, DatabaseInterface.CONNECT_USER, 0, true);
+    }
+    
+    public ResultSet tryQuery(String $query, int $link) throws SQLException {
+    	return tryQuery($query, $link, 0, true);
+    }
+    
+    public ResultSet tryQuery(String $query, int $link, int $options) throws SQLException {
+    	return tryQuery($query, $link, $options, true);
     }
     
     /**
@@ -586,6 +594,10 @@ public class DatabaseInterface {
         }
         
         return $value;
+    }
+    
+    public Object fetchValue(String $query) throws SQLException {
+    	return fetchValue($query, 0, 0, DatabaseInterface.CONNECT_USER);
     }
 
     /**

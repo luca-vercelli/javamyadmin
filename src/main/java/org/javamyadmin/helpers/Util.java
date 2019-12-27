@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +24,7 @@ import java.util.List;
 import org.javamyadmin.helpers.Menu.MenuStruct;
 import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 
@@ -700,11 +702,12 @@ public class Util {
      * @param array  $table the table infos
      *
      * @return int the possibly modified row count
+     * @throws SQLException 
      *
      */
-    private static int _checkRowCount(String $db, Map $table, Globals GLOBALS)
+    private static long _checkRowCount(String $db, Map $table, Globals GLOBALS) throws SQLException
     {
-        int $rowCount = 0;
+        long $rowCount = 0;
 
         if (empty($table.get("Rows"))) {
             // Do not check exact row count here,
@@ -850,11 +853,24 @@ public class Util {
      *
      * @access  public
      */
-    public static Object backquote(Object $a_name, boolean $do_it /*= true*/)
+    public static String backquote(String $a_name, boolean $do_it /*= true*/)
     {
         return backquoteCompat($a_name, "NONE", $do_it);
     } // end of the "backquote()" function
 
+    public static Array backquote(Array $a_name, boolean $do_it /*= true*/)
+    {
+        return backquoteCompat($a_name, "NONE", $do_it);
+    } // end of the "backquote()" function
+
+    public static String backquote(String $a_name) {
+    	return backquote($a_name, true);
+    }
+    
+    public static Array backquote(Array $a_name) {
+    	return backquote($a_name, true);
+    }
+    
     /**
      * Adds backquotes on both sides of a database, table or field name.
      * in compatibility mode
@@ -877,11 +893,11 @@ public class Util {
      * @access  public
      */
     public static String backquoteCompat(
-        Object $a_name,
+        String $a_name,
         String $compatibility /*= "MSSQL"*/,
         boolean $do_it /*= true*/
     ) {
-    	return null;
+    	return $a_name;
     	/* TODO
         if (is_array($a_name)) {
             foreach ($a_name as &$data) {
@@ -916,6 +932,14 @@ public class Util {
         return $a_name;*/
     } // end of the "backquoteCompat()" function
 
+    public static Array backquoteCompat(
+            Array $a_name,
+            String $compatibility /*= "MSSQL"*/,
+            boolean $do_it /*= true*/
+        ) {
+        	return $a_name;
+    }
+    
     /**
      * Prepare the message and the query
      * usually the message is the result of the query executed
