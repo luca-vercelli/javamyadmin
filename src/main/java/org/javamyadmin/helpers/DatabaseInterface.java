@@ -1,10 +1,18 @@
 package org.javamyadmin.helpers;
 
 import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.naming.Context;
 
 import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
@@ -46,6 +54,13 @@ public class DatabaseInterface {
 	 */
 	public final static int CONNECT_AUXILIARY = 0x102;
 
+    /**
+     * Opened database links
+     *
+     * @var array
+     */
+    private Map<Integer, Connection> _links = new HashMap<>();
+    
     /**
      * runs a query
      *
@@ -296,106 +311,134 @@ public class DatabaseInterface {
      *
      * @return array user, host and server settings array
      */
-    public Object[] getConnectionParams(int $mode, Map $server /*= null*/)
+    public ConnectionParams getConnectionParams(int $mode, Map<String, Object> $serverMap /*= null*/)
     {
         Config $cfg = Globals.getConfig();
+        ConnectionParams connectionParams = new ConnectionParams();
         String $user = null;
         String $password = null;
+        ServerParams $server = connectionParams.$server = new ServerParams();
+        
         if ($mode == DatabaseInterface.CONNECT_USER) {
             $user = (String) multiget($cfg.settings, "Server", "user");
             $password = (String) multiget($cfg.settings, "Server", "password");
-            $server = (Map) $cfg.get("Server");
+            $server.host = (String) multiget($cfg.settings, "Server", "host");
+            $server.jndiName = (String) multiget($cfg.settings, "Server", "jndiName");
+            $server.jdbcUrl = (String) multiget($cfg.settings, "Server", "jdbcUrl");
+            $server.jdbcDriver = (String) multiget($cfg.settings, "Server", "jdbcDriver");
+            if (!empty(multiget($cfg.settings, "Server", "port"))) {
+                $server.port = new Integer((String)multiget($cfg.settings, "Server", "port"));
+            }
+            $server.socket = (String)multiget($cfg.settings, "Server", "socket");
+            $server.compress = "true".equals(multiget($cfg.settings, "Server", "compress"));
+            $server.ssl = "true".equals(multiget($cfg.settings, "Server", "ssl"));
+            $server.ssl_key = (String)multiget($cfg.settings, "Server", "ssl_key");
+            $server.ssl_cert = (String)multiget($cfg.settings, "Server", "ssl_cert");
+            $server.ssl_ca = (String)multiget($cfg.settings, "Server", "ssl_ca");
+            $server.ssl_ca_path = (String)multiget($cfg.settings, "Server", "ssl_ca_path");
+            $server.ssl_ciphers = (String)multiget($cfg.settings, "Server", "ssl_ciphers");
+            $server.ssl_verify = (String)multiget($cfg.settings, "Server", "ssl_verify");
+            
         } else if ($mode == DatabaseInterface.CONNECT_CONTROL) {
             $user = (String) multiget($cfg.settings, "Server", "controluser");
             $password = (String) multiget($cfg.settings, "Server", "controlpass");
-            $server = new HashMap();
             if (! empty(multiget($cfg.settings, "Server", "controlhost"))) {
-                $server.put("host", multiget($cfg.settings, "Server", "controlhost"));
+                $server.host = (String) multiget($cfg.settings, "Server", "controlhost");
             } else {
-                $server.put("host", multiget($cfg.settings, "Server", "host"));
+                $server.host = (String) multiget($cfg.settings, "Server", "host");
+            }
+            if (! empty(multiget($cfg.settings, "Server", "controlJndiName"))) {
+                $server.jndiName = (String) multiget($cfg.settings, "Server", "controlJndiName");
+            } else {
+                $server.jndiName = (String) multiget($cfg.settings, "Server", "jndiName");
+            }
+            if (! empty(multiget($cfg.settings, "Server", "controlJdbcUrl"))) {
+                $server.jdbcUrl = (String) multiget($cfg.settings, "Server", "controlJdbcUrl");
+            } else {
+                $server.jdbcUrl = (String) multiget($cfg.settings, "Server", "jdbcUrl");
+            }
+            if (! empty(multiget($cfg.settings, "Server", "controlJdbcDriver"))) {
+                $server.jdbcDriver = (String) multiget($cfg.settings, "Server", "controlJdbcDriver");
+            } else {
+                $server.jdbcDriver = (String) multiget($cfg.settings, "Server", "jdbcDriver");
             }
             // Share the settings if the host is same
-            if ($server.get("host").equals(multiget($cfg.settings, "Server", "host"))) {
-                String[] $shared = new String[] {
-                    "port",
-                    "socket",
-                    "compress",
-                    "ssl",
-                    "ssl_key",
-                    "ssl_cert",
-                    "ssl_ca",
-                    "ssl_ca_path",
-                    "ssl_ciphers",
-                    "ssl_verify",
-                };
-                for (String $item : $shared) {
-                    if (!empty(multiget($cfg.settings, "Server", $item))) {
-                        $server.put($item, multiget($cfg.settings, "Server", $item));
-                    }
+            if ($server.host.equals(multiget($cfg.settings, "Server", "host"))) {
+            	
+            	if (!empty(multiget($cfg.settings, "Server", "port"))) {
+                    $server.port = new Integer((String)multiget($cfg.settings, "Server", "port"));
                 }
+                $server.socket = (String)multiget($cfg.settings, "Server", "socket");
+                $server.compress = "true".equals(multiget($cfg.settings, "Server", "compress"));
+                $server.ssl = "true".equals(multiget($cfg.settings, "Server", "ssl"));
+                $server.ssl_key = (String)multiget($cfg.settings, "Server", "ssl_key");
+                $server.ssl_cert = (String)multiget($cfg.settings, "Server", "ssl_cert");
+                $server.ssl_ca = (String)multiget($cfg.settings, "Server", "ssl_ca");
+                $server.ssl_ca_path = (String)multiget($cfg.settings, "Server", "ssl_ca_path");
+                $server.ssl_ciphers = (String)multiget($cfg.settings, "Server", "ssl_ciphers");
+                $server.ssl_verify = (String)multiget($cfg.settings, "Server", "ssl_verify");
             }
             // Set configured port
             if (! empty(multiget($cfg.settings, "Server", "controlport"))) {
-                $server.put("port", multiget($cfg.settings, "Server", "controlport"));
+                $server.port = new Integer((String)multiget($cfg.settings, "Server", "controlport"));
             }
             // Set any configuration with control_ prefix
-            for (String $key : ((Map<String, Object>) $cfg.get("Server")).keySet()) {
+            /* TODO or not?
+             for (String $key : ((Map<String, Object>) $cfg.get("Server")).keySet()) {
             	Object $val = ((Map) $cfg.get("Server")).get($key);
                 if ($key.startsWith("control_")) {
                     $server.put($key.substring(8), $val);
                 }
-            }
+            }*/
         } else {
-            if ($server == null) {
-                return new Object[] {
-                    null,
-                    null,
-                    null,
-                };
+            if ($serverMap == null) {
+                return connectionParams;
             }
-            if (!empty($server.get("user"))) {
-                $user = (String) $server.get("user");
+            if (!empty($serverMap.get("user"))) {
+                $user = (String) $serverMap.get("user");
             }
-            if (!empty($server.get("password"))) {
-            	$password = (String) $server.get("password");
+            if (!empty($serverMap.get("password"))) {
+            	$password = (String) $serverMap.get("password");
             }
         }
+        
         // Perform sanity checks on some variables
-        if (empty($server.get("port"))) {
-            $server.put("port", 0);
-        } else {
-            $server.put("port", new Integer((String)$server.get("port")));
+        if ($server.port == null) {
+            $server.port = 0;
         }
-        if (empty($server.get("socket"))) {
-            $server.put("socket", null);
+        if (empty($server.host)) {
+            $server.host = "localhost";
         }
-        if (empty($server.get("host"))) {
-            $server.put("host", "localhost");
-        }
-        if (empty($server.get("ssl"))) {
-            $server.put("ssl", false);
-        }
-        if (empty($server.get("compress"))) {
-            $server.put("compress", false);
-        }
-        return new Object[] {
-            $user,
-            $password,
-            $server,
-        };
+        
+        connectionParams.$user = $user;
+        connectionParams.$password = $password;
+        
+        return connectionParams;
     }
     
     public static class ServerParams {
-    	String host;
-    	Integer port;
-    	boolean ssl;
-    	boolean compress;
+		public String jndiName;
+    	public String jdbcUrl;
+    	public String host;
+		public Integer port;
+    	public String jdbcDriver;
+		
+		// MySQL specific: !?!
+    	public boolean ssl = false;
+    	public String ssl_verify;
+		public String ssl_ciphers;
+		public String ssl_ca_path;
+		public String ssl_ca;
+		public String ssl_cert;
+		public String ssl_key;
+    	boolean compress = false;
+    	public String socket;
     }
     
-    public static class ConnectionParams { // TODO use this
-    	String $user;
-    	String $password;
-    	ServerParams $server;
+    public static class ConnectionParams {
+    	public String $user;
+    	public String $password;
+    	public ServerParams $server;
     }
     
     /**
@@ -407,13 +450,16 @@ public class DatabaseInterface {
      * @param integer    $target How to store connection link, defaults to $mode
      *
      * @return mixed false on error or a connection object on success
+     * @throws SQLException 
+     * @throws NamingException 
      */
-    public Connection connect(int $mode, Map $server /*= null*/, Integer $target /*= null*/)
+    public Connection connect(int $mode, Map<String, Object> $serverMap /*= null*/, Integer $target /*= null*/) throws SQLException, NamingException
     {
-    	Object[] connectionParams = this.getConnectionParams($mode, $server); 
-    	String $user = (String) connectionParams[0];
-    	String $password = (String) connectionParams[1];
-    	$server = (Map) connectionParams[2];
+    	ConnectionParams connectionParams = this.getConnectionParams($mode, $serverMap); 
+    	String $user = connectionParams.$user;
+    	String $password = connectionParams.$password;
+    	ServerParams $server = connectionParams.$server;
+    	
         if ($target == null) {
             $target = $mode;
         }
@@ -424,16 +470,38 @@ public class DatabaseInterface {
             );
             return null;
         }
-        // Do not show location and backtrace for connection errors
-        //$GLOBALS['error_handler'].setHideLocation(true);
-        Connection $result = this._extension.connect(
-            $user,
-            $password,
-            $server
-        );
-        //$GLOBALS['error_handler'].setHideLocation(false);
+        
+        Connection $result = null;
+        
+        if ($server.jndiName != null) {
+        	
+        	// Datasource
+        	
+        	Context ctx = new InitialContext();
+        	DataSource ds = (DataSource)ctx.lookup($server.jndiName);
+        	$result = ds.getConnection();
+        	
+        } else if ($server.jdbcUrl != null) {
+        	
+        	// Direct JDBC url
+        	
+        	if (!empty($user) || !empty($password)) {
+        		$result = DriverManager.getConnection($server.jdbcUrl, $user, $password);
+        	} else {
+        		$result = DriverManager.getConnection($server.jdbcUrl);
+        	}
+        } else {
+        	trigger_error(
+                    __(
+                        "Currently, connection by hostname is not supported."
+                    ),
+                    E_USER_WARNING
+                );
+        	return null;
+        }
+        
         if ($result != null) {
-            this._links[$target] = $result;
+            this._links.put($target, $result);
             /* Run post connect for user connections */
             if ($target == DatabaseInterface.CONNECT_USER) {
                 this.postConnect();
@@ -455,5 +523,95 @@ public class DatabaseInterface {
             return null;
         }
         return $result;
+    }
+    
+
+
+    /**
+     * Function called just after a connection to the MySQL database server has
+     * been established. It sets the connection collation, and determines the
+     * version of MySQL which is running.
+     *
+     * @return void
+     */
+    public void postConnect()
+    {
+    	/*
+        $version = this.fetchSingleRow(
+            "SELECT @@version, @@version_comment",
+            "ASSOC",
+            DatabaseInterface.CONNECT_USER
+        );
+
+        if ($version) {
+            this._version_int = self.versionToInt($version["@@version"]);
+            this._version_str = $version["@@version"];
+            this._version_comment = $version["@@version_comment"];
+            if (stripos($version["@@version"], "mariadb") !== false) {
+                this._is_mariadb = true;
+            }
+            if (stripos($version["@@version_comment"], "percona") !== false) {
+                this._is_percona = true;
+            }
+        }
+
+        if (this._version_int > 50503) {
+            $default_charset = "utf8mb4";
+            $default_collation = "utf8mb4_general_ci";
+        } else {
+            $default_charset = "utf8";
+            $default_collation = "utf8_general_ci";
+        }
+        $GLOBALS["collation_connection"] = $default_collation;
+        $GLOBALS["charset_connection"] = $default_charset;
+        this.query(
+            "SET NAMES "$default_charset" COLLATE "$default_collation";",
+            DatabaseInterface.CONNECT_USER,
+            self.QUERY_STORE
+        );
+
+        // Locale for messages
+        $locale = LanguageManager.getInstance().getCurrentLanguage().getMySQLLocale();
+        if (! empty($locale)) {
+            this.query(
+                "SET lc_messages = "" . $locale . "";",
+                DatabaseInterface.CONNECT_USER,
+                self.QUERY_STORE
+            );
+        }
+
+        // Set timezone for the session, if required.
+        if ($GLOBALS["cfg"]["Server"]["SessionTimeZone"] != "") {
+            $sql_query_tz = "SET " . Util.backquote("time_zone") . " = "
+                . "\""
+                . this.escapeString($GLOBALS["cfg"]["Server"]["SessionTimeZone"])
+                . "\"";
+
+            if (! this.tryQuery($sql_query_tz)) {
+                $error_message_tz = sprintf(
+                    __(
+                        "Unable to use timezone "%1$s" for server %2$d. "
+                        . "Please check your configuration setting for "
+                        . "[em]$cfg[\"Servers\"][%3$d][\"SessionTimeZone\"][/em]. "
+                        . "phpMyAdmin is currently using the default time zone "
+                        . "of the database server."
+                    ),
+                    $GLOBALS["cfg"]["Server"]["SessionTimeZone"],
+                    $GLOBALS["server"],
+                    $GLOBALS["server"]
+                );
+
+                trigger_error($error_message_tz, E_USER_WARNING);
+            }
+        }
+
+        // Loads closest context to this version.
+        Context.loadClosest(
+            (this._is_mariadb ? "MariaDb" : "MySql") . this._version_int
+        );
+
+        // the DatabaseList class as a stub for the ListDatabase class
+        $GLOBALS["dblist"] = new DatabaseList();
+        */
     }
 }
