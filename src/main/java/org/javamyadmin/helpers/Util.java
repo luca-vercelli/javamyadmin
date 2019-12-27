@@ -1245,19 +1245,7 @@ public class Util {
      */
     public static boolean profilingSupported(Globals GLOBALS, SessionMap session)
     {
-        if (! cacheExists("profiling_supported", GLOBALS, session)) {
-            // 5.0.37 has profiling but for example, 5.1.20 does not
-            // (avoid a trip to the server for MySQL before 5.0.37)
-            // and do not set a constant as we might be switching servers
-            if (GLOBALS.getDbi().fetchValue("SELECT @@have_profiling")
-            ) {
-                cacheSet("profiling_supported", true, GLOBALS, session);
-            } else {
-                cacheSet("profiling_supported", false, GLOBALS, session);
-            }
-        }
-
-        return (Boolean) cacheGet("profiling_supported", null, GLOBALS, session);
+        return false; //Unsupported
     }
 
     /**
