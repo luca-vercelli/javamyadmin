@@ -1,9 +1,10 @@
 package org.javamyadmin.helpers;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,6 +15,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.naming.Context;
 
+import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
@@ -93,50 +95,40 @@ public class DatabaseInterface {
      * @param bool    $cache_affected_rows whether to cache affected row
      *
      * @return mixed
+     * @throws SQLException 
      */
-    public Object tryQuery(
+    public ResultSet tryQuery(
         String $query,
         int $link /*= DatabaseInterface::CONNECT_USER*/,
         int $options /*= 0*/,
         boolean $cache_affected_rows /*= true*/
-    ) {
-		return null;
-    	/* TODO
-        $debug = isset($GLOBALS['cfg']['DBG']) ? $GLOBALS['cfg']['DBG']['sql'] : false;
-        if (! isset($this->_links[$link])) {
-            return false;
+    ) throws SQLException {
+    	boolean $debug = "true".equals(((Map) Globals.getConfig().get("DBG")).get("sql"));
+        if (! _links.containsKey($link)) {
+            return null;
         }
-        $time = 0;
+        long $time = 0;
         if ($debug) {
-            $time = microtime(true);
+            $time = new Date().getTime();
         }
-        $result = $this->_extension->realQuery($query, $this->_links[$link], $options);
-        if ($cache_affected_rows) {
-            $GLOBALS['cached_affected_rows'] = $this->affectedRows($link, false);
-        }
+        // FIXME $options currently ignored
+        ResultSet $result = _links.get($link).createStatement().executeQuery($query);
+        
+        /* TODO if ($cache_affected_rows) {
+            $GLOBALS["cached_affected_rows"] = $this.affectedRows($link, false);
+        }*/
         if ($debug) {
-            $time = microtime(true) - $time;
-            $this->_dbgQuery($query, $link, $result, $time);
-            if ($GLOBALS['cfg']['DBG']['sqllog']) {
-                $warningsCount = '';
-                if (($options & DatabaseInterface::QUERY_STORE) == DatabaseInterface::QUERY_STORE) {
-                    if (isset($this->_links[$link]->warning_count)) {
-                        $warningsCount = $this->_links[$link]->warning_count;
-                    }
-                }
-                openlog('phpMyAdmin', LOG_NDELAY | LOG_PID, LOG_USER);
-                syslog(
-                    LOG_INFO,
-                    'SQL[' . basename($_SERVER['SCRIPT_NAME']) . ']: '
-                    . sprintf('%0.3f', $time) . '(W:' . $warningsCount . ') > ' . $query
-                );
-                closelog();
-            }
+            $time = new Date().getTime() - $time;
+            System.out.println("DEBUG - " + $query + " executed in " + $time + "ms"); // FIXME use some kind of logger
         }
-        if ($result !== false && Tracker::isActive()) {
-            Tracker::handleQuery($query);
-        }
-        return $result;*/
+        /* TODO if ($result !== false && Tracker.isActive()) {
+            Tracker.handleQuery($query);
+        }*/
+        return $result;
+    }
+    
+    public ResultSet tryQuery(String $query) throws SQLException {
+    	return tryQuery($query, DatabaseInterface.CONNECT_USER, 0, true);
     }
     
     /**
@@ -147,7 +139,7 @@ public class DatabaseInterface {
      *
      * @return mysqli_result[]|boolean (false)
      */
-    public Object tryMultiQuery(
+    public ResultSet[] tryMultiQuery(
         String $multiQuery /*= ''*/,
         int $linkIndex /*= DatabaseInterface::CONNECT_USER*/
     ) {
@@ -167,7 +159,7 @@ public class DatabaseInterface {
      *
      * @return array   tables names
      */
-    public List<Object> getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/)
+    public Array getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/)
     {
 		return null;
     	/* TODO
@@ -182,6 +174,23 @@ public class DatabaseInterface {
             usort($tables, 'strnatcasecmp');
         }
         return $tables;*/
+    }
+
+	public Array getTables(String $database) {
+		return getTables($database, DatabaseInterface.CONNECT_USER);
+	}
+
+    /**
+     * Get a table with database name and table name
+     *
+     * @param string $db_name    DB name
+     * @param string $table_name Table name
+     *
+     * @return Table
+     */
+    public Table getTable(String $db_name, String $table_name)
+    {
+        return new Table($table_name, $db_name, this);
     }
     
     /**
@@ -263,41 +272,440 @@ public class DatabaseInterface {
 		return null;
         	/* TODO */
     }
-    
-    public boolean isUserType(String string) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public Table getTable(String _db, String _table) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	public boolean isSystemSchema(String _db) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+    /**
+     * gets the current user with host
+     *
+     * @return string the current user i.e. user@host
+     */
+    public String getCurrentUser()
+    {
+    	return "";
+    	/* TODO
+        if (Util::cacheExists('mysql_cur_user')) {
+            return Util::cacheGet('mysql_cur_user');
+        }
+        $user = $this->fetchValue('SELECT CURRENT_USER();');
+        if ($user !== false) {
+            Util::cacheSet('mysql_cur_user', $user);
+            return $user;
+        }
+        return '@';*/
+    }
+    
+    /**
+     * Checks if current user is superuser
+     *
+     * @return bool Whether user is a superuser
+     */
 	public boolean isSuperuser() {
-		// TODO Auto-generated method stub
-		return false;
+		return isUserType("super");
 	}
 
-	public Hashtable<Object, Object> getTables(String _db) {
-		// TODO Auto-generated method stub
-		return null;
+    /**
+     * Checks if current user has global create user/grant privilege
+     * or is a superuser (i.e. SELECT on mysql.users)
+     * while caching the result in session.
+     *
+     * @param string $type type of user to check for
+     *                     i.e. 'create', 'grant', 'super'
+     *
+     * @return bool Whether user is a given type of user
+     */
+    public boolean isUserType(String type) {
+
+    	return false;
+		/* TODO
+		 if (Util::cacheExists('is_' . $type . 'user')) {
+            return Util::cacheGet('is_' . $type . 'user');
+        }
+
+        // when connection failed we don't have a $userlink
+        if (! isset($this->_links[DatabaseInterface::CONNECT_USER])) {
+            return false;
+        }
+
+        // checking if user is logged in
+        if ($type === 'logged') {
+            return true;
+        }
+
+        if (! $GLOBALS['cfg']['Server']['DisableIS'] || $type === 'super') {
+            // Prepare query for each user type check
+            $query = '';
+            if ($type === 'super') {
+                $query = 'SELECT 1 FROM mysql.user LIMIT 1';
+            } elseif ($type === 'create') {
+                list($user, $host) = $this->getCurrentUserAndHost();
+                $query = "SELECT 1 FROM `INFORMATION_SCHEMA`.`USER_PRIVILEGES` "
+                    . "WHERE `PRIVILEGE_TYPE` = 'CREATE USER' AND "
+                    . "'''" . $user . "''@''" . $host . "''' LIKE `GRANTEE` LIMIT 1";
+            } elseif ($type === 'grant') {
+                list($user, $host) = $this->getCurrentUserAndHost();
+                $query = "SELECT 1 FROM ("
+                    . "SELECT `GRANTEE`, `IS_GRANTABLE` FROM "
+                    . "`INFORMATION_SCHEMA`.`COLUMN_PRIVILEGES` UNION "
+                    . "SELECT `GRANTEE`, `IS_GRANTABLE` FROM "
+                    . "`INFORMATION_SCHEMA`.`TABLE_PRIVILEGES` UNION "
+                    . "SELECT `GRANTEE`, `IS_GRANTABLE` FROM "
+                    . "`INFORMATION_SCHEMA`.`SCHEMA_PRIVILEGES` UNION "
+                    . "SELECT `GRANTEE`, `IS_GRANTABLE` FROM "
+                    . "`INFORMATION_SCHEMA`.`USER_PRIVILEGES`) t "
+                    . "WHERE `IS_GRANTABLE` = 'YES' AND "
+                    . "'''" . $user . "''@''" . $host . "''' LIKE `GRANTEE` LIMIT 1";
+            }
+
+            $is = false;
+            $result = $this->tryQuery(
+                $query,
+                self::CONNECT_USER,
+                self::QUERY_STORE
+            );
+            if ($result) {
+                $is = (bool) $this->numRows($result);
+            }
+            $this->freeResult($result);
+        } else {
+            $is = false;
+            $grants = $this->fetchResult(
+                "SHOW GRANTS FOR CURRENT_USER();",
+                null,
+                null,
+                self::CONNECT_USER,
+                self::QUERY_STORE
+            );
+            if ($grants) {
+                foreach ($grants as $grant) {
+                    if ($type === 'create') {
+                        if (strpos($grant, "ALL PRIVILEGES ON *.*") !== false
+                            || strpos($grant, "CREATE USER") !== false
+                        ) {
+                            $is = true;
+                            break;
+                        }
+                    } elseif ($type === 'grant') {
+                        if (strpos($grant, "WITH GRANT OPTION") !== false) {
+                            $is = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        Util::cacheSet('is_' . $type . 'user', $is);
+        return $is;
+        
+		 */
 	}
 
-	public Map fetchResult(String string, String string2, Object object, int connectUser, int queryStore) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	/**
+     * returns all rows in the resultset in one array
+     *
+     * <code>
+     * $sql = 'SELECT * FROM `user`';
+     * $users = $dbi->fetchResult($sql);
+     * // produces
+     * // $users[] = array('id' => 123, 'name' => 'John Doe')
+     *
+     * $sql = 'SELECT `id`, `name` FROM `user`';
+     * $users = $dbi->fetchResult($sql, 'id');
+     * // produces
+     * // $users['123'] = array('id' => 123, 'name' => 'John Doe')
+     *
+     * $sql = 'SELECT `id`, `name` FROM `user`';
+     * $users = $dbi->fetchResult($sql, 0);
+     * // produces
+     * // $users['123'] = array(0 => 123, 1 => 'John Doe')
+     *
+     * $sql = 'SELECT `id`, `name` FROM `user`';
+     * $users = $dbi->fetchResult($sql, 'id', 'name');
+     * // or
+     * $users = $dbi->fetchResult($sql, 0, 1);
+     * // produces
+     * // $users['123'] = 'John Doe'
+     *
+     * $sql = 'SELECT `name` FROM `user`';
+     * $users = $dbi->fetchResult($sql);
+     * // produces
+     * // $users[] = 'John Doe'
+     *
+     * $sql = 'SELECT `group`, `name` FROM `user`'
+     * $users = $dbi->fetchResult($sql, array('group', null), 'name');
+     * // produces
+     * // $users['admin'][] = 'John Doe'
+     *
+     * $sql = 'SELECT `group`, `name` FROM `user`'
+     * $users = $dbi->fetchResult($sql, array('group', 'name'), 'id');
+     * // produces
+     * // $users['admin']['John Doe'] = '123'
+     * </code>
+     *
+     * @param string               $query   query to execute
+     * @param string|integer|array $key     field-name or offset
+     *                                      used as key for array
+     *                                      or array of those
+     * @param string|integer       $value   value-name or offset
+     *                                      used as value for array
+     * @param integer              $link    link type
+     * @param integer              $options query options
+     *
+     * @return array resultrows or values indexed by $key
+	 * @throws SQLException 
+     */
+    public Array fetchResult(
+        String $query,
+        Object $key /*= null*/,
+        Object $value /*= null*/,
+        int $link /*= DatabaseInterface.CONNECT_USER*/,
+        int $options /*= 0*/
+    ) throws SQLException {
+    	
+    	//FIXME why query whole table and then filter on $value only ?!?
 
-	public boolean fetchValue(String string) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    	Array $resultrows = new Array();
+    	
+        ResultSet $result = this.tryQuery($query, $link, $options, false);
+
+        // return empty array if result is empty or false
+        if ($result == null) {
+            return $resultrows;
+        }
+
+        if (null == $key) {
+        	// Will return an Array with Integer keys
+        	Array $row;
+            while (($row = this.fetchAssoc($result)) != null) {
+                $resultrows.add(_fetchValue($row, $value));
+            }
+            return $resultrows;
+        } else {
+            if ($key instanceof Object[]) {
+            	Array $row;
+                while (($row = this.fetchAssoc($result)) != null) {
+                	// Es. $row = (group => admin, name => john)
+                    Array $result_target = $resultrows;
+                    for (Object $key_index : (Object[])$key) {
+                        if (null == $key_index) {
+                            continue;
+                        }
+
+                        if (! ($result_target.containsKey($row.get($key_index)))) {
+                            $result_target.put($row.get($key_index), new Array());
+                        }
+                        $result_target = (Array) $result_target.get($row.get($key_index));
+                    }
+                    $result_target.add(_fetchValue($row, $value));
+                }
+            } else {
+            	Array $row;
+                while (($row = this.fetchAssoc($result)) != null) {
+                    $resultrows.put($row.get($key), _fetchValue($row, $value));
+                }
+            }
+            return $resultrows;
+        }
+    }
+
+    public Array fetchResult(String $query) throws SQLException {
+    	return fetchResult($query, null, null, DatabaseInterface.CONNECT_USER, 0);
+    }
+
+    /**
+     * Returns row or element of a row
+     *
+     * @param array           $row   Row to process
+     * @param string|null|int $key Which column to return
+     *
+     * @return mixed
+     */
+    private Object _fetchValue(Array $row, Object $value)
+    {
+        return $value == null ? $row : $row.get($value);
+    }
+
+    /**
+     * returns a single value from the given result or query,
+     * if the query or the result has more than one row or field
+     * the first field of the first row is returned
+     *
+     * <code>
+     * $sql = "SELECT `name` FROM `user` WHERE `id` = 123";
+     * $user_name = $dbi.fetchValue($sql);
+     * // produces
+     * // $user_name = "John Doe"
+     * </code>
+     *
+     * @param string         $query      The query to execute
+     * @param integer        $row_number row to fetch the value from,
+     *                                   starting at 0, with 0 being default
+     * @param integer|string $field      field to fetch the value from,
+     *                                   starting at 0, with 0 being default
+     * @param integer        $link       link type
+     *
+     * @return mixed value of first field in first row from result
+     *               or false if not found
+     * @throws SQLException 
+     */
+    public Object fetchValue(
+        String $query,
+        int $row_number /*= 0*/,
+        Object $field /*= 0*/,
+        int $link /*= DatabaseInterface.CONNECT_USER*/
+    ) throws SQLException {
+        Object $value = false;
+
+        ResultSet $result = this.tryQuery(
+            $query,
+            $link,
+            QUERY_STORE,
+            false
+        );
+        if ($result == null) {
+            return false;
+        }
+
+        // get requested row
+        for (int $i = 0; $i < $row_number; $i++) {
+        	if (!$result.next()) {
+        		return null;
+        	}
+        }
+
+        if ($field instanceof Integer) {
+        	$value = $result.getObject((Integer)$field);
+        } else if ($field instanceof String) {
+        	$value = $result.getObject((String)$field);
+        } else {
+        	System.err.println("Unexpected $field type: " + $field.getClass().getName());
+        	return null;
+        }
+        
+        return $value;
+    }
+
+    /**
+     * returns only the first row from the result
+     *
+     * <code>
+     * $sql = "SELECT * FROM `user` WHERE `id` = 123";
+     * $user = $dbi.fetchSingleRow($sql);
+     * // produces
+     * // $user = array("id" => 123, "name" => "John Doe")
+     * </code>
+     *
+     * @param string  $query The query to execute
+     * @param string  $type  NUM|ASSOC|BOTH returned array should either numeric
+     *                       associative or both
+     * @param integer $link  link type
+     *
+     * @return array first row from result
+     *                       or null if result is empty
+     * @throws SQLException 
+     */
+    public Array fetchSingleRow(
+        String $query,
+        String $type /*= "ASSOC"*/,
+        int $link /*= DatabaseInterface.CONNECT_USER*/
+    ) throws SQLException {
+        ResultSet $result = this.tryQuery(
+            $query,
+            $link,
+            QUERY_STORE,
+            false
+        );
+        if ($result == null) {
+            return null;
+        }
+
+        // return false if result is empty or false
+    	if (!$result.next()) {
+    		return null;
+    	}
+
+    	Array $row = null;
+        switch ($type) {
+            case "NUM":
+                $row = fetchRow($result);
+                break;
+            case "ASSOC":
+                $row = fetchAssoc($result);
+                break;
+            case "BOTH":
+            default:
+                $row = fetchArray($result);
+                break;
+        }
+        
+        return $row;
+    }
+
+	public Array fetchSingleRow(String $query) throws SQLException {
+				return fetchSingleRow($query, "ASSOC", DatabaseInterface.CONNECT_USER);
+    	
+    }
+    
+    /**
+     * returns array of rows with associative and numeric keys from $result
+     *
+     * @param object $result result set identifier
+     *
+     * @return Map of String|Integer to Object
+     * @throws SQLException 
+     */
+    public Array fetchArray(ResultSet $result) throws SQLException
+    {
+    	Array map = new Array();
+    	int $n = $result.getMetaData().getColumnCount();
+    	for (int i = 0; i < $n; ++i) {
+    		Object value = $result.getObject(i);
+    		map.put(new Integer(i), value);
+    		map.put($result.getMetaData().getColumnName(i), value);
+    	}
+        return map;
+    }
+
+    /**
+     * returns array of rows with associative keys from $result
+     *
+     * @param object $result result set identifier
+     *
+     * @return array|null
+     * @throws SQLException 
+     */
+    public Array fetchAssoc(ResultSet $result) throws SQLException
+    {
+    	Array map = new Array();
+    	int $n = $result.getMetaData().getColumnCount();
+    	for (int i = 0; i < $n; ++i) {
+    		map.put($result.getMetaData().getColumnName(i), $result.getObject(i));
+    	}
+        return map;
+    }
+
+    /**
+     * returns array of rows with numeric keys from $result
+     *
+     * @param object $result result set identifier
+     *
+     * @return array|null
+     * @throws SQLException 
+     */
+    public Array fetchRow(ResultSet $result) throws SQLException
+    {
+    	Array map = new Array();
+    	int $n = $result.getMetaData().getColumnCount();
+    	for (int i = 0; i < $n; ++i) {
+    		map.add($result.getObject(i));
+    	}
+    	return map;
+    }
+
 
 	// TODO
 
