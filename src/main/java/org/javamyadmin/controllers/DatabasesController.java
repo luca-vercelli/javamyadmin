@@ -3,9 +3,11 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Response;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class DatabasesController extends AbstractController {
 
 	@RequestMapping(value = "/databases")
-	public void databases() throws ServletException, IOException {
+	public void databases() throws ServletException, IOException, SQLException, NamingException {
 
 		super.prepareResponse();
 		

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,7 +36,7 @@ public class HomeController extends AbstractController {
 	
 	@RequestMapping(value = "/Home")
 	public void index(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException, SQLException {
+			throws ServletException, IOException, SQLException, NamingException {
 		
 		super.prepareResponse();
 		

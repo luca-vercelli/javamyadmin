@@ -977,7 +977,9 @@ public class DatabaseInterface {
         return $result;
     }
     
-
+    public Connection connect(int $mode) throws SQLException, NamingException {
+    	return connect($mode, null, null);
+    }
 
     /**
      * Function called just after a connection to the MySQL database server has

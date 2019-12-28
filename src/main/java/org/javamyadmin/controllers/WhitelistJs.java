@@ -1,7 +1,9 @@
 package org.javamyadmin.controllers;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Core;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WhitelistJs extends AbstractController {
 
 	@RequestMapping(value = "/js/whitelist.php")
-	public void whitelist() throws ServletException, IOException {
+	public void whitelist() throws ServletException, IOException, SQLException, NamingException {
 
 		super.prepareResponse();
 		

@@ -3,13 +3,19 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Core;
+import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Language;
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
@@ -52,8 +58,10 @@ public abstract class AbstractController {
 	 * @param response
 	 * @throws ServletException
 	 * @throws IOException
+	 * @throws NamingException 
+	 * @throws SQLException 
 	 */
-	public void prepareResponse() throws ServletException, IOException {
+	public void prepareResponse() throws ServletException, IOException, SQLException, NamingException {
 		
 		if (Globals.getRootPath() == null) {
 			// this is executed only at first run
@@ -202,47 +210,37 @@ public abstract class AbstractController {
 		        // get the privileges list for the current user but the true user link
 		        // must be open after this one so it would be default one for all the
 		        // scripts)
-		        /* TODO
-		        boolean $controllink = false;
-		        if (GLOBALS.cfg.get("Server"]["controluser"] != "") {
-		            $controllink = GLOBALS.dbi.connect(
+		        Connection $controllink = null;
+		        if (!empty(((Map) Globals.getConfig().get("Server")).get("controluser"))) {
+		            $controllink = GLOBALS.getDbi().connect(
 		                DatabaseInterface.CONNECT_CONTROL
 		            );
-		        }*/
+		        }
 		        // Connects to the server (validates user"s login)
 		        /** @var DatabaseInterface $userlink */
-		        /* TODO
-		        $userlink = GLOBALS.dbi.connect(DatabaseInterface.CONNECT_USER);
-		        if ($userlink == null) {
+		        Connection $userlink = GLOBALS.getDbi().connect(DatabaseInterface.CONNECT_USER);
+		        /*if ($userlink == null) {
 		            $auth_plugin.showFailure("mysql-denied");
-		        }
-		        if (! $controllink) {
+		        }*/
+		        if ($controllink == null) {
 //		             * Open separate connection for control queries, this is needed
 //		             * to avoid problems with table locking used in main connection
 //		             * and phpMyAdmin issuing queries to configuration storage, which
 //		             * is not locked by that time.
-		            $controllink = GLOBALS.dbi.connect(
+		            $controllink = GLOBALS.getDbi().connect(
 		                DatabaseInterface.CONNECT_USER,
 		                null,
 		                DatabaseInterface.CONNECT_CONTROL
 		            );
 		        }
-		        $auth_plugin.rememberCredentials();
-		        $auth_plugin.checkTwoFactor();
+		        // $auth_plugin.rememberCredentials();
+		        // $auth_plugin.checkTwoFactor();
 		        
 		        // Log success
-		        Logging.logUser(cfg.get("Server.user"));
-		        if (GLOBALS.dbi.getVersion() < GLOABLS.cfg.get("MysqlMinVersion.internal") {
-		            Core.fatalError(
-		                __("You should upgrade to %s %s or later."),
-		                [
-		                    "MySQL",
-		                    GLOBALS.cfg["MysqlMinVersion"]["human"],
-		                ]
-		            );
-		        }
+		        // Logging.logUser(cfg.get("Server.user"));
+
 		        // Sets the default delimiter (if specified).
-		        if (! empty(request.getParameter("sql_delimiter"))) {
+		        /*if (! empty(request.getParameter("sql_delimiter"))) {
 		            Lexer.$DEFAULT_DELIMITER = request.getParameter("sql_delimiter");
 		        }*/
 		        // TODO: Set SQL modes too.

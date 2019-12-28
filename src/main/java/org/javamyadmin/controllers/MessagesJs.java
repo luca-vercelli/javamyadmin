@@ -3,10 +3,12 @@ package org.javamyadmin.controllers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Sanitize;
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MessagesJs extends AbstractController {
 
 	@RequestMapping(value = "/js/messages.php")
-	public void messages() throws ServletException, IOException {
+	public void messages() throws ServletException, IOException, SQLException, NamingException {
 
 		super.prepareResponse();
 		
