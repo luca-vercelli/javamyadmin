@@ -311,6 +311,18 @@ public class Php {
 	}
 
 	/**
+	 * True if array contains object
+	 */
+	public static boolean in_array(Object x, Object[] array) {
+		for (Object y : array) {
+			if ((x == null && y == null) || (y != null && y.equals(x))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Return true if Object represents a number
 	 * 
 	 * @param x

@@ -73,6 +73,7 @@ public class Globals {
 	
 	private String PMA_USR_BROWSER_AGENT;
 	private int PMA_USR_BROWSER_VER;
+	public boolean avoid_show_comment = false;
 
 	public static String getRootPath() {
 		return ROOT_PATH;

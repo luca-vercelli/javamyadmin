@@ -177,5 +177,19 @@ public class Table {
     public long countRecords() throws SQLException {
     	return countRecords(false);
     }
-    
+
+    /**
+     * Returns the comments for current table.
+     *
+     * @return string Return comment info if it is set for the selected table or return blank.
+     */
+    public String getComment()
+    {
+    	return ""; /* TODO
+        $table_comment = $this->getStatusInfo('TABLE_COMMENT', false, true);
+        if ($table_comment === false) {
+            return '';
+        }
+        return $table_comment;*/
+    }
 }
