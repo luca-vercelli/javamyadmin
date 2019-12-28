@@ -73,7 +73,7 @@ public class Globals {
 	
 	private String PMA_USR_BROWSER_AGENT;
 	private int PMA_USR_BROWSER_VER;
-	public boolean avoid_show_comment = false;
+	private boolean avoid_show_comment = false;
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -343,5 +343,13 @@ public class Globals {
 
 	public static String getPmaMajorVersion() {
 		return PMA_MAJOR_VERSION;
+	}
+
+	public boolean getAvoidShowComment() {
+		return avoid_show_comment;
+	}
+
+	public void setAvoidShowComment(boolean avoid_show_comment) {
+		this.avoid_show_comment = avoid_show_comment;
 	}
 }

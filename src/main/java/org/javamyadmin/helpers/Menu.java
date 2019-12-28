@@ -375,7 +375,7 @@ public class Menu {
                 // Displays table comment
                  
                 if (! empty($show_comment)
-                    && ! (GLOBALS.avoid_show_comment)
+                    && ! (GLOBALS.getAvoidShowComment())
                 ) {
                     /*if (mb_strstr($show_comment, "; InnoDB free")) {
                         $show_comment = preg_replace(
