@@ -74,6 +74,10 @@ public class Globals {
 	private String PMA_USR_BROWSER_AGENT;
 	private int PMA_USR_BROWSER_VER;
 	private boolean avoid_show_comment = false;
+	private String url_query;
+	private String err_url;
+	private Object is_grantuser;
+	private Object is_createuser;
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -351,5 +355,37 @@ public class Globals {
 
 	public void setAvoidShowComment(boolean avoid_show_comment) {
 		this.avoid_show_comment = avoid_show_comment;
+	}
+
+	public String getUrlQuery() {
+		return url_query;
+	}
+
+	public void setUrlQuery(String url_query) {
+		this.url_query = url_query;
+	}
+
+	public String getErrUrl() {
+		return err_url;
+	}
+
+	public void setErrUrl(String err_url) {
+		this.err_url = err_url;
+	}
+
+	public Object getIsGrantuser() {
+		return is_grantuser;
+	}
+
+	public void setIsGrantuser(Object is_grantuser) {
+		this.is_grantuser = is_grantuser;
+	}
+
+	public Object getIsCreateuser() {
+		return is_createuser;
+	}
+
+	public void setIsCreateuser(Object is_createuser) {
+		this.is_createuser = is_createuser;
 	}
 }

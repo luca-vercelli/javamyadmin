@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
+import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
@@ -53,7 +54,11 @@ public class HomeController extends AbstractController {
 		}
 
 		if (GLOBALS.getServer() > 0) {
-			// TODO include ROOT_PATH . "libraries/server_common.inc.php";
+			// @see libraries/server_common.inc.php
+			GLOBALS.setUrlQuery(Url.getCommon(null, request, GLOBALS));
+			GLOBALS.setErrUrl(Url.getFromRoute("/", request, GLOBALS));
+			GLOBALS.setIsGrantuser(GLOBALS.getDbi().isUserType("grant"));
+			GLOBALS.setIsCreateuser(GLOBALS.getDbi().isUserType("create"));
 		}
 
 		String $displayMessage = "";
