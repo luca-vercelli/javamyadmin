@@ -1,6 +1,7 @@
 package org.javamyadmin.helpers;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -226,8 +227,9 @@ public class Response {
      * Renders the HTML response text
      *
      * @return string
+     * @throws SQLException 
      */
-    private String _getDisplay()
+    private String _getDisplay() throws SQLException
     {
         // The header may contain nothing at all,
         // if its content was already rendered
@@ -244,8 +246,9 @@ public class Response {
      *
      * @return void
      * @throws IOException 
+     * @throws SQLException 
      */
-    private void _htmlResponse() throws IOException
+    private void _htmlResponse() throws IOException, SQLException
     {
     	response.getWriter().write(this._getDisplay());
     }
@@ -256,8 +259,9 @@ public class Response {
      *
      * @return void
      * @throws IOException 
+     * @throws SQLException 
      */
-    private void _ajaxResponse() throws IOException
+    private void _ajaxResponse() throws IOException, SQLException
     {
         /* Avoid wrapping in case we"re disabled */
     	
@@ -398,8 +402,9 @@ public class Response {
      *
      * @return void
      * @throws IOException 
+     * @throws SQLException 
      */
-    public void response() throws IOException
+    public void response() throws IOException, SQLException
     {
         /*
         TODO

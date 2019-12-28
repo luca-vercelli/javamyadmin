@@ -4,6 +4,7 @@ import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -146,8 +147,9 @@ public class Menu {
      *
      * @return void
      * @throws IOException 
+     * @throws SQLException 
      */
-    public void display(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS) throws IOException
+    public void display(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS) throws IOException, SQLException
     {
         response.getWriter().write(this.getDisplay(request, GLOBALS));
     }
@@ -156,8 +158,9 @@ public class Menu {
      * Returns the menu and the breadcrumbs as a string
      *
      * @return string
+     * @throws SQLException 
      */
-    public String getDisplay(HttpServletRequest request, Globals GLOBALS)
+    public String getDisplay(HttpServletRequest request, Globals GLOBALS) throws SQLException
     {
         String  $retval  = this._getBreadcrumbs(request, GLOBALS);
         $retval += this._getMenu();
@@ -168,8 +171,9 @@ public class Menu {
      * Returns hash for the menu and the breadcrumbs
      *
      * @return string
+     * @throws SQLException 
      */
-    public String getHash()
+    public String getHash() throws SQLException
     {
         return 
             md5(this._getMenu() + this._getBreadcrumbs(request, GLOBALS)).substring(0,8);
@@ -179,8 +183,9 @@ public class Menu {
      * Returns the menu as HTML
      *
      * @return string HTML formatted menubar
+     * @throws SQLException 
      */
-    private String _getMenu()
+    private String _getMenu() throws SQLException
     {
         Map<String, String> $url_params = new HashMap<>();
         String $level;
@@ -259,8 +264,9 @@ public class Menu {
      * Returns the breadcrumbs as HTML
      *
      * @return string HTML formatted breadcrumbs
+     * @throws SQLException 
      */
-    private String  _getBreadcrumbs(HttpServletRequest request, Globals GLOBALS)
+    private String  _getBreadcrumbs(HttpServletRequest request, Globals GLOBALS) throws SQLException
     {
         String $retval = "";
         boolean $tbl_is_view = GLOBALS.getDbi().getTable(this._db, this._table)
@@ -416,8 +422,9 @@ public class Menu {
      * Returns the table tabs as an array
      *
      * @return array Data for generating table tabs
+     * @throws SQLException 
      */
-    private Map _getTableTabs()
+    private Map _getTableTabs() throws SQLException
     {
 
         boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
@@ -550,8 +557,9 @@ public class Menu {
      * Returns the db tabs as an array
      *
      * @return array Data for generating db tabs
+     * @throws SQLException 
      */
-    private Map<String, MenuStruct> _getDbTabs()
+    private Map<String, MenuStruct> _getDbTabs() throws SQLException
     {
         boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
         int $num_tables = GLOBALS.getDbi().getTables(this._db).size();

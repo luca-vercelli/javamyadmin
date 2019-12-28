@@ -1,5 +1,6 @@
 package org.javamyadmin.helpers;
 
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -421,8 +422,9 @@ public class Header {
      * Generates the header
      *
      * @return String The header
+     * @throws SQLException 
      */
-    public String getDisplay()
+    public String getDisplay() throws SQLException
     {
         if (! this._headerIsSent) {
             String $baseDir = null;

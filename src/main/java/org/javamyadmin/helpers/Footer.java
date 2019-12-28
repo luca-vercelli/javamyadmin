@@ -1,5 +1,6 @@
 package org.javamyadmin.helpers;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -314,8 +315,9 @@ public class Footer {
      * Renders the footer
      *
      * @return String
+     * @throws SQLException 
      */
-    public String getDisplay()
+    public String getDisplay() throws SQLException
     {
     	Map<String, Object> model = new HashMap<String, Object>();
     	

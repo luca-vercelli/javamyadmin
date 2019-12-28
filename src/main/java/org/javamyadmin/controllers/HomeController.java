@@ -4,6 +4,7 @@ import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class HomeController extends AbstractController {
 	
 	@RequestMapping(value = "/Home")
 	public void index(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws ServletException, IOException, SQLException {
 		
 		super.prepareResponse();
 		
