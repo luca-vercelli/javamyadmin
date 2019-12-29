@@ -1,7 +1,9 @@
 package org.javamyadmin.php;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Hash table and linked list implementation of the Map interface, with
@@ -10,7 +12,7 @@ import java.util.Map;
  * Just a shortcut
  *
  */
-public class Array extends LinkedHashMap<Object, Object> {
+public class Array extends LinkedHashMap<Object, Object> implements Iterable<Entry<Object, Object>> {
 
 	private static final long serialVersionUID = 6442347190410894897L;
 	int lastInsert;
@@ -36,10 +38,16 @@ public class Array extends LinkedHashMap<Object, Object> {
 
 	/**
 	 * Add an element at the end, with an Integer key
+	 * 
 	 * @param value
 	 */
 	public void add(Object value) {
 		this.put(lastInsert++, value);
+	}
+
+	@Override
+	public Iterator<Entry<Object, Object>> iterator() {
+		return entrySet().iterator();
 	}
 
 }
