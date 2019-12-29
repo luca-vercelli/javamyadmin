@@ -1068,4 +1068,182 @@ public class DatabaseInterface {
         $GLOBALS["dblist"] = new DatabaseList();
         */
     }
+    
+
+    /**
+     * returns array with databases containing extended infos about them
+     *
+     * @param string   $database     database
+     * @param boolean  $force_stats  retrieve stats also for MySQL < 5
+     * @param integer  $link         link type
+     * @param string   $sort_by      column to order by
+     * @param string   $sort_order   ASC or DESC
+     * @param integer  $limit_offset starting offset for LIMIT
+     * @param bool|int $limit_count  row count for LIMIT or true
+     *                               for $GLOBALS['cfg']['MaxDbList']
+     *
+     * @return array
+     *
+     * @todo    move into ListDatabase?
+     */
+    public Array getDatabasesFull(
+        String $database /*= null*/,
+        boolean $force_stats /*= false*/,
+        int $link /*= DatabaseInterface::CONNECT_USER*/,
+        String $sort_by /*= 'SCHEMA_NAME'*/,
+        String $sort_order /*= 'ASC'*/,
+        int $limit_offset /*= 0*/,
+        Integer $limit_count /*= false*/
+    ) {
+    	if ($sort_order != null) {
+    		$sort_order = $sort_order.toUpperCase();
+    	}
+        if (true === $limit_count) {
+            $limit_count = $GLOBALS['cfg']['MaxDbList'];
+        }
+        $apply_limit_and_order_manual = true;
+        if (! $GLOBALS['cfg']['Server']['DisableIS']) {
+            /**
+             * if $GLOBALS['cfg']['NaturalOrder'] is enabled, we cannot use LIMIT
+             * cause MySQL does not support natural ordering,
+             * we have to do it afterward
+             */
+            $limit = "";
+            if (! $GLOBALS["cfg"]["NaturalOrder"]) {
+                if ($limit_count) {
+                    $limit = " LIMIT " . $limit_count . " OFFSET " . $limit_offset;
+                }
+                $apply_limit_and_order_manual = false;
+            }
+            // get table information from information_schema
+            if (! empty($database)) {
+                $sql_where_schema = "WHERE `SCHEMA_NAME` LIKE \""
+                    . $this.escapeString($database, $link) . "\"";
+            } else {
+                $sql_where_schema = "";
+            }
+            $sql  = "SELECT *,
+                    CAST(BIN_NAME AS CHAR CHARACTER SET utf8) AS SCHEMA_NAME
+                FROM (";
+            $sql .= "SELECT
+                BINARY s.SCHEMA_NAME AS BIN_NAME,
+                s.DEFAULT_COLLATION_NAME";
+            if ($force_stats) {
+                $sql .= ",
+                    COUNT(t.TABLE_SCHEMA)  AS SCHEMA_TABLES,
+                    SUM(t.TABLE_ROWS)      AS SCHEMA_TABLE_ROWS,
+                    SUM(t.DATA_LENGTH)     AS SCHEMA_DATA_LENGTH,
+                    SUM(t.MAX_DATA_LENGTH) AS SCHEMA_MAX_DATA_LENGTH,
+                    SUM(t.INDEX_LENGTH)    AS SCHEMA_INDEX_LENGTH,
+                    SUM(t.DATA_LENGTH + t.INDEX_LENGTH)
+                                           AS SCHEMA_LENGTH,
+                    SUM(IF(t.ENGINE <> \"InnoDB\", t.DATA_FREE, 0))
+                                           AS SCHEMA_DATA_FREE";
+            }
+            $sql .= "
+                   FROM `information_schema`.SCHEMATA s ";
+            if ($force_stats) {
+                $sql .= "
+                    LEFT JOIN `information_schema`.TABLES t
+                        ON BINARY t.TABLE_SCHEMA = BINARY s.SCHEMA_NAME";
+            }
+            $sql .= $sql_where_schema . "
+                    GROUP BY BINARY s.SCHEMA_NAME, s.DEFAULT_COLLATION_NAME
+                    ORDER BY ";
+            if ($sort_by == "SCHEMA_NAME"
+                || $sort_by == "DEFAULT_COLLATION_NAME"
+            ) {
+                $sql .= "BINARY ";
+            }
+            $sql .= Util.backquote($sort_by)
+                . " " . $sort_order
+                . $limit;
+            $sql .= ") a";
+            $databases = $this.fetchResult($sql, "SCHEMA_NAME", null, $link);
+            $mysql_error = $this.getError($link);
+            if (! count($databases) && $GLOBALS["errno"]) {
+                Generator.mysqlDie($mysql_error, $sql);
+            }
+            // display only databases also in official database list
+            // f.e. to apply hide_db and only_db
+            $drops = array_diff(
+                array_keys($databases),
+                (array) $GLOBALS["dblist"].databases
+            );
+            foreach ($drops as $drop) {
+                unset($databases[$drop]);
+            }
+        } else {
+            $databases = [];
+            foreach ($GLOBALS["dblist"].databases as $database_name) {
+                // Compatibility with INFORMATION_SCHEMA output
+                $databases[$database_name]["SCHEMA_NAME"]      = $database_name;
+                $databases[$database_name]["DEFAULT_COLLATION_NAME"]
+                    = $this.getDbCollation($database_name);
+                if (! $force_stats) {
+                    continue;
+                }
+                // get additional info about tables
+                $databases[$database_name]["SCHEMA_TABLES"]          = 0;
+                $databases[$database_name]["SCHEMA_TABLE_ROWS"]      = 0;
+                $databases[$database_name]["SCHEMA_DATA_LENGTH"]     = 0;
+                $databases[$database_name]["SCHEMA_MAX_DATA_LENGTH"] = 0;
+                $databases[$database_name]["SCHEMA_INDEX_LENGTH"]    = 0;
+                $databases[$database_name]["SCHEMA_LENGTH"]          = 0;
+                $databases[$database_name]["SCHEMA_DATA_FREE"]       = 0;
+                $res = $this.query(
+                    "SHOW TABLE STATUS FROM "
+                    . Util.backquote($database_name) . ";"
+                );
+                if ($res === false) {
+                    unset($res);
+                    continue;
+                }
+                while ($row = $this.fetchAssoc($res)) {
+                    $databases[$database_name]["SCHEMA_TABLES"]++;
+                    $databases[$database_name]["SCHEMA_TABLE_ROWS"]
+                        += $row["Rows"];
+                    $databases[$database_name]["SCHEMA_DATA_LENGTH"]
+                        += $row["Data_length"];
+                    $databases[$database_name]["SCHEMA_MAX_DATA_LENGTH"]
+                        += $row["Max_data_length"];
+                    $databases[$database_name]["SCHEMA_INDEX_LENGTH"]
+                        += $row["Index_length"];
+                    // for InnoDB, this does not contain the number of
+                    // overhead bytes but the total free space
+                    if ("InnoDB" != $row["Engine"]) {
+                        $databases[$database_name]["SCHEMA_DATA_FREE"]
+                            += $row["Data_free"];
+                    }
+                    $databases[$database_name]["SCHEMA_LENGTH"]
+                        += $row["Data_length"] + $row["Index_length"];
+                }
+                $this.freeResult($res);
+                unset($res);
+            }
+        }
+        /**
+         * apply limit and order manually now
+         * (caused by older MySQL < 5 or $GLOBALS["cfg"]["NaturalOrder"])
+         */
+        if ($apply_limit_and_order_manual) {
+            $GLOBALS["callback_sort_order"] = $sort_order;
+            $GLOBALS["callback_sort_by"] = $sort_by;
+            usort(
+                $databases,
+                [
+                    self.class,
+                    "_usortComparisonCallback",
+                ]
+            );
+            unset($GLOBALS["callback_sort_order"], $GLOBALS["callback_sort_by"]);
+            /**
+             * now apply limit
+             */
+            if ($limit_count) {
+                $databases = array_slice($databases, $limit_offset, $limit_count);
+            }
+        }
+        return $databases;
+    }
 }

@@ -1,6 +1,7 @@
 package org.javamyadmin.php;
 
 import java.io.File;
+import java.util.List;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
@@ -30,6 +31,7 @@ public class Globals {
 	private static boolean pma_config_loading = false;
 	private static String LOCALE_PATH = "/"; // FIXME Where is it? files *.mo should be there
 	private static File PMA_PHP_SELF = new File("???"); // TODO
+	private static List dblist;
 	
 	private Integer server = 0;
 	private String PMA_MINIMUM_COMMON = "";
@@ -387,5 +389,13 @@ public class Globals {
 
 	public void setIsCreateuser(Object is_createuser) {
 		this.is_createuser = is_createuser;
+	}
+
+	public static List getDblist() {
+		return dblist;
+	}
+
+	public static void setDblist(List dblist) {
+		Globals.dblist = dblist;
 	}
 }

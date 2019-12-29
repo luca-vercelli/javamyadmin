@@ -20,6 +20,7 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class HomeController extends AbstractController {
 	
-	@RequestMapping(value = "/Home")
+    @RequestMapping(value = "/Home")
 	public void index(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException, NamingException {
 		
