@@ -84,7 +84,7 @@ public class Config {
     public Config(String source /* may be null */)
     {
     	
-    	this.default_source = "/global.properties";
+    	this.default_source = "/config.default.properties";
     			
         this.settings.put("is_setup" , false);
 
@@ -162,6 +162,9 @@ public class Config {
      */
     public void checkClient(/*HttpServletRequest req*/)
     {
+    	// TODO Warning: this method use request
+    	// so che whole Config object become request-dependent
+    	
     	/*String HTTP_USER_AGENT;
         if (Core.getenv("HTTP_USER_AGENT")) {
             HTTP_USER_AGENT = req.getHeader("User-Agent");
@@ -261,8 +264,8 @@ public class Config {
             this.set("PMA_USR_BROWSER_VER", 0);
             this.set("PMA_USR_BROWSER_AGENT", "OTHER");
         }*/
-        this.set("PMA_USR_BROWSER_VER", 0);
-        this.set("PMA_USR_BROWSER_AGENT", "OTHER");
+    	this.set("PMA_USR_BROWSER_VER", 0);
+    	this.set("PMA_USR_BROWSER_AGENT", "OTHER");
     }
 
     /**
@@ -444,74 +447,51 @@ public class Config {
     }
 
     /**
-     * Sets the connection collation
-     *
-     * @return void
-     */
-    private void _setConnectionCollation()
-    {
-    	throw new IllegalStateException("Not implemented");/*
-        collation_connection = this.get("DefaultConnectionCollation");
-        if (! empty(collation_connection)
-            && collation_connection != GLOBALS["collation_connection"]
-        ) {
-            GLOBALS["dbi"].setCollation(collation_connection);
-        }*/
-    }
-
-    /**
      * Loads user preferences and merges them with current config
      * must be called after control connection has been established
+     * @param request 
+     * @param response 
      *
      * @return void
      */
-    public void loadUserPreferences()
+    public void loadUserPreferences(Globals GLOBALS, SessionMap _SESSION, HttpServletRequest request, HttpServletResponse response)
     {
-    	// TODO
-    	/*
-        userPreferences = new UserPreferences();
+    	UserPreferences userPreferences = new UserPreferences();
         // index.php should load these settings, so that phpmyadmin.css.php
         // will have everything available in session cache
-        server = isset(GLOBALS["server"])
-            ? GLOBALS["server"]
-            : (! empty(GLOBALS["cfg"]["ServerDefault"])
-                ? GLOBALS["cfg"]["ServerDefault"]
+        int server = !empty(GLOBALS.getServer())
+            ? GLOBALS.getServer()
+            : (! empty(Globals.getConfig().get("ServerDefault"))
+                ? new Integer((String)Globals.getConfig().get("ServerDefault"))
                 : 0);
-        cache_key = "server_" . server;
-        if (server > 0 && ! defined("PMA_MINIMUM_COMMON")) {
-            config_mtime = max(this.default_source_mtime, this.source_mtime);
+        String cache_key = "server_" + server;
+        if (server > 0 && ! GLOBALS.get_PMA_MINIMUM_COMMON()) {
             // cache user preferences, use database only when needed
-            if (! isset(_SESSION["cache"][cache_key]["userprefs"])
-                || _SESSION["cache"][cache_key]["config_mtime"] < config_mtime
+            if (empty(multiget(_SESSION, "cache", cache_key, "userprefs"))
+                /*|| _SESSION["cache"][cache_key]["config_mtime"] < config_mtime*/
             ) {
-                prefs = userPreferences.load();
-                _SESSION["cache"][cache_key]["userprefs"]
-                    = userPreferences.apply(prefs["config_data"]);
-                _SESSION["cache"][cache_key]["userprefs_mtime"] = prefs["mtime"];
-                _SESSION["cache"][cache_key]["userprefs_type"] = prefs["type"];
-                _SESSION["cache"][cache_key]["config_mtime"] = config_mtime;
+                Map prefs = userPreferences.load();
+                multiput(_SESSION, "cache", cache_key, "userprefs", userPreferences.apply((Map)prefs.get("config_data")));
+                multiput(_SESSION, "cache", cache_key, "userprefs_type", prefs.get("type"));
             }
         } else if (server == 0
-            || ! isset(_SESSION["cache"][cache_key]["userprefs"])
+            || empty(multiget(_SESSION, "cache", cache_key, "userprefs"))
         ) {
             this.set("user_preferences", false);
             return;
         }
-        config_data = _SESSION["cache"][cache_key]["userprefs"];
+        Map config_data = (Map)multiget(_SESSION, "cache", cache_key, "userprefs");
         // type is "db" or "session"
         this.set(
             "user_preferences",
-            _SESSION["cache"][cache_key]["userprefs_type"]
+            multiget(_SESSION, "cache", cache_key, "userprefs_type")
         );
-        this.set(
-            "user_preferences_mtime",
-            _SESSION["cache"][cache_key]["userprefs_mtime"]
-        );
-
+        
         // load config array
-        this.settings = array_replace_recursive(this.settings, config_data);
-        GLOBALS["cfg"] = array_replace_recursive(GLOBALS["cfg"], config_data);
-        if (defined("PMA_MINIMUM_COMMON")) {
+        array_replace_recursive(this.settings, config_data);
+        array_replace_recursive(Globals.getConfig().settings, config_data);
+        
+        if (GLOBALS.get_PMA_MINIMUM_COMMON()) {
             return;
         }
 
@@ -521,12 +501,12 @@ public class Config {
 
         // save theme
         // @var ThemeManager tmanager
-        tmanager = ThemeManager.getInstance();
-        if (tmanager.getThemeCookie() || isset(_REQUEST["set_theme"])) {
-            if ((! isset(config_data["ThemeDefault"])
-                && tmanager.theme.getId() != "original")
-                || isset(config_data["ThemeDefault"])
-                && config_data["ThemeDefault"] != tmanager.theme.getId()
+        ThemeManager tmanager = GLOBALS.getThemeManager();
+        if (!empty(tmanager.getThemeCookie(request)) || !empty(request.getParameter("set_theme"))) {
+            if ((!config_data.containsKey("ThemeDefault")
+                && !tmanager.theme.getId().equals("original"))
+                || config_data.containsKey("ThemeDefault")
+                && !config_data.get("ThemeDefault").equals(tmanager.theme.getId())
             ) {
                 // new theme was set in common.inc.php
                 this.setUserValue(
@@ -538,38 +518,36 @@ public class Config {
             }
         } else {
             // no cookie - read default from settings
-            if (this.settings["ThemeDefault"] != tmanager.theme.getId()
-                && tmanager.checkTheme(this.settings["ThemeDefault"])
+            if (!this.settings.get("ThemeDefault").equals(tmanager.theme.getId())
+                && tmanager.checkTheme((String) this.settings.get("ThemeDefault"))
             ) {
-                tmanager.setActiveTheme(this.settings["ThemeDefault"]);
-                tmanager.setThemeCookie();
+                tmanager.setActiveTheme((String) this.settings.get("ThemeDefault"));
+                tmanager.setThemeCookie(request, response);
             }
         }
 
         // save language
-        if (this.issetCookie("pma_lang") || isset(_POST["lang"])) {
-            if ((! isset(config_data["lang"])
-                && GLOBALS["lang"] != "en")
-                || isset(config_data["lang"])
-                && GLOBALS["lang"] != config_data["lang"]
+        if (this.issetCookie("pma_lang", request) || !empty(request.getParameter("lang"))) {
+            if ((! config_data.containsKey("lang")
+                && !GLOBALS.getLang().equals("en"))
+                || config_data.containsKey("lang")
+                && !GLOBALS.getLang().equals(config_data.get("lang"))
             ) {
-                this.setUserValue(null, "lang", GLOBALS["lang"], "en");
+                this.setUserValue(null, "lang", GLOBALS.getLang(), "en");
             }
         } else {
             // read language from settings
-            if (isset(config_data["lang"])) {
-                language = LanguageManager.getInstance().getLanguage(
-                    config_data["lang"]
+            if (config_data.containsKey("lang")) {
+                Language language = LanguageManager.getInstance().getLanguage(
+                    (String)config_data.get("lang"), request
                 );
-                if (language !== false) {
-                    language.activate();
-                    this.setCookie("pma_lang", language.getCode());
+                if (language != null) {
+                    language.activate(GLOBALS);
+                    this.setCookie("pma_lang", language.getCode(), request, response);
                 }
             }
         }
 
-        // set connection collation
-        this._setConnectionCollation();*/
     }
 
     /**
@@ -660,7 +638,7 @@ public class Config {
      */
     public void checkPermissions()
     {
-        // Not supported by Java ?!?
+        // FIXME Not supported by Java ?!?
     	// Check for permissions (on platforms that support it):
     	/*
     	File source = new File(this.getSource());

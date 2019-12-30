@@ -71,7 +71,7 @@ public class DatabasesController extends AbstractController {
 		boolean $is_create_db_priv = GLOBALS.getIsCreateDbPriv();
 		String $db_to_create = GLOBALS.getDbToCreate();
 		
-		Header $header = this.pmaResponse.getHeader();
+		Header $header = this.response.getHeader();
         Scripts $scripts = $header.getScripts();
         $scripts.addFile("server/databases.js");
         /* TODO include_once ROOT_PATH . "libraries/replication.inc.php";
@@ -147,7 +147,7 @@ public class DatabasesController extends AbstractController {
 	    model.put("text_dir", GLOBALS.getTextDir());
 
 		String html = JtwigFactory.render("databases/index", model);
-		pmaResponse.addHTML(html);
+		response.addHTML(html);
 	}
 
     /**
@@ -170,8 +170,8 @@ public class DatabasesController extends AbstractController {
 		
 		Array $json = new Array();
 		
-        if (empty(new_db) || ! this.pmaResponse.isAjax()) {
-        	$json.put("message", Message.error(null, request, GLOBALS));
+        if (empty(new_db) || ! this.response.isAjax()) {
+        	$json.put("message", Message.error(null, httpRequest, GLOBALS));
         	return $json;
         }
 
@@ -185,19 +185,19 @@ public class DatabasesController extends AbstractController {
         	// avoid displaying the not-created db name in header or navi panel
             GLOBALS.setDb(null);
 
-            Message $message = Message.rawError(this.getDbi().getError(), request, GLOBALS);
+            Message $message = Message.rawError(this.getDbi().getError(), httpRequest, GLOBALS);
             $json.put("message", $message);
 
-            this.pmaResponse.setRequestStatus(false);
+            this.response.setRequestStatus(false);
         } else {
             GLOBALS.setDb(new_db);
 
-            Message $message = Message.success(__("Database %1$s has been created."), request, GLOBALS);
+            Message $message = Message.success(__("Database %1$s has been created."), httpRequest, GLOBALS);
             $message.addParam(new_db);
 
             String $scriptName = Util.getScriptNameForOption(
                 (String)$cfg.get("DefaultTabDatabase"),
-                "database", request, GLOBALS
+                "database", httpRequest, GLOBALS
             );
 
             $json.put("message", $message);
@@ -205,7 +205,7 @@ public class DatabasesController extends AbstractController {
             
             Map<String, String> $queryParam = new HashMap<>();
             $queryParam.put("db", new_db);
-            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?", request, GLOBALS));
+            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?", httpRequest, GLOBALS));
             
         }
 
@@ -234,15 +234,15 @@ public class DatabasesController extends AbstractController {
 		Message $message = null;
 		
         if (empty(drop_selected_dbs)
-            || ! this.pmaResponse.isAjax()
+            || ! this.response.isAjax()
             || (! this.getDbi().isSuperuser() && "false".equals($cfg.get("AllowUserDropDatabase")))
         ) {
-            $message = Message.error(null, request, GLOBALS);
+            $message = Message.error(null, httpRequest, GLOBALS);
         } else if (empty(selected_dbs)) {
-            $message = Message.error(__("No databases selected."), request, GLOBALS);
+            $message = Message.error(__("No databases selected."), httpRequest, GLOBALS);
         } else {
             // for mult_submits.inc.php
-            String $action = Url.getFromRoute("/server/databases", request, GLOBALS);
+            String $action = Url.getFromRoute("/server/databases", httpRequest, GLOBALS);
             GLOBALS.setErrUrl($action);
 
             GLOBALS.setSubmitMult("drop_db");
@@ -257,7 +257,7 @@ public class DatabasesController extends AbstractController {
                         "%1$d database has been dropped successfully.",
                         "%1$d databases have been dropped successfully.",
                         $numberOfDatabases
-                    ), request, GLOBALS
+                    ), httpRequest, GLOBALS
                 );
                 $message.addParam($numberOfDatabases);
             }
@@ -266,7 +266,7 @@ public class DatabasesController extends AbstractController {
         Array $json = new Array();
         if ($message instanceof Message) {
             $json.put("message", $message);
-            this.pmaResponse.setRequestStatus($message.isSuccess());
+            this.response.setRequestStatus($message.isSuccess());
         }
 
         return $json;

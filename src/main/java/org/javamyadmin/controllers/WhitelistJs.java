@@ -22,15 +22,15 @@ public class WhitelistJs extends AbstractController {
 
 		super.prepareResponse();
 		
-		GLOBALS.set_PMA_MINIMUM_COMMON("true");
+		GLOBALS.set_PMA_MINIMUM_COMMON(true);
 
-		response.setHeader("Content-Type", "text/javascript; charset=UTF-8");
+		httpResponse.setHeader("Content-Type", "text/javascript; charset=UTF-8");
 		//TODO header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
 		
-		response.getWriter().write("var GotoWhitelist = [];\n");
+		httpResponse.getWriter().write("var GotoWhitelist = [];\n");
 		int $i = 0;
 		for(String $one_whitelist : Core.$goto_whitelist) {
-			response.getWriter().write("GotoWhitelist[" + $i + "] = '" + $one_whitelist + "';\n");
+			httpResponse.getWriter().write("GotoWhitelist[" + $i + "] = '" + $one_whitelist + "';\n");
 		}
 	}
 }

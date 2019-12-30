@@ -20,7 +20,6 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
-import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,29 +35,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class HomeController extends AbstractController {
 	
     @RequestMapping(value = "/Home")
-	public void index(HttpServletRequest request, HttpServletResponse response)
+	public void index()
 			throws ServletException, IOException, SQLException, NamingException {
 		
 		super.prepareResponse();
 		
-		if (pmaResponse.isAjax() && !empty(request.getParameter("access_time"))) {
+		if (response.isAjax() && !empty(httpRequest.getParameter("access_time"))) {
 			return;
 		}
 
 		// @see https://docs.phpmyadmin.net/en/latest/faq.html#faq1-34
-		if (!empty(request.getParameter("db"))) {
-			if (!empty(request.getParameter("table"))) {
-				response.sendRedirect("/sql");
+		if (!empty(httpRequest.getParameter("db"))) {
+			if (!empty(httpRequest.getParameter("table"))) {
+				httpResponse.sendRedirect("/sql");
 			} else {
-				response.sendRedirect("/database/structure?db=" + request.getParameter("db"));
+				httpResponse.sendRedirect("/database/structure?db=" + httpRequest.getParameter("db"));
 			}
 			return;
 		}
 
 		if (GLOBALS.getServer() > 0) {
 			// @see libraries/server_common.inc.php
-			GLOBALS.setUrlQuery(Url.getCommon(null, request, GLOBALS));
-			GLOBALS.setErrUrl(Url.getFromRoute("/", request, GLOBALS));
+			GLOBALS.setUrlQuery(Url.getCommon(null, httpRequest, GLOBALS));
+			GLOBALS.setErrUrl(Url.getFromRoute("/", httpRequest, GLOBALS));
 			GLOBALS.setIsGrantuser(GLOBALS.getDbi().isUserType("grant"));
 			GLOBALS.setIsCreateuser(GLOBALS.getDbi().isUserType("create"));
 		}
@@ -70,10 +69,10 @@ public class HomeController extends AbstractController {
 		}
 
 		String $partialLogout = "";
-		if (request.getSession().getAttribute("partial_logout") != null) {
+		if (httpRequest.getSession().getAttribute("partial_logout") != null) {
 			$partialLogout = Message.success(__("You were logged out from one server, to logout completely "
-					+ "from phpMyAdmin, you need to logout from all servers."), request, GLOBALS).getDisplay();
-			request.getSession().removeAttribute("partial_logout");
+					+ "from phpMyAdmin, you need to logout from all servers."), httpRequest, GLOBALS).getDisplay();
+			httpRequest.getSession().removeAttribute("partial_logout");
 		}
 
 		String $syncFavoriteTables = "";
@@ -93,7 +92,7 @@ public class HomeController extends AbstractController {
                 		&& ((Map)Globals.getConfig().get("Servers")).size() > 1
                 		|| (GLOBALS.getServer() == 0 && ((Map)Globals.getConfig().get("Servers")).size() == 1));
             if ($hasServerSelection) {
-                $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, request);
+                $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, httpRequest);
             }
 
             /* TODO
@@ -225,8 +224,8 @@ public class HomeController extends AbstractController {
 		model.put("config_storage_message", null);
 
 		String html = JtwigFactory.render("home/index", model);
-		pmaResponse.addHTML(html);
-		pmaResponse.response();
+		response.addHTML(html);
+		response.response();
 	}
 	
 	public final static class WebServer {

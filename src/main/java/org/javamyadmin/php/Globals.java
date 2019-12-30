@@ -35,7 +35,7 @@ public class Globals {
 	private ListDatabase dblist;
 	
 	private Integer server = 0;
-	private String PMA_MINIMUM_COMMON = "";
+	private boolean PMA_MINIMUM_COMMON = false;
 	private boolean IS_TRANSFORMATION_WRAPPER = false;
 	private Theme PMA_Theme;
 	private File pmaThemeFullPath;
@@ -73,6 +73,9 @@ public class Globals {
 	// FIXME what are these ?!?
 	private Object reload;
 	private Object focus_querywindow;
+	private String submit_mult;
+	private String mult_btn;
+	private List selected;
 	
 	private String PMA_USR_BROWSER_AGENT;
 	private int PMA_USR_BROWSER_VER;
@@ -84,9 +87,6 @@ public class Globals {
 	private List<String> db_to_test;
 	private boolean is_create_db_priv;
 	private String db_to_create;
-	private String submit_mult;
-	private String mult_btn;
-	private List selected;
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -168,11 +168,11 @@ public class Globals {
 		this.server = server;
 	}
 
-	public String get_PMA_MINIMUM_COMMON() {
+	public boolean get_PMA_MINIMUM_COMMON() {
 		return PMA_MINIMUM_COMMON;
 	}
 
-	public void set_PMA_MINIMUM_COMMON(String PMA_MINIMUM_COMMON) {
+	public void set_PMA_MINIMUM_COMMON(boolean PMA_MINIMUM_COMMON) {
 		this.PMA_MINIMUM_COMMON = PMA_MINIMUM_COMMON;
 	}
 

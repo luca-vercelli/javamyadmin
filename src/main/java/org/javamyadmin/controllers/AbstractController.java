@@ -37,24 +37,24 @@ public abstract class AbstractController {
 	protected Globals GLOBALS;
 	
 	@Autowired
-	protected Response pmaResponse;
+	protected Response response;
 	
 	@Autowired
 	protected SessionMap $_SESSION;
 	
 	@Autowired
-	protected HttpServletRequest request;
+	protected HttpServletRequest httpRequest;
 	
 	@Autowired
-	protected HttpServletResponse response;
+	protected HttpServletResponse httpResponse;
 	
 	/**
 	 * Prepare global variables.
 	 * 
 	 * This could be an Interceptor. 
 	 * 
-	 * @param request
-	 * @param response
+	 * @param httpRequest
+	 * @param httpResponse
 	 * @throws ServletException
 	 * @throws IOException
 	 * @throws NamingException 
@@ -64,7 +64,7 @@ public abstract class AbstractController {
 		
 		if (Globals.getRootPath() == null) {
 			// this is executed only at first run
-			ServletContext servletContext = request.getServletContext();
+			ServletContext servletContext = httpRequest.getServletContext();
 			Globals.setRootPath(servletContext.getRealPath("/WEB-INF/.."));
 			Globals.setThemesPath(servletContext.getRealPath("/themes/"));
 			Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
@@ -81,14 +81,14 @@ public abstract class AbstractController {
 		}
 		
 		boolean $token_provided = false, $token_mismatch = false;
-		if (request.getMethod().equals("POST")) {
-		    if (Core.isValid(request.getParameter("token"))) {
+		if (httpRequest.getMethod().equals("POST")) {
+		    if (Core.isValid(httpRequest.getParameter("token"))) {
 		        $token_provided = true;
-		        $token_mismatch = ! request.getParameter("token").equals(request.getSession().getAttribute("PMA_token"));
+		        $token_mismatch = ! httpRequest.getParameter("token").equals(httpRequest.getSession().getAttribute("PMA_token"));
 		    }
 		    if ($token_mismatch) {
 		        /* Warn in case the mismatch is result of failed setting of session cookie */
-		        if (request.getParameter("set_session") != null &&  !request.getParameter("set_session").equals(request.getSession().getId())) {
+		        if (httpRequest.getParameter("set_session") != null &&  !httpRequest.getParameter("set_session").equals(httpRequest.getSession().getId())) {
 		            trigger_error(
 		                __(
 		                    "Failed to set session cookie. Maybe you are using "
@@ -146,7 +146,7 @@ public abstract class AbstractController {
 		/*
 		 * lang detection is done here
 		 */
-		Language $language = LanguageManager.getInstance().selectLanguage(request, response);
+		Language $language = LanguageManager.getInstance().selectLanguage(httpRequest, httpResponse);
 		$language.activate(GLOBALS);
 		
 		/*
@@ -154,19 +154,19 @@ public abstract class AbstractController {
 		 * this check is done here after loading language files to present errors in locale
 		 */
 		Globals.getConfig().checkPermissions();
-		Globals.getConfig().checkErrors(request, response, GLOBALS, pmaResponse);
+		Globals.getConfig().checkErrors(httpRequest, httpResponse, GLOBALS, response);
 		
 		/* setup themes                                          LABEL_theme_setup    */
 
-		ThemeManager.initializeTheme(request, GLOBALS, $_SESSION);
+		ThemeManager.initializeTheme(httpRequest, GLOBALS, $_SESSION);
 		
 		if (empty(GLOBALS.get_PMA_MINIMUM_COMMON())) {
 		    /**
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
-		    Globals.getConfig().setCookie("pma_lang", GLOBALS.getLang(), request, response);
-		    GLOBALS.getThemeManager().setThemeCookie(request, response);
+		    Globals.getConfig().setCookie("pma_lang", GLOBALS.getLang(), httpRequest, httpResponse);
+		    GLOBALS.getThemeManager().setThemeCookie(httpRequest, httpResponse);
 		    if (! empty(Globals.getConfig().get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
@@ -180,10 +180,10 @@ public abstract class AbstractController {
 		        // PhpMyAdmin\Config.loadUserPreferences()
 		        
 		    	String $cache_key = "server_" + GLOBALS.getServer();
-		        if (!empty(request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity"))
+		        if (!empty(httpRequest.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity"))
 		        ) {
 		            String $value
-		                = (String) request.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
+		                = (String) httpRequest.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
 		            Globals.getConfig().set("LoginCookieValidity", $value);
 		        }
 		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
@@ -244,27 +244,27 @@ public abstract class AbstractController {
 		        }*/
 		        // TODO: Set SQL modes too.
 		    } else { // end server connecting
-		        pmaResponse.getHeader().disableMenuAndConsole();
-		        pmaResponse.getFooter().setMinimal();
+		        response.getHeader().disableMenuAndConsole();
+		        response.getFooter().setMinimal();
 		    }
 		    /**
 		     * check if profiling was requested and remember it
 		     * (note: when GLOBALS.cfg["ServerDefault"] = 0, constant is not defined)
 		     */
-		    if (! empty(request.getParameter("profiling"))
+		    if (! empty(httpRequest.getParameter("profiling"))
 		        && Util.profilingSupported(GLOBALS, $_SESSION)
 		    ) {
-		    	request.getSession().setAttribute("profiling", true);
-		    } else if (! empty(request.getParameter("profiling_form"))) {
+		    	httpRequest.getSession().setAttribute("profiling", true);
+		    } else if (! empty(httpRequest.getParameter("profiling_form"))) {
 		        // the checkbox was unchecked
-		    	request.getSession().removeAttribute("profiling");
+		    	httpRequest.getSession().removeAttribute("profiling");
 		    }
 		    /**
 		     * Inclusion of profiling scripts is needed on various
 		     * pages like sql, tbl_sql, db_sql, tbl_select
 		     */
-		    if (! empty (request.getSession().getAttribute("profiling"))) {
-		        Scripts $scripts  = pmaResponse.getHeader().getScripts();
+		    if (! empty (httpRequest.getSession().getAttribute("profiling"))) {
+		        Scripts $scripts  = response.getHeader().getScripts();
 		        $scripts.addFile("chart.js");
 		        $scripts.addFile("vendor/jqplot/jquery.jqplot.js");
 		        $scripts.addFile("vendor/jqplot/plugins/jqplot.pieRenderer.js");
@@ -275,18 +275,18 @@ public abstract class AbstractController {
 		     * There is no point in even attempting to process
 		     * an ajax request if there is a token mismatch
 		     */
-		    if (pmaResponse.isAjax() && request.getMethod().equals("POST") && $token_mismatch) {
-		    	pmaResponse.setRequestStatus(false);
-		    	pmaResponse.addJSON(
+		    if (response.isAjax() && httpRequest.getMethod().equals("POST") && $token_mismatch) {
+		    	response.setRequestStatus(false);
+		    	response.addJSON(
 		            "message",
-		            Message.error(__("Error: Token mismatch"), request, GLOBALS)
+		            Message.error(__("Error: Token mismatch"), httpRequest, GLOBALS)
 		        );
 		        //exit();	// FIXME
 		    }
 		    //$containerBuilder.set("response", Response.getInstance());
 		}
 		// load user preferences
-		Globals.getConfig().loadUserPreferences();
+		Globals.getConfig().loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse);
 
 		/*if (empty(GLOBALS.PMA_MINIMUM_COMMON)) {
 			pmaResponse.response();
