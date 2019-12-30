@@ -386,13 +386,17 @@ public class Message {
      *
      * @return boolean whether this is a success message or not
      */
-    public boolean isSuccess(boolean set )
+    public boolean isSuccess(boolean set /* = false*/)
     {
         if (set) {
             this.setNumber(SUCCESS);
         }
 
         return this.getNumber() == SUCCESS;
+    }
+    
+    public boolean isSuccess() {
+    	return isSuccess(false);
     }
 
     /**

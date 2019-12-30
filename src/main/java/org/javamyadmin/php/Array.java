@@ -45,6 +45,9 @@ public class Array extends LinkedHashMap<Object, Object> implements Iterable<Ent
 		this.put(lastInsert++, value);
 	}
 
+	/**
+	 * Iterate over entries in iteration order
+	 */
 	@Override
 	public Iterator<Entry<Object, Object>> iterator() {
 		return entrySet().iterator();

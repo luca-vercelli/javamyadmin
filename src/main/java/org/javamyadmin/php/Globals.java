@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
+import org.javamyadmin.helpers.ListDatabase;
 import org.javamyadmin.helpers.Theme;
 import org.javamyadmin.helpers.ThemeManager;
 
@@ -31,7 +32,7 @@ public class Globals {
 	private static boolean pma_config_loading = false;
 	private static String LOCALE_PATH = "/"; // FIXME Where is it? files *.mo should be there
 	private static File PMA_PHP_SELF = new File("???"); // TODO
-	private static List dblist;
+	private ListDatabase dblist;
 	
 	private Integer server = 0;
 	private String PMA_MINIMUM_COMMON = "";
@@ -80,6 +81,12 @@ public class Globals {
 	private String err_url;
 	private Object is_grantuser;
 	private Object is_createuser;
+	private List<String> db_to_test;
+	private boolean is_create_db_priv;
+	private String db_to_create;
+	private String submit_mult;
+	private String mult_btn;
+	private List selected;
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -391,11 +398,59 @@ public class Globals {
 		this.is_createuser = is_createuser;
 	}
 
-	public static List getDblist() {
+	public ListDatabase getDblist() {
 		return dblist;
 	}
 
-	public static void setDblist(List dblist) {
-		Globals.dblist = dblist;
+	public void setDblist(ListDatabase dblist) {
+		this.dblist = dblist;
+	}
+
+	public List<String> getDbToTest() {
+		return db_to_test;
+	}
+
+	public void setDbToTest(List<String> db_to_test) {
+		this.db_to_test = db_to_test;
+	}
+
+	public boolean getIsCreateDbPriv() {
+		return is_create_db_priv;
+	}
+
+	public void setIsCreateDbPriv(boolean is_create_db_priv) {
+		this.is_create_db_priv = is_create_db_priv;
+	}
+
+	public String getDbToCreate() {
+		return db_to_create;
+	}
+
+	public void setDbToCreate(String db_to_create) {
+		this.db_to_create = db_to_create;
+	}
+
+	public String getSubmit_mult() {
+		return submit_mult;
+	}
+
+	public void setSubmitMult(String submit_mult) {
+		this.submit_mult = submit_mult;
+	}
+
+	public String getMult_btn() {
+		return mult_btn;
+	}
+
+	public void setMultBtn(String mult_btn) {
+		this.mult_btn = mult_btn;
+	}
+
+	public List getSelected() {
+		return selected;
+	}
+
+	public void setSelected(List selected) {
+		this.selected = selected;
 	}
 }

@@ -63,6 +63,17 @@ public class DatabaseInterface {
     public Map<Integer, Connection> _links = new HashMap<>();
     
     /**
+     * Last error for given conenction
+     */
+    public Map<Integer, String> _errMessages = new HashMap<>();
+    
+    private Globals GLOBALS;
+    
+    public DatabaseInterface(Globals GLOBALS) {
+    	this.GLOBALS = GLOBALS;
+    }
+    
+    /**
      * runs a query
      *
      * @param string $query               SQL query to execute
@@ -71,18 +82,18 @@ public class DatabaseInterface {
      * @param bool   $cache_affected_rows whether to cache affected rows
      *
      * @return mixed
+     * @throws SQLException 
      */
-    public Object query(
+    public ResultSet query(
         String $query,
         int $link /*= DatabaseInterface.CONNECT_USER*/,
         int $options /*= 0*/,
         boolean $cache_affected_rows /*= true*/
-    ) {
-    	/* TODO
-        $res = $this->tryQuery($query, $link, $options, $cache_affected_rows)
-           or Generator::mysqlDie($this->getError($link), $query);
-        return $res;*/
-    	return null;
+    ) throws SQLException {
+    	
+        ResultSet $res = this.tryQuery($query, $link, $options, $cache_affected_rows);
+           /* TODO or Generator::mysqlDie($this->getError($link), $query); */
+        return $res;
     }
     
     /**
@@ -101,7 +112,8 @@ public class DatabaseInterface {
         int $link /*= DatabaseInterface::CONNECT_USER*/,
         int $options /*= 0*/,
         boolean $cache_affected_rows /*= true*/
-    ) throws SQLException {
+    ) {
+    	
     	boolean $debug = "true".equals(((Map) Globals.getConfig().get("DBG")).get("sql"));
         if (! _links.containsKey($link)) {
             return null;
@@ -111,7 +123,12 @@ public class DatabaseInterface {
             $time = new Date().getTime();
         }
         // FIXME $options currently ignored
-        ResultSet $result = _links.get($link).createStatement().executeQuery($query);
+        ResultSet $result = null;
+        try {
+        	$result = _links.get($link).createStatement().executeQuery($query);
+        } catch(SQLException exc) {
+        	this._errMessages.put($link, exc.getMessage());
+        }
         
         /* TODO if ($cache_affected_rows) {
             $GLOBALS["cached_affected_rows"] = $this.affectedRows($link, false);
@@ -126,15 +143,15 @@ public class DatabaseInterface {
         return $result;
     }
     
-    public ResultSet tryQuery(String $query) throws SQLException {
+    public ResultSet tryQuery(String $query) {
     	return tryQuery($query, DatabaseInterface.CONNECT_USER, 0, true);
     }
     
-    public ResultSet tryQuery(String $query, int $link) throws SQLException {
+    public ResultSet tryQuery(String $query, int $link) {
     	return tryQuery($query, $link, 0, true);
     }
     
-    public ResultSet tryQuery(String $query, int $link, int $options) throws SQLException {
+    public ResultSet tryQuery(String $query, int $link, int $options) {
     	return tryQuery($query, $link, $options, true);
     }
     
@@ -210,9 +227,9 @@ public class DatabaseInterface {
      *
      * @return array           array of found foreign keys
      */
-    public List<Object> getForeignKeyConstrains(String $database, List $tables, int $link /*= DatabaseInterface::CONNECT_USER*/)
+    public Array getForeignKeyConstrains(String $database, List $tables, int $link /*= DatabaseInterface::CONNECT_USER*/)
     {
-		return $tables;
+		return null;
     	/* TODO
         $tablesListForQuery = '';
         foreach ($tables as $table) {
@@ -303,6 +320,10 @@ public class DatabaseInterface {
         			$limit_count, $sort_by, $sort_order, $table_type, $link);
         }
 
+    public Array getTablesFull(String $database) throws SQLException {
+    	return getTablesFull(null, $database, null, false, 0, null, "Name", "ASC", null, CONNECT_USER);
+    }
+    
 	public boolean isSystemSchema(String _db) {
 		// TODO Auto-generated method stub
 		return false;
@@ -455,7 +476,6 @@ public class DatabaseInterface {
             while (($row = this.fetchAssoc($result)) != null) {
                 $resultrows.add(_fetchValue($row, $value));
             }
-            return $resultrows;
         } else {
             if ($key instanceof Object[]) {
             	Array $row;
@@ -480,8 +500,8 @@ public class DatabaseInterface {
                     $resultrows.put($row.get($key), _fetchValue($row, $value));
                 }
             }
-            return $resultrows;
         }
+        return $resultrows;
     }
 
 	public Array fetchResult(ResultSet $result) throws SQLException {
@@ -987,8 +1007,9 @@ public class DatabaseInterface {
      * version of MySQL which is running.
      *
      * @return void
+     * @throws SQLException 
      */
-    public void postConnect()
+    public void postConnect() throws SQLException
     {
     	/*
         $version = this.fetchSingleRow(
@@ -1063,10 +1084,10 @@ public class DatabaseInterface {
         Context.loadClosest(
             (this._is_mariadb ? "MariaDb" : "MySql") . this._version_int
         );
-
-        // the DatabaseList class as a stub for the ListDatabase class
-        $GLOBALS["dblist"] = new DatabaseList();
-        */
+		*/
+    	
+        
+    	GLOBALS.setDblist(new ListDatabase(GLOBALS));
     }
     
 
@@ -1079,14 +1100,16 @@ public class DatabaseInterface {
      * @param string   $sort_by      column to order by
      * @param string   $sort_order   ASC or DESC
      * @param integer  $limit_offset starting offset for LIMIT
-     * @param bool|int $limit_count  row count for LIMIT or true
+     * @param bool|int $limit_count  row count for LIMIT or null
      *                               for $GLOBALS['cfg']['MaxDbList']
      *
      * @return array
+     * @throws SQLException 
      *
      * @todo    move into ListDatabase?
      */
     public Array getDatabasesFull(
+    	String $catalogName /*= null*/,
         String $database /*= null*/,
         boolean $force_stats /*= false*/,
         int $link /*= DatabaseInterface::CONNECT_USER*/,
@@ -1094,156 +1117,68 @@ public class DatabaseInterface {
         String $sort_order /*= 'ASC'*/,
         int $limit_offset /*= 0*/,
         Integer $limit_count /*= false*/
-    ) {
+    ) throws SQLException {
+    	
     	if ($sort_order != null) {
     		$sort_order = $sort_order.toUpperCase();
     	}
-        if (true === $limit_count) {
-            $limit_count = $GLOBALS['cfg']['MaxDbList'];
+        if ($limit_count == null) {
+            $limit_count = new Integer((String)Globals.getConfig().get("MaxDbList"));
         }
-        $apply_limit_and_order_manual = true;
-        if (! $GLOBALS['cfg']['Server']['DisableIS']) {
-            /**
-             * if $GLOBALS['cfg']['NaturalOrder'] is enabled, we cannot use LIMIT
-             * cause MySQL does not support natural ordering,
-             * we have to do it afterward
-             */
-            $limit = "";
-            if (! $GLOBALS["cfg"]["NaturalOrder"]) {
-                if ($limit_count) {
-                    $limit = " LIMIT " . $limit_count . " OFFSET " . $limit_offset;
-                }
-                $apply_limit_and_order_manual = false;
-            }
-            // get table information from information_schema
-            if (! empty($database)) {
-                $sql_where_schema = "WHERE `SCHEMA_NAME` LIKE \""
-                    . $this.escapeString($database, $link) . "\"";
-            } else {
-                $sql_where_schema = "";
-            }
-            $sql  = "SELECT *,
-                    CAST(BIN_NAME AS CHAR CHARACTER SET utf8) AS SCHEMA_NAME
-                FROM (";
-            $sql .= "SELECT
-                BINARY s.SCHEMA_NAME AS BIN_NAME,
-                s.DEFAULT_COLLATION_NAME";
-            if ($force_stats) {
-                $sql .= ",
-                    COUNT(t.TABLE_SCHEMA)  AS SCHEMA_TABLES,
-                    SUM(t.TABLE_ROWS)      AS SCHEMA_TABLE_ROWS,
-                    SUM(t.DATA_LENGTH)     AS SCHEMA_DATA_LENGTH,
-                    SUM(t.MAX_DATA_LENGTH) AS SCHEMA_MAX_DATA_LENGTH,
-                    SUM(t.INDEX_LENGTH)    AS SCHEMA_INDEX_LENGTH,
-                    SUM(t.DATA_LENGTH + t.INDEX_LENGTH)
-                                           AS SCHEMA_LENGTH,
-                    SUM(IF(t.ENGINE <> \"InnoDB\", t.DATA_FREE, 0))
-                                           AS SCHEMA_DATA_FREE";
-            }
-            $sql .= "
-                   FROM `information_schema`.SCHEMATA s ";
-            if ($force_stats) {
-                $sql .= "
-                    LEFT JOIN `information_schema`.TABLES t
-                        ON BINARY t.TABLE_SCHEMA = BINARY s.SCHEMA_NAME";
-            }
-            $sql .= $sql_where_schema . "
-                    GROUP BY BINARY s.SCHEMA_NAME, s.DEFAULT_COLLATION_NAME
-                    ORDER BY ";
-            if ($sort_by == "SCHEMA_NAME"
-                || $sort_by == "DEFAULT_COLLATION_NAME"
-            ) {
-                $sql .= "BINARY ";
-            }
-            $sql .= Util.backquote($sort_by)
-                . " " . $sort_order
-                . $limit;
-            $sql .= ") a";
-            $databases = $this.fetchResult($sql, "SCHEMA_NAME", null, $link);
-            $mysql_error = $this.getError($link);
-            if (! count($databases) && $GLOBALS["errno"]) {
-                Generator.mysqlDie($mysql_error, $sql);
-            }
-            // display only databases also in official database list
-            // f.e. to apply hide_db and only_db
-            $drops = array_diff(
-                array_keys($databases),
-                (array) $GLOBALS["dblist"].databases
-            );
-            foreach ($drops as $drop) {
-                unset($databases[$drop]);
-            }
-        } else {
-            $databases = [];
-            foreach ($GLOBALS["dblist"].databases as $database_name) {
-                // Compatibility with INFORMATION_SCHEMA output
-                $databases[$database_name]["SCHEMA_NAME"]      = $database_name;
-                $databases[$database_name]["DEFAULT_COLLATION_NAME"]
-                    = $this.getDbCollation($database_name);
-                if (! $force_stats) {
-                    continue;
-                }
-                // get additional info about tables
-                $databases[$database_name]["SCHEMA_TABLES"]          = 0;
-                $databases[$database_name]["SCHEMA_TABLE_ROWS"]      = 0;
-                $databases[$database_name]["SCHEMA_DATA_LENGTH"]     = 0;
-                $databases[$database_name]["SCHEMA_MAX_DATA_LENGTH"] = 0;
-                $databases[$database_name]["SCHEMA_INDEX_LENGTH"]    = 0;
-                $databases[$database_name]["SCHEMA_LENGTH"]          = 0;
-                $databases[$database_name]["SCHEMA_DATA_FREE"]       = 0;
-                $res = $this.query(
-                    "SHOW TABLE STATUS FROM "
-                    . Util.backquote($database_name) . ";"
-                );
-                if ($res === false) {
-                    unset($res);
-                    continue;
-                }
-                while ($row = $this.fetchAssoc($res)) {
-                    $databases[$database_name]["SCHEMA_TABLES"]++;
-                    $databases[$database_name]["SCHEMA_TABLE_ROWS"]
-                        += $row["Rows"];
-                    $databases[$database_name]["SCHEMA_DATA_LENGTH"]
-                        += $row["Data_length"];
-                    $databases[$database_name]["SCHEMA_MAX_DATA_LENGTH"]
-                        += $row["Max_data_length"];
-                    $databases[$database_name]["SCHEMA_INDEX_LENGTH"]
-                        += $row["Index_length"];
-                    // for InnoDB, this does not contain the number of
-                    // overhead bytes but the total free space
-                    if ("InnoDB" != $row["Engine"]) {
-                        $databases[$database_name]["SCHEMA_DATA_FREE"]
-                            += $row["Data_free"];
-                    }
-                    $databases[$database_name]["SCHEMA_LENGTH"]
-                        += $row["Data_length"] + $row["Index_length"];
-                }
-                $this.freeResult($res);
-                unset($res);
-            }
+        
+        // Warning: $GLOBALS['cfg']['Server']['DisableIS'] is not supported
+        
+        Array $databases = new Array();
+        
+        Connection connection = this._links.get($link);
+        
+        ResultSet rs = connection.getMetaData()
+        	.getTables($catalogName, $database, null, new String[] {"TABLE"});
+
+        // Only from $GLOBALS["dblist"].databases
+        for (String $database_name : GLOBALS.getDblist().getDatabases()) {
+            	
+            	Array $dbarr = new Array();
+            	$databases.put($database_name, $dbarr);
+            	$dbarr.put("SCHEMA_NAME", $database_name);
+            	$dbarr.put("SCHEMA_TABLES", $database_name);
         }
-        /**
-         * apply limit and order manually now
-         * (caused by older MySQL < 5 or $GLOBALS["cfg"]["NaturalOrder"])
-         */
-        if ($apply_limit_and_order_manual) {
-            $GLOBALS["callback_sort_order"] = $sort_order;
-            $GLOBALS["callback_sort_by"] = $sort_by;
-            usort(
-                $databases,
-                [
-                    self.class,
-                    "_usortComparisonCallback",
-                ]
-            );
-            unset($GLOBALS["callback_sort_order"], $GLOBALS["callback_sort_by"]);
-            /**
-             * now apply limit
-             */
-            if ($limit_count) {
-                $databases = array_slice($databases, $limit_offset, $limit_count);
-            }
-        }
+
         return $databases;
+    }
+    
+    public Array getDatabasesFull(
+            String $database /*= null*/,
+            boolean $force_stats /*= false*/,
+            int $link /*= DatabaseInterface::CONNECT_USER*/,
+            String $sort_by /*= 'SCHEMA_NAME'*/,
+            String $sort_order /*= 'ASC'*/,
+            int $limit_offset /*= 0*/,
+            Integer $limit_count /*= false*/
+        ) throws SQLException {
+    	return getDatabasesFull(null, $database, $force_stats, $link, $sort_by, $sort_order, $limit_offset, $limit_count);
+    }
+    
+    public Array getDatabasesFull() throws SQLException {
+    	return getDatabasesFull(null, false, CONNECT_USER, "SCHEMA_NAME", "ASC", 0, null);
+    }
+
+    /**
+     * returns last error message or false if no errors occurred
+     *
+     * @param integer $link link type
+     *
+     * @return string|bool error or false
+     */
+    public String getError(Integer $link /*= DatabaseInterface::CONNECT_USER*/)
+    {
+        if (!_errMessages.containsKey($link)) {
+            return null;
+        }
+        return _errMessages.get($link);
+    }
+    
+    public String getError() {
+    	return getError(CONNECT_USER);
     }
 }

@@ -3,9 +3,12 @@ package org.javamyadmin.controllers.server;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -13,17 +16,23 @@ import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.controllers.AbstractController;
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Header;
+import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
+import org.javamyadmin.helpers.Url;
+import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequestMapping(value = "/databases")
 public class DatabasesController extends AbstractController {
 
     /**
@@ -51,22 +60,26 @@ public class DatabasesController extends AbstractController {
      */
     private int position;
     
-	@RequestMapping(value = "/databases")
-	public void index() throws ServletException, IOException, SQLException, NamingException {
+	@RequestMapping(value = "/")
+	public void index(@RequestParam String sort_by, @RequestParam String sort_order, @RequestParam String statistics, @RequestParam(defaultValue="0") Integer pos) throws ServletException, IOException, SQLException, NamingException {
 
 		super.prepareResponse();
         //global $cfg, $server, $dblist, $is_create_db_priv;
         //global $replication_info, $db_to_create, $pmaThemeImage, $text_dir;
         
+		Config $cfg = Globals.getConfig();
+		boolean $is_create_db_priv = GLOBALS.getIsCreateDbPriv();
+		String $db_to_create = GLOBALS.getDbToCreate();
+		
 		Header $header = this.pmaResponse.getHeader();
         Scripts $scripts = $header.getScripts();
         $scripts.addFile("server/databases.js");
         /* TODO include_once ROOT_PATH . "libraries/replication.inc.php";
         include_once ROOT_PATH . "libraries/server_common.inc.php";
         */
-        this.setSortDetails($params.get("sort_by"), $params.get("sort_order"));
-        this.hasStatistics = ! empty($params.get("statistics"));
-        this.position = ! empty($params.get("pos")) ? new Integer($params.get("pos")) : 0;
+        this.setSortDetails(sort_by, sort_order);
+        this.hasStatistics = ! empty(statistics);
+        this.position = pos;
         /**
          * Gets the databases list
          */
@@ -78,9 +91,9 @@ public class DatabasesController extends AbstractController {
                 this.sortBy,
                 this.sortOrder,
                 this.position,
-                true
+                null
             );
-            this.databaseCount = Globals.getDblist().databases.size();
+            this.databaseCount = GLOBALS.getDblist().size();
         }
         Array $urlParams = new Array();
         $urlParams.put("statistics", this.hasStatistics);
@@ -88,15 +101,16 @@ public class DatabasesController extends AbstractController {
         $urlParams.put("sort_by", this.sortBy);
         $urlParams.put("sort_order", this.sortOrder);
         Array $databases = this.getDatabases(/*$replication_types ?? []*/);
+        List<String> $charsetsList = new ArrayList<>();
         //$charsetsList = [];
-        if ($cfg["ShowCreateDb"] && $is_create_db_priv) {
+        /*if ($cfg.get("ShowCreateDb") && $is_create_db_priv) {
             $charsets = Charsets.getCharsets(this.dbi, $cfg["Server"]["DisableIS"]);
             $collations = Charsets.getCollations(this.dbi, $cfg["Server"]["DisableIS"]);
             $serverCollation = this.dbi.getServerCollation();
-            /** @var Charset $charset */
+            // @var Charset $charset
             foreach ($charsets as $charset) {
                 $collationsList = [];
-                /** @var Collation $collation */
+                // @var Collation $collation
                 foreach ($collations[$charset.getName()] as $collation) {
                     $collationsList[] = [
                         "name" => $collation.getName(),
@@ -110,30 +124,172 @@ public class DatabasesController extends AbstractController {
                     "collations" => $collationsList,
                 ];
             }
-        }
-        $headerStatistics = this.getStatisticsColumns();		
+        }*/
+        String $headerStatistics = ""; //this.getStatisticsColumns();
+        
 		Map<String, Object> model = new HashMap<>();
-	    model.put("is_create_database_shown", $cfg["ShowCreateDb"]);
+	    model.put("is_create_database_shown", $cfg.get("ShowCreateDb"));
 	    model.put("has_create_database_privileges", $is_create_db_priv);
 	    model.put("has_statistics", this.hasStatistics);
 	    model.put("database_to_create", $db_to_create);
-	    model.put("databases", $databases["databases"]);
-	    model.put("total_statistics", $databases["total_statistics"]);
+	    model.put("databases", $databases.get("databases"));
+	    model.put("total_statistics", $databases.get("total_statistics"));
 	    model.put("header_statistics", $headerStatistics);
 	    model.put("charsets", $charsetsList);
 	    model.put("database_count", this.databaseCount);
 	    model.put("pos", this.position);
 	    model.put("url_params", $urlParams);
-	    model.put("max_db_list", $cfg["MaxDbList"]);
-	    model.put("has_master_replication", $replication_info["master"]["status"]);
-	    model.put("has_slave_replication", $replication_info["slave"]["status"]);
-	    model.put("is_drop_allowed", this.dbi.isSuperuser() || $cfg["AllowUserDropDatabase"]);
-	    model.put("pma_theme_image", $pmaThemeImage);
-	    model.put("text_dir", $text_dir);
+	    model.put("max_db_list", $cfg.get("MaxDbList"));
+	    //model.put("has_master_replication", $replication_info["master"]["status"]);
+	    //model.put("has_slave_replication", $replication_info["slave"]["status"]);
+	    model.put("is_drop_allowed", this.getDbi().isSuperuser() || "true".equals($cfg.get("AllowUserDropDatabase")));
+	    model.put("pma_theme_image", GLOBALS.getPmaThemeImage());
+	    model.put("text_dir", GLOBALS.getTextDir());
 
 		String html = JtwigFactory.render("databases/index", model);
 		pmaResponse.addHTML(html);
 	}
+
+    /**
+     * Handles creating a new database
+     *
+     * @param array $params Request parameters
+     *
+     * @return array JSON
+     * @throws NamingException 
+     * @throws SQLException 
+     * @throws IOException 
+     * @throws ServletException 
+     */
+	@RequestMapping(value = "/create")
+    public Array create(@RequestParam String new_db) throws ServletException, IOException, SQLException, NamingException
+    {
+    	super.prepareResponse();
+    	
+		Config $cfg = Globals.getConfig();
+		
+		Array $json = new Array();
+		
+        if (empty(new_db) || ! this.pmaResponse.isAjax()) {
+        	$json.put("message", Message.error(null, request, GLOBALS));
+        	return $json;
+        }
+
+        /**
+         * Builds and executes the db creation sql query
+         */
+        String $sqlQuery = "CREATE DATABASE " + Util.backquote(new_db);
+        ResultSet $result = this.getDbi().tryQuery($sqlQuery);
+
+        if ($result == null) {
+        	// avoid displaying the not-created db name in header or navi panel
+            GLOBALS.setDb(null);
+
+            Message $message = Message.rawError(this.getDbi().getError(), request, GLOBALS);
+            $json.put("message", $message);
+
+            this.pmaResponse.setRequestStatus(false);
+        } else {
+            GLOBALS.setDb(new_db);
+
+            Message $message = Message.success(__("Database %1$s has been created."), request, GLOBALS);
+            $message.addParam(new_db);
+
+            String $scriptName = Util.getScriptNameForOption(
+                (String)$cfg.get("DefaultTabDatabase"),
+                "database", request, GLOBALS
+            );
+
+            $json.put("message", $message);
+            $json.put("sql_query", Util.getMessage(null, $sqlQuery, "success"));
+            
+            Map<String, String> $queryParam = new HashMap<>();
+            $queryParam.put("db", new_db);
+            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?", request, GLOBALS));
+            
+        }
+
+        return $json;
+    }
+
+    /**
+     * Handles dropping multiple databases
+     *
+     * @param array $params Request parameters
+     *
+     * @return array JSON
+     * @throws NamingException 
+     * @throws SQLException 
+     * @throws IOException 
+     * @throws ServletException 
+     */
+	@RequestMapping(value = "/destroy")
+    public Array destroy(@RequestParam String drop_selected_dbs, @RequestParam String selected_dbs) throws ServletException, IOException, SQLException, NamingException
+    {
+    	super.prepareResponse();
+
+		Config $cfg = Globals.getConfig();
+		
+        // global $submit_mult, $mult_btn, $selected, $err_url, $cfg;
+		Message $message = null;
+		
+        if (empty(drop_selected_dbs)
+            || ! this.pmaResponse.isAjax()
+            || (! this.getDbi().isSuperuser() && "false".equals($cfg.get("AllowUserDropDatabase")))
+        ) {
+            $message = Message.error(null, request, GLOBALS);
+        } else if (empty(selected_dbs)) {
+            $message = Message.error(__("No databases selected."), request, GLOBALS);
+        } else {
+            // for mult_submits.inc.php
+            String $action = Url.getFromRoute("/server/databases", request, GLOBALS);
+            GLOBALS.setErrUrl($action);
+
+            GLOBALS.setSubmitMult("drop_db");
+            GLOBALS.setMultBtn(__("Yes"));
+
+            //TODO include ROOT_PATH . "libraries/mult_submits.inc.php";
+
+            if (empty($message)) { // no error message
+                int $numberOfDatabases = GLOBALS.getSelected().size();
+                $message = Message.success(
+                    _ngettext(
+                        "%1$d database has been dropped successfully.",
+                        "%1$d databases have been dropped successfully.",
+                        $numberOfDatabases
+                    ), request, GLOBALS
+                );
+                $message.addParam($numberOfDatabases);
+            }
+        }
+
+        Array $json = new Array();
+        if ($message instanceof Message) {
+            $json.put("message", $message);
+            this.pmaResponse.setRequestStatus($message.isSuccess());
+        }
+
+        return $json;
+    }
+
+    /**
+     * Extracts parameters sort order and sort by
+     *
+     * @param string|null $sortBy    sort by
+     * @param string|null $sortOrder sort order
+     *
+     * @return void
+     */
+    private void setSortDetails(String $sortBy, String $sortOrder)
+    {
+    	// JMA: $sortBy will be ignored
+
+		this.sortBy = "SCHEMA_NAME";
+		this.sortOrder = "asc";
+		if ($sortOrder != null && $sortOrder.toLowerCase().equals("desc")) {
+			this.sortOrder = "desc";
+		}
+    }
 	
 
     /**

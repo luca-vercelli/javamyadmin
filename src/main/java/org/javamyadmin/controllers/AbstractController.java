@@ -5,7 +5,6 @@ import static org.javamyadmin.php.Php.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -294,5 +293,8 @@ public abstract class AbstractController {
 		}*/
 	}
 
+	public DatabaseInterface getDbi() {
+		return GLOBALS.getDbi();
+	}
 
 }
