@@ -192,4 +192,9 @@ public class Table {
         }
         return $table_comment;*/
     }
+
+	public Integer getRealRowCountTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
