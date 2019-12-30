@@ -1,7 +1,9 @@
 package org.javamyadmin.php;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
@@ -87,6 +89,7 @@ public class Globals {
 	private List<String> db_to_test;
 	private boolean is_create_db_priv;
 	private String db_to_create;
+	private Map url_parameters = new HashMap();
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -452,5 +455,13 @@ public class Globals {
 
 	public void setSelected(List selected) {
 		this.selected = selected;
+	}
+
+	public Map getUrlParameters() {
+		return url_parameters;
+	}
+
+	public void setUrlParameters(Map url_parameters) {
+		this.url_parameters = url_parameters;
 	}
 }
