@@ -2,6 +2,7 @@ package org.javamyadmin.controllers.database;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,17 +83,18 @@ public class StructureController extends AbstractController {
      * @param string $subPart Page part name
      *
      * @return void
+	 * @throws SQLException 
      */
-    private void getDatabaseInfo(String $subPart)
+    private void getDatabaseInfo(String $subPart) throws SQLException
     {
-        [$tables, $numTables, $totalNumTables,, $isShowStats, $dbIsSystemSchema,,, $position]
-            = Util.getDbInfo(this.db, $subPart);
-        this.tables = $tables;
-        this.numTables = $numTables;
-        this.position = $position;
-        this.dbIsSystemSchema = $dbIsSystemSchema;
-        this.totalNumTables = $totalNumTables;
-        this.isShowStats = $isShowStats;
+        // [$tables, $numTables, $totalNumTables,, $isShowStats, $dbIsSystemSchema,,, $position]
+        Object[] ret = Util.getDbInfo(this.db, $subPart, httpRequest, GLOBALS, $_SESSION);
+        this.tables = (Map<String, Map<String, Object>>) ret[0];
+        this.numTables = (int) ret[1];
+        this.position = (Integer) ret[8];
+        this.dbIsSystemSchema = (boolean) ret[5];
+        this.totalNumTables = (Integer) ret[2];
+        this.isShowStats = (boolean) ret[4];
     }
 
     /**
@@ -101,9 +103,12 @@ public class StructureController extends AbstractController {
      * @param array $parameters Request parameters
      *
      * @return string HTML
+     * @throws IOException 
+     * @throws ServletException 
+     * @throws SQLException 
      */
     @RequestMapping(value = "/structure")
-	public String index(Map $parameters)
+	public String index(Map $parameters) throws ServletException, IOException, SQLException
     {
     	Config $cfg = Globals.getConfig();
     	
@@ -134,9 +139,9 @@ public class StructureController extends AbstractController {
             Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";
-        PageSettings.showGroup("DbStructure");
-        String $tableList;
-        String $listNavigator;
+        // TODO PageSettings.showGroup("DbStructure");
+        String $tableList = null;
+        String $listNavigator = null;
         if (this.numTables > 0) {
             Map $urlParams = new HashMap();
             $urlParams.put("db", this.db);
@@ -171,15 +176,22 @@ public class StructureController extends AbstractController {
         return JtwigFactory.render("database/structure/index", model);
     }
     
-    /**
+    private void multiSubmitAction() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
      * Handles request for real row count on database level view page.
      *
      * @param array $parameters Request parameters
      *
      * @return array JSON
+     * @throws IOException 
+     * @throws ServletException 
      */
     @RequestMapping(value = "/structure/real-row-count")
-    public Map handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all)
+    public Map handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException
     {
     	super.prepareResponse();
     	
@@ -202,15 +214,16 @@ public class StructureController extends AbstractController {
         // Array to store the results.
         Map $realRowCountAll = new HashMap();
         // Iterate over each table and fetch real row count.
-        for (Table $table : this.tables.values()) {
+        for (Map<String, Object> $table : this.tables.values()) {
             int $rowCount = this.getDbi()
-                .getTable(this.db, $table.get("TABLE_NAME"))
+                .getTable(this.db, (String) $table.get("TABLE_NAME"))
                 .getRealRowCountTable();
             $realRowCountAll.put("table", $table.get("TABLE_NAME"));
             $realRowCountAll.put("row_count", $rowCount);
         }
         Map map = new HashMap();
         map.put("real_row_count_all", json_encode($realRowCountAll));
+        return map;
     }
     
     /**
@@ -333,12 +346,12 @@ public class StructureController extends AbstractController {
                     $check_time_all = $check_time;
                 }
             }*/
-            String $truename = $current_table.get("TABLE_NAME");
+            String $truename = (String) $current_table.get("TABLE_NAME");
             $i++;
             $row_count++;
             if ($table_is_view) {
                 $hidden_fields.add("<input type='hidden' name='views[]' value='"
-                    + htmlspecialchars($current_table.get("TABLE_NAME")) + "'>");
+                    + htmlspecialchars((String)$current_table.get("TABLE_NAME")) + "'>");
             }
             /*
              * Always activate links for Browse, Search and Empty, even if
@@ -353,7 +366,7 @@ public class StructureController extends AbstractController {
             boolean $may_have_rows = (Integer)$current_table.get("TABLE_ROWS") > 0 || $table_is_view;
             Map<String, String> $titles = Util.buildActionTitles(GLOBALS, $_SESSION);
             if (! this.dbIsSystemSchema) {
-                $drop_query = sprintf(
+                $drop_query = String.format(
                     "DROP %s %s",
                     $table_is_view || $current_table.get("ENGINE") == null ? "VIEW"
                     : "TABLE",
@@ -374,7 +387,7 @@ public class StructureController extends AbstractController {
                 && ($row_count % $num_columns) == 0
             ) {
                 $row_count = 1;
-                Map model1 = new HashMap();
+                Map<String, Object> model1 = new HashMap<>();
                 model1.put("db", this.db);
                 model1.put("db_is_system_schema", this.dbIsSystemSchema);
                 model1.put("replication", null);
@@ -397,7 +410,7 @@ public class StructureController extends AbstractController {
             [$do, $ignored] = this.getReplicationStatus($truename);*/
             Array $row = new Array();
             $structure_table_rows.add($row);
-            $row.put("table_name_hash", md5($current_table.get("TABLE_NAME")));
+            $row.put("table_name_hash", md5((String)$current_table.get("TABLE_NAME")));
             $row.put("db_table_name_hash", md5(this.db + "." + $current_table.get("TABLE_NAME")));
             $row.put("db", this.db);
             $row.put("curr", $i);
@@ -413,7 +426,7 @@ public class StructureController extends AbstractController {
             ));
             $row.put("empty_table_message_to_show", urlencode(
                 String.format(
-                    __("Table %s has been emptied."));
+                    __("Table %s has been emptied."),
                     htmlspecialchars(
                         (String)$current_table.get("TABLE_NAME")
                     )
@@ -428,24 +441,24 @@ public class StructureController extends AbstractController {
             $row.put("drop_query", $drop_query);
             $row.put("drop_message", $drop_message);
             $row.put("collation", $collationDefinition);
-            $row.put("formatted_size", $formatted_size);
-            $row.put("unit", $unit);
+//            $row.put("formatted_size", $formatted_size);
+//            $row.put("unit", $unit);
             $row.put("overhead", $overhead);
-            $row.put("create_time", isset($create_time) && $create_time
-                    ? Util.localisedDate(strtotime($create_time)) : "-");
-            $row.put("update_time", isset($update_time) && $update_time
-                    ? Util.localisedDate(strtotime($update_time)) : "-");
-            $row.put("check_time", isset($check_time) && $check_time
-                    ? Util.localisedDate(strtotime($check_time)) : "-");
-            $row.put("charset", $charset);
+//            $row.put("create_time", isset($create_time) && $create_time
+//                    ? Util.localisedDate(strtotime($create_time)) : "-");
+//            $row.put("update_time", isset($update_time) && $update_time
+//                    ? Util.localisedDate(strtotime($update_time)) : "-");
+//            $row.put("check_time", isset($check_time) && $check_time
+//                    ? Util.localisedDate(strtotime($check_time)) : "-");
+//            $row.put("charset", $charset);
             $row.put("is_show_stats", this.isShowStats);
-            $row.put("ignored", $ignored);
-            $row.put("do", $do);
-            $row.put("approx_rows", $approx_rows);
-            $row.put("show_superscript", $show_superscript);
-            $row.put("already_favorite", this.checkFavoriteTable(
-                $current_table.get("TABLE_NAME")
-            ));
+//            $row.put("ignored", $ignored);
+//            $row.put("do", $do);
+//            $row.put("approx_rows", $approx_rows);
+//            $row.put("show_superscript", $show_superscript);
+//            $row.put("already_favorite", this.checkFavoriteTable(
+//                $current_table.get("TABLE_NAME")
+//            ));
             $row.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
             $row.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
             $row.put("limit_chars", Globals.getConfig().get("LimitChars"));
@@ -454,7 +467,7 @@ public class StructureController extends AbstractController {
             $row.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
             $row.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
             $row.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
-            $overall_approx_rows = $overall_approx_rows || $approx_rows;
+//            $overall_approx_rows = $overall_approx_rows || $approx_rows;
         }
         /*$databaseCollation = [];
         $databaseCharset = "";
@@ -473,22 +486,22 @@ public class StructureController extends AbstractController {
         // table form
         Map body_for_table_summary = new HashMap();
         body_for_table_summary.put("num_tables", this.numTables);
-        body_for_table_summary.put("server_slave_status", $GLOBALS.get("replication_info").get("slave").get("status"));
+//        body_for_table_summary.put("server_slave_status", $GLOBALS.get("replication_info").get("slave").get("status"));
         body_for_table_summary.put("db_is_system_schema", this.dbIsSystemSchema);
         body_for_table_summary.put("sum_entries", $sum_entries);
-        body_for_table_summary.put("database_collation", $databaseCollation);
+//        body_for_table_summary.put("database_collation", $databaseCollation);
         body_for_table_summary.put("is_show_stats", this.isShowStats);
-        body_for_table_summary.put("database_charset", $databaseCharset);
+//        body_for_table_summary.put("database_charset", $databaseCharset);
         body_for_table_summary.put("sum_size", $sum_size);
         body_for_table_summary.put("overhead_size", $overhead_size);
-        body_for_table_summary.put("create_time_all", $create_time_all ? Util.localisedDate(strtotime($create_time_all)) : "-");
-        body_for_table_summary.put("update_time_all", $update_time_all ? Util.localisedDate(strtotime($update_time_all)) : "-");
-        body_for_table_summary.put("check_time_all", $check_time_all ? Util.localisedDate(strtotime($check_time_all)) : "-");
+//        body_for_table_summary.put("create_time_all", $create_time_all ? Util.localisedDate(strtotime($create_time_all)) : "-");
+//        body_for_table_summary.put("update_time_all", $update_time_all ? Util.localisedDate(strtotime($update_time_all)) : "-");
+//        body_for_table_summary.put("check_time_all", $check_time_all ? Util.localisedDate(strtotime($check_time_all)) : "-");
         body_for_table_summary.put("approx_rows", $overall_approx_rows);
         body_for_table_summary.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
-        body_for_table_summary.put("db", $GLOBALS.get("db"));
+        body_for_table_summary.put("db", GLOBALS.getDb());
         body_for_table_summary.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
-        body_for_table_summary.put("dbi", this.dbi);
+        body_for_table_summary.put("dbi", this.getDbi());
         body_for_table_summary.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
         body_for_table_summary.put("show_comment", Globals.getConfig().get("ShowDbStructureComment"));
         body_for_table_summary.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
@@ -501,11 +514,11 @@ public class StructureController extends AbstractController {
         check_all_tables.put("db_is_system_schema", this.dbIsSystemSchema);
         check_all_tables.put("hidden_fields", $hidden_fields);
         check_all_tables.put("disable_multi_table", Globals.getConfig().get("DisableMultiTableMaintenance"));
-        check_all_tables.put("central_columns_work", $GLOBALS.get("cfgRelation").get("centralcolumnswork") ?? null);
-        Map model = new HashMap();
+//        check_all_tables.put("central_columns_work", GLOBALS.cfgRelation.get("centralcolumnswork"));
+        model.clear();;
         model.put("db", this.db);
         model.put("db_is_system_schema", this.dbIsSystemSchema);
-        model.put("replication", $GLOBALS.get("replication_info").get("slave").get("status"));
+//        model.put("replication", $GLOBALS.get("replication_info").get("slave").get("status"));
         model.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
         model.put("is_show_stats", this.isShowStats);
         model.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
@@ -518,7 +531,7 @@ public class StructureController extends AbstractController {
         model.put("body_for_table_summary", body_for_table_summary);
         model.put("check_all_tables", check_all_tables);
         
-        $html += JTwigFactory.render("database/structure/table_header", model);
+        $html += JtwigFactory.render("database/structure/table_header", model);
         return $html;
     }
     /**
@@ -556,6 +569,7 @@ public class StructureController extends AbstractController {
      */
     protected boolean hasTable(List<String> $db, String $truename)
     {
+    	/* TODO
         for (String $db_table: $db) {
             if (this.db == this.replication.extractDbOrTable($db_table)
                 && preg_match(
@@ -566,7 +580,7 @@ public class StructureController extends AbstractController {
             ) {
                 return true;
             }
-        }
+        }*/
         return false;
     }
 }

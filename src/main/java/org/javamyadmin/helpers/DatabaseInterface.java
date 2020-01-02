@@ -320,6 +320,21 @@ public class DatabaseInterface {
         			$limit_count, $sort_by, $sort_order, $table_type, $link);
         }
 
+    public Array getTablesFull(
+        	String $database,
+            String $table /*= null*/,
+            boolean $tbl_is_group /*= false*/,
+            int $limit_offset /*= 0*/,
+            Integer $limit_count /*= false*/,
+            String $sort_by /*= 'Name'*/,
+            String $sort_order /*= 'ASC'*/,
+            String $table_type /*= null*/
+        ) throws SQLException {
+        	
+        	return getTablesFull(null, $database, $table, $tbl_is_group, $limit_offset,
+        			$limit_count, $sort_by, $sort_order, $table_type, CONNECT_USER);
+        }
+    
     public Array getTablesFull(String $database) throws SQLException {
     	return getTablesFull(null, $database, null, false, 0, null, "Name", "ASC", null, CONNECT_USER);
     }

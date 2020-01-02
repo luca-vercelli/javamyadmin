@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
@@ -4471,6 +4472,20 @@ public class Util {
              || ($serverType == "MariaDB" && $serverVersion >= 50200);*/
     }
 
+    private static Map<String, String> $sortable_name_mappings = new HashMap<>();
+    static {
+		 $sortable_name_mappings.put("table"      , "Name");
+		 $sortable_name_mappings.put("records"    , "Rows");
+		 $sortable_name_mappings.put("type"       , "Engine");
+		 $sortable_name_mappings.put("collation"  , "Collation");
+		 $sortable_name_mappings.put("size"       , "Data_length");
+		 $sortable_name_mappings.put("overhead"   , "Data_free");
+		 $sortable_name_mappings.put("creation"   , "Create_time");
+		 $sortable_name_mappings.put("last_update", "Update_time");
+		 $sortable_name_mappings.put("last_check" , "Check_time");
+		 $sortable_name_mappings.put("comment"    , "Comment");
+    }
+
     /**
      * Gets the list of tables in the current db and information about these
      * tables if possible
@@ -4479,37 +4494,38 @@ public class Util {
      * @param String|null $sub_part part of script name
      *
      * @return array
+     * @throws SQLException 
      *
      */
-    public static Map getDbInfo(String $db, String $sub_part)
+    public static Object[] getDbInfo(String $db, String $sub_part, HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) throws SQLException
     {
-    	return new HashMap<>(); // TODO
-    	/*
-        global $cfg;
+    	//ResultSet metadata = this._links.get($link).getMetaData()
+		//		.getTables($catalogName, $database, null, new String[] {"TABLE"});
+    	
+        Config $cfg = GLOBALS.getConfig();
 
-        /**
-         * limits for table list
-         *
-        if (! !empty($_SESSION["tmpval"]["table_limit_offset"])
-            || $_SESSION["tmpval"]["table_limit_offset_db"] != $db
+        // limits for table list
+         
+        if (! !empty(multiget($_SESSION, "tmpval", "table_limit_offset"))
+            || !$db.equals(multiget($_SESSION, "tmpval", "table_limit_offset_db"))
         ) {
-            $_SESSION["tmpval"]["table_limit_offset"] = 0;
-            $_SESSION["tmpval"]["table_limit_offset_db"] = $db;
+            multiput($_SESSION, "tmpval", "table_limit_offset", 0);
+            multiput($_SESSION, "tmpval", "table_limit_offset_db", $db);
         }
-        if (!empty($_REQUEST["pos"])) {
-            $_SESSION["tmpval"]["table_limit_offset"] = (int) $_REQUEST["pos"];
+        if (!empty(request.getParameter("pos"))) {
+            multiput($_SESSION, "tmpval", "table_limit_offset", new Integer(request.getParameter("pos")));
         }
-        $pos = $_SESSION["tmpval"]["table_limit_offset"];
+        Integer $pos = (Integer) multiget($_SESSION, "tmpval", "table_limit_offset");
 
         /**
          * whether to display extended stats
-         *
-        $is_show_stats = $cfg["ShowStats"];
+         */
+        boolean $is_show_stats = "true".equals($cfg.get("ShowStats"));
 
         /**
          * whether selected db is information_schema
-         *
-        $db_is_system_schema = false;
+         */
+        boolean $db_is_system_schema = false;
 
         if (GLOBALS.getDbi().isSystemSchema($db)) {
             $is_show_stats = false;
@@ -4518,125 +4534,98 @@ public class Util {
 
         /**
          * information about tables in db
-         *
-        $tables = [];
+         */
+        Map $tables = new HashMap();
 
-        $tooltip_truename = [];
-        $tooltip_aliasname = [];
+        Map $tooltip_truename = new HashMap();
+        Map $tooltip_aliasname = new HashMap();
 
-        // Special speedup for newer MySQL Versions (in 4.0 format changed)
-        if (true === $cfg["SkipLockedTables"]) {
-            $db_info_result = GLOBALS.getDbi().query(
-                "SHOW OPEN TABLES FROM " + backquote($db) + " WHERE In_use > 0;"
-            );
+        
+        // Set some sorting defaults
+        String $sort = "Name";
+        String $sort_order = "ASC";
 
-            // Blending out tables in use
-            if ($db_info_result && GLOBALS.getDbi().numRows($db_info_result) > 0) {
-                $tables = getTablesWhenOpen($db, $db_info_result);
-            } else if ($db_info_result) {
-                GLOBALS.getDbi().freeResult($db_info_result);
+        if (!empty(request.getParameter("sort"))) {
+
+            // Make sure the sort type is implemented
+            if (!empty($sortable_name_mappings.get(request.getParameter("sort")))) {
+                $sort = $sortable_name_mappings.get(request.getParameter("sort"));
+                if ("DESC".equals(request.getParameter("sort_order"))) {
+                    $sort_order = "DESC";
+                }
             }
         }
 
-        if (empty($tables)) {
-            // Set some sorting defaults
-            $sort = "Name";
-            $sort_order = "ASC";
-
-            if (!empty($_REQUEST["sort"])) {
-                $sortable_name_mappings = [
-                    "table"       => "Name",
-                    "records"     => "Rows",
-                    "type"        => "Engine",
-                    "collation"   => "Collation",
-                    "size"        => "Data_length",
-                    "overhead"    => "Data_free",
-                    "creation"    => "Create_time",
-                    "last_update" => "Update_time",
-                    "last_check"  => "Check_time",
-                    "comment"     => "Comment",
-                ];
-
-                // Make sure the sort type is implemented
-                if (!empty($sortable_name_mappings[$_REQUEST["sort"]])) {
-                    $sort = $sortable_name_mappings[$_REQUEST["sort"]];
-                    if ($_REQUEST["sort_order"] == "DESC") {
-                        $sort_order = "DESC";
-                    }
-                }
+        String $groupWithSeparator = null;
+        String $tbl_type = null;
+        int $limit_offset = 0;
+        Integer $limit_count = null;
+        Map $groupTable = null;
+        Integer $total_num_tables = null;
+        
+        if (! empty(request.getParameter("tbl_group")) || ! empty(request.getParameter("tbl_type"))) {
+            if (! empty(request.getParameter("tbl_type"))) {
+                // only tables for selected type
+                $tbl_type = request.getParameter("tbl_type");
             }
-
-            $groupWithSeparator = false;
-            $tbl_type = null;
-            $limit_offset = 0;
-            $limit_count = false;
-            $groupTable = [];
-
-            if (! empty($_REQUEST["tbl_group"]) || ! empty($_REQUEST["tbl_type"])) {
-                if (! empty($_REQUEST["tbl_type"])) {
-                    // only tables for selected type
-                    $tbl_type = $_REQUEST["tbl_type"];
-                }
-                if (! empty($_REQUEST["tbl_group"])) {
-                    // only tables for selected group
-                    $tbl_group = $_REQUEST["tbl_group"];
-                    // include the table with the exact name of the group if such
-                    // exists
-                    $groupTable = GLOBALS.getDbi().getTablesFull(
-                        $db,
-                        $tbl_group,
-                        false,
-                        $limit_offset,
-                        $limit_count,
-                        $sort,
-                        $sort_order,
-                        $tbl_type
-                    );
-                    $groupWithSeparator = $tbl_group
-                        + Globals.getConfig()["NavigationTreeTableSeparator"];
-                }
-            } else {
-                // all tables in db
-                // - get the total number of tables
-                //  (needed for proper working of the MaxTableList feature)
-                $tables = GLOBALS.getDbi().getTables($db);
-                $total_num_tables = count($tables);
-                if (! (!empty($sub_part) && $sub_part == "_export")) {
-                    // fetch the details for a possible limited subset
-                    $limit_offset = $pos;
-                    $limit_count = true;
-                }
-            }
-            $tables = array_merge(
-                $groupTable,
-                GLOBALS.getDbi().getTablesFull(
+            if (! empty(request.getParameter("tbl_group"))) {
+                // only tables for selected group
+                String $tbl_group = request.getParameter("tbl_group");
+                // include the table with the exact name of the group if such
+                // exists
+                $groupTable = GLOBALS.getDbi().getTablesFull(
                     $db,
-                    $groupWithSeparator,
-                    $groupWithSeparator !== false,
+                    $tbl_group,
+                    false,
                     $limit_offset,
                     $limit_count,
                     $sort,
                     $sort_order,
                     $tbl_type
-                )
-            );
+                );
+                $groupWithSeparator = $tbl_group
+                    + Globals.getConfig().get("NavigationTreeTableSeparator");
+            }
+        } else {
+            // all tables in db
+            // - get the total number of tables
+            //  (needed for proper working of the MaxTableList feature)
+            $tables = GLOBALS.getDbi().getTables($db);
+            $total_num_tables = $tables.size();
+            if (! (!empty($sub_part) && $sub_part == "_export")) {
+                // fetch the details for a possible limited subset
+                $limit_offset = $pos;
+                $limit_count = null;
+            }
         }
+        $tables = array_merge(
+            $groupTable,
+            GLOBALS.getDbi().getTablesFull(
+                $db,
+                $groupWithSeparator,
+                $groupWithSeparator != null,
+                $limit_offset,
+                $limit_count,
+                $sort,
+                $sort_order,
+                $tbl_type
+            )
+        );
+    
 
-        $num_tables = count($tables);
+        int $num_tables = $tables.size();
         //  (needed for proper working of the MaxTableList feature)
         if (! !empty($total_num_tables)) {
             $total_num_tables = $num_tables;
         }
 
-        /**
-         * If coming from a Show MySQL link on the home page,
-         * put something in $sub_part
-         *
+        // If coming from a Show MySQL link on the home page,
+        // put something in $sub_part
         if (empty($sub_part)) {
             $sub_part = "_structure";
         }
 
-        return [
+        return new Object[] {
             $tables,
             $num_tables,
             $total_num_tables,
@@ -4646,7 +4635,7 @@ public class Util {
             $tooltip_truename,
             $tooltip_aliasname,
             $pos,
-        ];*/
+        };
     }
 
     /**
