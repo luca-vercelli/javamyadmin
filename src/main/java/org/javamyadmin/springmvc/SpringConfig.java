@@ -5,6 +5,7 @@ import static org.javamyadmin.php.Php.$_SESSION;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
@@ -44,6 +45,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public Globals getGLOBALS() {
 		return new Globals();
+	}
+    
+	@Bean
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public DatabaseInterface getDbi(Globals GLOBALS) {
+		return new DatabaseInterface(GLOBALS);
 	}
 
 	@Bean

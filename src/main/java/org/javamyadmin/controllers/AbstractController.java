@@ -49,6 +49,9 @@ public abstract class AbstractController {
 	@Autowired
 	protected HttpServletResponse httpResponse;
 	
+	@Autowired
+	protected DatabaseInterface dbi;
+	
 	/**
 	 * Prepare global variables.
 	 * 
@@ -70,6 +73,8 @@ public abstract class AbstractController {
 			Globals.setThemesPath(servletContext.getRealPath("/themes/"));
 			Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
 		}
+		
+		GLOBALS.setDbi(dbi);
 		
 		// cfr. commons.inc.php
 		
@@ -353,7 +358,7 @@ public abstract class AbstractController {
 	}
 
 	public DatabaseInterface getDbi() {
-		return GLOBALS.getDbi();
+		return dbi;
 	}
 
 }
