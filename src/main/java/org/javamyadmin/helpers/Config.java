@@ -1197,11 +1197,11 @@ public class Config {
     {
         // Do we have some server?
         if (! (this.settings.containsKey("Servers"))) {
-        	this.settings.put("Servers", new ArrayList<Integer>());
+        	this.settings.put("Servers", new HashMap());
         }
         
-        if ( ((List)this.settings.get("Servers")).size() == 0  ) {
-        	((List)this.settings.get("Servers")).add(this.default_server);
+        if ( ((Map)this.settings.get("Servers")).size() == 0  ) {
+        	((Map)this.settings.get("Servers")).put("0", this.default_server);
         } 
         
         /* TODO
