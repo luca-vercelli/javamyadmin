@@ -3,17 +3,19 @@ package org.javamyadmin.helpers;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -43,6 +45,7 @@ public class Header {
      * @access private
      * @var Menu
      */
+    @Autowired
     private Menu _menu;
     /**
      * Whether to offer the option of importing user settings
@@ -124,21 +127,25 @@ public class Header {
      */
     // TODO private Navigation navigation;
 
+    @Autowired
     private Globals GLOBALS;
+    @Autowired
 	private HttpServletRequest request;
+    @Autowired
 	private HttpServletResponse response;
+    @Autowired
 	private SessionMap session;
     private SmartMap cfg;
     
     /**
      * Creates a new class instance
      */
-    public Header(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, SessionMap session)
+    public Header()
     {
-    	this.request = request;
-    	this.response = response;
-    	this.GLOBALS = GLOBALS;
-    	this.session = session;
+    }
+
+    @PostConstruct
+    private void init() {
     	this.cfg = Globals.getConfig().settings;
     	
         //this.template = new Template();
@@ -148,19 +155,14 @@ public class Header {
         this._bodyId = "";
         this._title = "";
         // TODO this._console = new Console();
-        String $db = GLOBALS.getDb(); // FIXME col xxx che sono globali
+        String $db = GLOBALS.getDb();
         String $table = GLOBALS.getTable();
-        this._menu = new Menu(
-            $db,
-            $table,
-            request,
-            GLOBALS,
-            session
-        );
+        this._menu.setDb($db);
+        this._menu.setTable($table);
         this._menuEnabled = true;
         this._warningsEnabled = true;
         this._isPrintView = false;
-        this._scripts = new Scripts(GLOBALS);
+        this._scripts = new Scripts();
         this._addDefaultScripts();
         this._headerIsSent = false;
         // if database storage for user preferences is transient,
@@ -572,7 +574,6 @@ public class Header {
          */
         String $captcha_url;
         
-        String now = gmdate.format(new Date());	// FIXME
         if (! empty(cfg.get("CaptchaLoginPrivateKey"))
             && ! empty(cfg.get("CaptchaLoginPublicKey"))
         ) {

@@ -9,6 +9,8 @@ import org.javamyadmin.helpers.Scripts.FStruct2;
 import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -57,21 +59,21 @@ public class Footer {
      */
     //private Template template;
 
+    @Autowired
     private Globals GLOBALS;
-	private Response pmaResponse;
+    @Autowired
+    private Response response;
     
     /**
      * Creates a new class instance
      */
-    public Footer(Globals GLOBALS, Response pmaResponse)
+    public Footer()
     {
         this._isEnabled = true;
-        this._scripts = new Scripts(GLOBALS);
+        this._scripts = new Scripts();
         this._isMinimal = false;
         // TODO this.relation = new Relation(GLOBALS.getDbi());
         
-        this.GLOBALS = GLOBALS;
-        this.pmaResponse = pmaResponse;
     }
 
     /**
@@ -339,7 +341,7 @@ public class Footer {
                     && ! this._isAjax
                 ) {
                     $url = this.getSelfUrl();
-                    $header = pmaResponse.getHeader();
+                    $header = response.getHeader();
                     List<FStruct2> $files = $header.getScripts().getFiles();
                     $menuHash = $header.getMenu().getHash();
                     // prime the client-side cache

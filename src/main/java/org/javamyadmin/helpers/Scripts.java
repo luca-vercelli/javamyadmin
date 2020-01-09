@@ -8,8 +8,6 @@ import java.util.Map;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 
-import static org.javamyadmin.php.Php.*;
-
 /**
  * Collects information about which JavaScript
  * files and objects are necessary to render
@@ -69,17 +67,14 @@ public class Scripts {
 	 */
 	//private Template template;
 
-	private Globals GLOBALS;
-
 	/**
 	 * Generates new Scripts objects
 	 *
 	 */
-	public Scripts(Globals GLOBALS) {
+	public Scripts() {
 		//this.template = new Template();
 		this._files = new ArrayList<>();
 		this._code = "";
-		this.GLOBALS = GLOBALS;
 	}
 
 	/**

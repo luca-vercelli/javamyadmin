@@ -74,7 +74,7 @@ public abstract class AbstractController {
 			Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
 		}
 		
-		GLOBALS.setDbi(dbi);
+		// GLOBALS.setDbi(dbi);
 		
 		// cfr. commons.inc.php
 		
@@ -222,8 +222,6 @@ public abstract class AbstractController {
 
 		ThemeManager.initializeTheme(httpRequest, GLOBALS, $_SESSION);
 		
-		GLOBALS.setDbi(null);
-
 		if (empty(GLOBALS.get_PMA_MINIMUM_COMMON())) {
 		    /**
 		     * save some settings in cookies

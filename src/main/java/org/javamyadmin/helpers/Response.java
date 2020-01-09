@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -28,6 +30,7 @@ public class Response {
      * @access private
      * @var Header
      */
+	@Autowired
     private Header _header;
     /**
      * HTML data to be used in the response
@@ -50,6 +53,7 @@ public class Response {
      * @access private
      * @var Footer
      */
+	@Autowired
     private Footer _footer;
     /**
      * Whether we are servicing an ajax request.
@@ -74,36 +78,38 @@ public class Response {
      */
     private boolean _isSuccess;
 
+	@Autowired
     private HttpServletRequest request;
+	
+	@Autowired
     private HttpServletResponse response;
+	
+	@Autowired
     private Globals GLOBALS;
-    
-    private static final String FUCK = "";
     
     /**
      * Creates a new class instance
      */
-    public Response(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, SessionMap session)
+    public Response()
     {
         /*if (! defined("TESTSUITE")) {
             $buffer = OutputBuffering.getInstance();
             $buffer.start();
             register_shutdown_function([this, "response"]);
         }*/
-        this._header = new Header(request, response, GLOBALS, session);
         this._HTML   = "";
         this._JSON   = new HashMap<>();
-        this._footer = new Footer(GLOBALS, this);
 
         this._isSuccess  = true;
         this._isDisabled = false;
-        this.setAjax(! empty(request.getParameter("ajax_request")));
         
-        this.request = request;
-        this.response = response;
-        this.GLOBALS = GLOBALS;
     }
 
+    @PostConstruct
+    private void init() {
+        this.setAjax(! empty(request.getParameter("ajax_request")));
+    }
+    
     /**
      * Set the ajax flag to indicate whether
      * we are servicing an ajax request

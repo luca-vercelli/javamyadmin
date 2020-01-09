@@ -10,6 +10,7 @@ import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.ListDatabase;
 import org.javamyadmin.helpers.Theme;
 import org.javamyadmin.helpers.ThemeManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Mimic PHP GLOBALS. Intended to be stored in Request (in JavaEE this would be
@@ -46,7 +47,10 @@ public class Globals {
 	private String lang;
 	private String db;
 	private String table;
+	
+	@Autowired
 	private DatabaseInterface dbi;
+	
 	private String sql_query;
 	private String error_message;
 	// private Object error_handler; // Unsupported

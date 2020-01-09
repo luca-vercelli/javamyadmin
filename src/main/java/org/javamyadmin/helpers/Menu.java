@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Generates and renders the top menu
@@ -42,9 +43,12 @@ public class Menu {
      */
     private String _table;
     
+    @Autowired
 	private SessionMap session;
 	private SmartMap cfg;
+    @Autowired
 	private HttpServletRequest request;
+    @Autowired
 	private Globals GLOBALS;
 
 	private static SmartMap menuProperties;
@@ -131,17 +135,12 @@ public class Menu {
      * @param string $db    Database name
      * @param string $table Table name
      */
-    public Menu(String $db, String $table, HttpServletRequest request, Globals GLOBALS, SessionMap session)
+    public Menu()
     {
-        this._db = $db;
-        this._table = $table;
         //this.relation = new Relation(GLOBALS.getDbi());
-        this.session = session;
         this.cfg = Globals.getConfig().settings;
-        this.request = request;
-        this.GLOBALS = GLOBALS;
     }
-
+    
     /**
      * Prints the menu and the breadcrumbs
      *
@@ -805,6 +804,19 @@ public class Menu {
     public Menu setTable(String $table)
     {
         this._table = $table;
+        return this;
+    }
+
+    /**
+     * Set current database
+     *
+     * @param string $db Current db
+     *
+     * @return Menu
+     */
+    public Menu setDb(String $db)
+    {
+        this._db = $db;
         return this;
     }
 }

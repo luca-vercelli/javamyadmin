@@ -6,7 +6,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.DatabaseInterface;
+import org.javamyadmin.helpers.Footer;
+import org.javamyadmin.helpers.Header;
+import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
+import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.context.annotation.Bean;
@@ -61,9 +65,25 @@ public class SpringConfig implements WebMvcConfigurer {
 
 	@Bean
 	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
-	public Response getResponse(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS,
-			SessionMap $_SESSION) {
-		return new Response(request, response, GLOBALS, $_SESSION);
+	public Response getResponse() {
+		return new Response();
 	}
 
+	@Bean
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public Header getHeader() {
+		return new Header();
+	}
+
+	@Bean
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public Footer getFooter() {
+		return new Footer();
+	}
+
+	@Bean
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public Menu getMenu() {
+		return new Menu();
+	}
 }
