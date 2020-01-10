@@ -35,7 +35,8 @@ public class Functions {
 			functions.add(new JtwigFunction1Ary("link", x -> x)); // TODO
 			functions.add(new JtwigFunction1Ary("trans", x -> __((String)x)));
 			functions.add(new JtwigFunction1Ary("error", x -> x)); // TODO
-			functions.add(new JtwigFunction1Ary("show_php_docu", x -> x)); // TODO (or not)
+			functions.add(new JtwigFunction1Ary("show_php_docu", x -> "")); // DON'T !
+			functions.add(new JtwigFunction1Ary("show_mysql_docu", x -> "")); // DON'T !
 			functions.add(
 					new JtwigFunction2Ary("get_docu_link", (x, y) -> Util.getDocuLink((String) x, (String) y), "", ""));
 			functions.add(new JtwigFunction1Ary("escape_js_string", x -> Sanitize.escapeJsString((String) x)));
