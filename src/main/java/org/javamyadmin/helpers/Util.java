@@ -1549,72 +1549,57 @@ public class Util {
      *
      * @access  public
      */
-    public static String getHtmlTab(Map $tab, Map $url_params /*= []*/, HttpServletRequest request, Globals GLOBALS, SessionMap session)
+    public static String getHtmlTab(MenuStruct $tab, Map<String, String> $url_params /*= []*/, HttpServletRequest request, Globals GLOBALS, SessionMap session)
     {
-        //$template = new Template();
-        // default values
-		Map $defaults = new HashMap();
-		$defaults.put("text", "");
-		$defaults.put("class", "");
-		$defaults.put("active", null);
-		$defaults.put("link", "");
-		$defaults.put("sep", "?");
-		$defaults.put("attr", "");
-		$defaults.put("args", "");
-		$defaults.put("warning", "");
-		$defaults.put("fragment", "");
-		$defaults.put("id", "");
-
-        $tab = array_merge($defaults, $tab);
 
         // determine additional style-class
-        if (empty($tab.get("class"))) {
-            if (! empty($tab.get("active"))
-                || Core.isValid(GLOBALS.getActivePage(), "identical", $tab.get("link"))
+        if (empty($tab.getClazz())) {
+            if (! empty($tab.getActive())
+                || Core.isValid(GLOBALS.getActivePage(), "identical", $tab.getLink())
             ) {
-                $tab.put("class", "active");
-            } else if ($tab.get("active") == null && empty(GLOBALS.getActivePage())
+                $tab.setClazz("active");
+            } else if ($tab.getActive() == null && empty(GLOBALS.getActivePage())
                 /*&& (basename(Globals.PMA_PHP_SELF).equals($tab.get("link")))*/
             ) {
-            	$tab.put("class", "active");
+            	$tab.setClazz("active");
             }
         }
 
         // build the link
-        if (! empty($tab.get("link"))) {
+        if (! empty($tab.getLink())) {
             // If there are any tab specific URL parameters, merge those with
             // the general URL parameters
-            if (! empty($tab.get("args")) && is_array($tab.get("args"))) {
-                $url_params = array_merge($url_params, (Map)$tab.get("args"));
+            if (! empty($tab.getArgs()) ) {
+                $url_params = array_merge($url_params, (Map)$tab.getArgs());
             }
-            if (!(((String)$tab.get("link")).contains( "?") )) {
-                $tab.put("link", htmlentities((String)$tab.get("link")) + Url.getCommon($url_params, request, GLOBALS));
+            if (!(($tab.getLink().contains( "?") ))) {
+            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, request, GLOBALS));
             } else {
-                $tab.put("link", htmlentities((String)$tab.get("link")) + Url.getCommon($url_params, "&", request, GLOBALS));
+            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, "&", request, GLOBALS));
             }
         }
 
-        if (! empty($tab.get("fragment"))) {
-            $tab.put("link", (String)$tab.get("link") + (String)$tab.get("fragment"));
+        if (! empty($tab.getFragment())) {
+            $tab.setLink($tab.getLink()+ $tab.getFragment());
         }
 
         // display icon
-        if (!empty($tab.get("icon"))) {
+        if (!empty($tab.getIcon())) {
             // avoid generating an alt tag, because it only illustrates
             // the text that follows and if browser does not display
             // images, the text is duplicated
-            $tab.put("text", getIcon(
-                (String)$tab.get("icon"),
-                (String)$tab.get("text"),
+            $tab.setText(getIcon(
+                $tab.getIcon(),
+                $tab.getText(),
                 false,
                 true,
                 "TabsMode",
                 GLOBALS,
                 session
             ));
-        } else if (empty($tab.get("text"))) {
+        } else if (empty($tab.getText())) {
             // check to not display an empty link-text
-            $tab.put("text", "?");
+            $tab.setText("?");
             trigger_error(
                 "empty linktext in function getHtmlTab()",
                 E_USER_NOTICE
@@ -1622,20 +1607,20 @@ public class Util {
         }
 
         //Set the id for the tab, if set in the params
-        String $tabId = (String) $tab.get("id");
+        String $tabId = $tab.getId();
 
-        Map $item = new HashMap();
-        if (! empty($tab.get("link"))) {
-            $item.put("content", $tab.get("text"));
-            multiput($item, "url", "href", empty($tab.get("link")) ? null : $tab.get("link"));
+        Map<String, Object> $item = new HashMap<>();
+        if (! empty($tab.getLink())) {
+            $item.put("content", $tab.getText());
+            multiput($item, "url", "href", empty($tab.getLink()) ? null : $tab.getLink());
             multiput($item, "url", "id", $tabId);
-            multiput($item, "url", "class", "tab" + htmlentities((String)$tab.get("class")));
+            multiput($item, "url", "class", "tab" + htmlentities($tab.getClazz()));
         } else {
-            $item.put("content", "<span class='tab" + htmlentities((String)$tab.get("class")) + "'"
-                + $tabId + ">" + $tab.get("text") + "</span>");
+            $item.put("content", "<span class='tab" + htmlentities($tab.getClazz()) + "'"
+                + $tabId + ">" + $tab.getText() + "</span>");
         }
 
-        $item.put("class", "active".equals($tab.get("class")) ? "active" : "");
+        $item.put("class", "active".equals($tab.getClazz()) ? "active" : "");
 
         return JtwigFactory.render("list/item", $item);
     }
@@ -1651,7 +1636,7 @@ public class Util {
      * @return String  html-code for tab-navigation
      */
     public static String getHtmlTabs(
-        Map<String, Map> $tabs,
+    	Map<String, MenuStruct> $tabs,
         Map<String, String> $url_params,
         String $menu_id,
         boolean $resizable, /*= false*/
@@ -1667,7 +1652,7 @@ public class Util {
             + "<i class='scrollindicator scrollindicator--left'><a href='#' class='tab'></a></i>"
             + "<div class='navigationbar'><ul id='" + htmlentities($menu_id) + "' " + $class + ">";
 
-        for (Map $tab : $tabs.values()) {
+        for (MenuStruct $tab : $tabs.values()) {
             $tab_navigation += getHtmlTab($tab, $url_params, request, GLOBALS, session);
         }
         $tab_navigation += "";
@@ -2718,11 +2703,12 @@ public class Util {
     public static Object cacheGet(String $var, Function $callback /*= null*/, Globals GLOBALS, SessionMap session)
     {
         if (cacheExists($var, GLOBALS, session)) {
-            return (Function) multiget(session, "cache", cacheKey(GLOBALS), $var);
+        	//System.out.println("DEBUG Loading: " + $var + " that contains:" + multiget(session, "cache", cacheKey(GLOBALS), $var));
+            return multiget(session, "cache", cacheKey(GLOBALS), $var);
         }
 
         if ($callback != null) {
-        	Object $val = $callback.apply(null);	//FIXME 0-ary function in Java ?!?
+			Object $val = $callback.apply(null);	//FIXME 0-ary function in Java ?!?
             cacheSet($var, $val, GLOBALS, session);
             return $val;
         }
@@ -2739,7 +2725,7 @@ public class Util {
      */
     public static void cacheSet(String $var, Object $val /*= null*/, Globals GLOBALS, SessionMap session)
     {
-    	multiput(session, $val, "cache", cacheKey(GLOBALS), $var);
+    	multiput(session, "cache", cacheKey(GLOBALS), $var, $val);
     }
 
     /**

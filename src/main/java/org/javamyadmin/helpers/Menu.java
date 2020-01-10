@@ -51,9 +51,15 @@ public class Menu {
     @Autowired
 	private Globals GLOBALS;
 
-	private static SmartMap menuProperties;
+    private static Map<String, MenuStruct> serverTabs;
+    private static Map<String, MenuStruct> dbTabs;
+    private static Map<String, MenuStruct> tableTabs;
 	static {
-		menuProperties = new SmartMap();
+		loadTabs();
+	}
+	
+	private static void loadTabs() {
+		SmartMap menuProperties = new SmartMap();
         try {
 			InputStream is = Globals.class.getClassLoader().getResourceAsStream("/menu.properties");
 			menuProperties.load(is);
@@ -62,6 +68,21 @@ public class Menu {
 		} catch (IOException e) {
 			throw new IllegalStateException("Error reading menu.properties!");
 		}
+        serverTabs = loadTabsFor(menuProperties, "server");
+        dbTabs = loadTabsFor(menuProperties, "server");
+        tableTabs = loadTabsFor(menuProperties, "table");
+	}
+	
+	private static Map<String, MenuStruct> loadTabsFor(SmartMap menuProperties, String whatfor) {
+		Map<String, MenuStruct> retmap = new HashMap<>();
+        @SuppressWarnings("unchecked")
+		Map<String, Map<String, String>> m = (Map<String, Map<String, String>>) menuProperties.get(whatfor);
+        for (String tabname: m.keySet()) {
+        	Map<String, String> tabattrs = m.get(tabname);
+        	retmap.put(tabname, new MenuStruct(tabattrs.get("icon"), tabattrs.get("link"), tabattrs.get("text"),
+        			"true".equals(tabattrs.get("active"))));
+        }
+        return retmap;
 	}
 	
 	/**
@@ -69,12 +90,17 @@ public class Menu {
 	 *
 	 */
     public static class MenuStruct {
-    	private String icon;
-    	private String text;
-    	private String link;
-    	private String warnings;
+    	private String icon = "";
+    	private String text = "";
+    	private String clazz = ""; // FIXME! 'class' is not allowed here
+    	private String fragment = "";
+    	private String id = "";
+    	private String attr = "";
+    	private String sep = "?";
+    	private String link = "";
+    	private String warning;
     	private Map args;
-    	private boolean active;
+    	private Boolean active = null;
 
     	public MenuStruct(String icon, String link, String text, boolean active) {
     		this(icon, text, link, active, null);
@@ -104,11 +130,11 @@ public class Menu {
 		public void setLink(String link) {
 			this.link = link;
 		}
-		public String getWarnings() {
-			return warnings;
+		public String getWarning() {
+			return warning;
 		}
-		public void setWarnings(String warnings) {
-			this.warnings = warnings;
+		public void setWarning(String warnings) {
+			this.warning = warnings;
 		}
 		public Map getArgs() {
 			return args;
@@ -116,11 +142,41 @@ public class Menu {
 		public void setArgs(Map args) {
 			this.args = args;
 		}
-		public boolean isActive() {
+		public Boolean getActive() {
 			return active;
 		}
-		public void setActive(boolean active) {
+		public void setActive(Boolean active) {
 			this.active = active;
+		}
+		public String getClazz() {
+			return clazz;
+		}
+		public void setClazz(String clazz) {
+			this.clazz = clazz;
+		}
+		public String getFragment() {
+			return fragment;
+		}
+		public void setFragment(String fragment) {
+			this.fragment = fragment;
+		}
+		public String getId() {
+			return id;
+		}
+		public void setId(String id) {
+			this.id = id;
+		}
+		public String getAttr() {
+			return attr;
+		}
+		public void setAttr(String attr) {
+			this.attr = attr;
+		}
+		public String getSep() {
+			return sep;
+		}
+		public void setSep(String sep) {
+			this.sep = sep;
 		}
     }
     
@@ -188,7 +244,7 @@ public class Menu {
     {
         Map<String, String> $url_params = new HashMap<>();
         String $level;
-        Map $tabs;
+        Map<String, MenuStruct> $tabs;
         if (!empty(this._table)) {
             $tabs = this._getTableTabs();
             $url_params.put("db", this._db);
@@ -204,8 +260,9 @@ public class Menu {
         }
 
         Map<String, Map<String, String>> $allowedTabs = this._getAllowedTabs($level);
-        Set<Entry> entries = $tabs.entrySet();
-        for (Entry $entry : entries) {
+        Map<String, MenuStruct> $tabs_copy = new HashMap<>($tabs);
+        Set<Entry<String, MenuStruct>> entries = $tabs_copy.entrySet();
+        for (Entry<String, MenuStruct> $entry : entries) {
             if (! $allowedTabs.containsKey($entry.getKey())) {
                 $tabs.remove($entry.getKey());
             }
@@ -424,10 +481,9 @@ public class Menu {
      * @return array Data for generating table tabs
      * @throws SQLException 
      */
-    private Map _getTableTabs() throws SQLException
+    private Map<String, MenuStruct> _getTableTabs() throws SQLException
     {
-
-        boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
+        /*boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
         boolean $tbl_is_view = GLOBALS.getDbi().getTable(this._db, this._table)
             .isView();
         boolean $updatable_view = false;
@@ -437,12 +493,14 @@ public class Menu {
         }
         boolean $is_superuser = GLOBALS.getDbi().isSuperuser();
         boolean $isCreateOrGrantUser = GLOBALS.getDbi().isUserType("grant")
-            || GLOBALS.getDbi().isUserType("create");
+            || GLOBALS.getDbi().isUserType("create");*/
 
-        Map $tabs = new HashMap<>();
+        Map<String, MenuStruct> $tabs = new HashMap<>();
+        $tabs.putAll(serverTabs);
+        
 
-        Map params = new HashMap();
-        params.put("pos", 0);
+        /*Map<String, String> params = new HashMap<>();
+        params.put("pos", "0");
         
         $tabs.put("browse", new MenuStruct("b_browse",
         		Url.getFromRoute("/sql", (Map)session, request, GLOBALS),
@@ -529,12 +587,12 @@ public class Menu {
             multiput($tabs,"operation", "active",  GLOBALS.getRoute().equals("/view/operations"));
         }
 
-        /* TODO if (Tracker.isActive() && ! $db_is_system_schema) {
+        if (Tracker.isActive() && ! $db_is_system_schema) {
             multiput($tabs,"tracking", "icon",  "eye");
             multiput($tabs,"tracking", "text",  __("Tracking"));
             multiput($tabs,"tracking", "link",  Url.getFromRoute("/table/tracking", request, GLOBALS));
             multiput($tabs,"tracking", "active",  GLOBALS.getRoute().equals("/table/tracking");
-        }*/
+        }
         if (! $db_is_system_schema
             && Util.currentUserHasPrivilege(
                 "TRIGGER",
@@ -547,7 +605,7 @@ public class Menu {
             multiput($tabs,"triggers", "text",  __("Triggers"));
             multiput($tabs,"triggers", "icon",  "b_triggers");
             multiput($tabs,"triggers", "active",  GLOBALS.getRoute().equals("/table/triggers"));
-        }
+        }*/
 
         return $tabs;
     }
@@ -560,18 +618,19 @@ public class Menu {
      */
     private Map<String, MenuStruct> _getDbTabs() throws SQLException
     {
-        boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
+        /*boolean $db_is_system_schema = GLOBALS.getDbi().isSystemSchema(this._db);
         int $num_tables = GLOBALS.getDbi().getTables(this._db).size();
         boolean $is_superuser = GLOBALS.getDbi().isSuperuser();
         boolean $isCreateOrGrantUser = GLOBALS.getDbi().isUserType("grant")
-            || GLOBALS.getDbi().isUserType("create");
+            || GLOBALS.getDbi().isUserType("create");*/
 
         /**
          * Gets the relation settings
          */
         //TODO $cfgRelation = this.relation.getRelationsParam();
 
-        Map $tabs = new HashMap();
+        Map<String, MenuStruct> $tabs = new HashMap<>();
+        $tabs.putAll(dbTabs);
 
         /*
         $tabs["structure"]["link"] = Url.getFromRoute("/database/structure");
@@ -701,8 +760,8 @@ public class Menu {
             Util.cacheSet("binary_logs", $binary_logs, session);
         }*/
 
-        Map $tabs = new HashMap();
-        $tabs.putAll((Map)menuProperties.get("server"));
+        Map<String, MenuStruct> $tabs = new HashMap<>();
+        $tabs.putAll(serverTabs);
         
         /*
         $tabs.put("databases", new MenuStruct("s_db",
