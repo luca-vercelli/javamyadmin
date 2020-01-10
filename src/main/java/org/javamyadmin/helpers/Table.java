@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Table metadata
@@ -26,23 +27,24 @@ public class Table {
     /**
      * @var DatabaseInterface
      */
+    @Autowired
     protected DatabaseInterface _dbi;
     /**
      * @var Relation
      */
     //private Relation $relation; TODO?
 
-	public Table(String $table_name, String $db_name, DatabaseInterface $databaseInterface) {
+	public Table(String $table_name, String $db_name/*, DatabaseInterface $databaseInterface*/) {
 		this._name = $table_name;
 		this._db_name = $db_name;
-		this._dbi = $databaseInterface;
+		//this._dbi = $databaseInterface;
 	}
 
-	public Table(String $table_name, String $db_name, String $catalog_name, DatabaseInterface $databaseInterface) {
+	public Table(String $table_name, String $db_name, String $catalog_name/*, DatabaseInterface $databaseInterface*/) {
 		this._name = $table_name;
 		this._db_name = $db_name;
 		this._catalog_name = $catalog_name;
-		this._dbi = $databaseInterface;
+		//this._dbi = $databaseInterface;
 	}
 
     /**

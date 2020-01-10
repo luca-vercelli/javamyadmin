@@ -16,6 +16,9 @@ import javax.naming.Context;
 
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -67,10 +70,12 @@ public class DatabaseInterface {
      */
     public Map<Integer, String> _errMessages = new HashMap<>();
     
+    @Autowired
     private Globals GLOBALS;
+    @Autowired
+    private BeanFactory beanFactory;
     
-    public DatabaseInterface(Globals GLOBALS) {
-    	this.GLOBALS = GLOBALS;
+    public DatabaseInterface() {
     }
     
     /**
@@ -215,7 +220,7 @@ public class DatabaseInterface {
      */
     public Table getTable(String $db_name, String $table_name)
     {
-        return new Table($table_name, $db_name, this);
+    	return beanFactory.getBean(Table.class, $table_name, $db_name);
     }
     
     /**

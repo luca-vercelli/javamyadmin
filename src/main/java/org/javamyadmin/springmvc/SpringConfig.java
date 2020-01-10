@@ -11,14 +11,17 @@ import org.javamyadmin.helpers.Header;
 import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
+import org.javamyadmin.helpers.Table;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -46,6 +49,7 @@ public class SpringConfig implements WebMvcConfigurer {
     }
     
 	@Bean
+	// TODO @RequestScope
 	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public Globals getGLOBALS() {
 		return new Globals();
@@ -53,8 +57,8 @@ public class SpringConfig implements WebMvcConfigurer {
     
 	@Bean
 	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
-	public DatabaseInterface getDbi(Globals GLOBALS) {
-		return new DatabaseInterface(GLOBALS);
+	public DatabaseInterface getDbi() {
+		return new DatabaseInterface();
 	}
 
 	@Bean
@@ -85,5 +89,11 @@ public class SpringConfig implements WebMvcConfigurer {
 	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public Menu getMenu() {
 		return new Menu();
+	}
+
+	@Bean
+	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public Table getTable(String $db, String $table) {
+		return new Table($db, $table);
 	}
 }

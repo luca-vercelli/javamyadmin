@@ -59,6 +59,9 @@ public class Menu {
 	}
 	
 	private static void loadTabs() {
+		
+		//TODO define tabs as Spring beans
+		
 		SmartMap menuProperties = new SmartMap();
         try {
 			InputStream is = Globals.class.getClassLoader().getResourceAsStream("/menu.properties");
