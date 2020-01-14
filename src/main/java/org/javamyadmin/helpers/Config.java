@@ -1172,7 +1172,7 @@ public class Config {
          * and "this.settings["ServerDefault"] = 0" is set.
          */
         String server;
-        if (is_numeric(request) && ! empty(request) && ! empty(((Map) this.settings.get("Servers")).get("request"))) {
+        if (is_numeric(request) && ! empty(request) && ! empty(((Map) this.settings.get("Servers")).get(request))) {
             server = request;
             this.settings.put("Server", ((Map) this.settings.get("Servers")).get(server));
         } else {
