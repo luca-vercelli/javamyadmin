@@ -222,7 +222,7 @@ public abstract class AbstractController {
 
 		ThemeManager.initializeTheme(httpRequest, GLOBALS, $_SESSION);
 		
-		if (empty(GLOBALS.get_PMA_MINIMUM_COMMON())) {
+		if (!(GLOBALS.get_PMA_MINIMUM_COMMON())) {
 		    /**
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
