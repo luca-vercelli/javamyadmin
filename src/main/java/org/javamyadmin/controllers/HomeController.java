@@ -12,8 +12,6 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
@@ -34,6 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class HomeController extends AbstractController {
 	
+	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})
+	public void root() throws IOException {
+		httpResponse.sendRedirect("Home");
+	}
+	
     @RequestMapping(value = "/Home")
 	public void index()
 			throws ServletException, IOException, SQLException, NamingException {
@@ -41,6 +44,7 @@ public class HomeController extends AbstractController {
 		super.prepareResponse();
 		
 		if (response.isAjax() && !empty(httpRequest.getParameter("access_time"))) {
+			response.response();
 			return;
 		}
 
