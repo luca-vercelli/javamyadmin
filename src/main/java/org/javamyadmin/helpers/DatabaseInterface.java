@@ -965,6 +965,18 @@ public class DatabaseInterface {
         
         Connection $result = null;
         
+        if (!empty($server.jdbcDriver)) {
+	        try {
+				Class.forName($server.jdbcDriver);
+			} catch (ClassNotFoundException e) {
+	            trigger_error(
+	                    __("Missing JDBC driver class!"),
+	                    E_USER_WARNING
+	                );
+	                return null;
+			}
+        }
+        
         if ($server.jndiName != null) {
         	
         	// Datasource

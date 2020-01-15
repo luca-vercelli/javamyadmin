@@ -278,11 +278,13 @@ public abstract class AbstractController {
 		            );
 		        }
 		        // Connects to the server (validates user"s login)
-		        /** @var DatabaseInterface $userlink */
+		        // @var DatabaseInterface $userlink
 		        Connection $userlink = GLOBALS.getDbi().connect(DatabaseInterface.CONNECT_USER);
-		        /*if ($userlink == null) {
+		        if ($userlink == null) {
+		        	/* TODO
 		            $auth_plugin.showFailure("mysql-denied");
-		        }*/
+		            */
+		        }
 		        if ($controllink == null) {
 //		             * Open separate connection for control queries, this is needed
 //		             * to avoid problems with table locking used in main connection
