@@ -54,7 +54,7 @@ public class Table {
      * @throws SQLException 
      */
 	public boolean isView() throws SQLException {
-		ResultSet metadata = this._dbi._links.get(DatabaseInterface.CONNECT_USER).getMetaData()
+		ResultSet metadata = this._dbi.getLink(DatabaseInterface.CONNECT_USER).getMetaData()
 				.getTables(_catalog_name, _db_name, _name, new String[] {"VIEW"});
 		return metadata.next();
 	}

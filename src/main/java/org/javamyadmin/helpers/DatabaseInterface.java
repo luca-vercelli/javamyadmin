@@ -63,7 +63,7 @@ public class DatabaseInterface {
      *
      * @var array
      */
-    public Map<Integer, Connection> _links = new HashMap<>();
+    private Map<Integer, Connection> _links = new HashMap<>();
     
     /**
      * Last error for given conenction
@@ -1212,5 +1212,13 @@ public class DatabaseInterface {
     
     public String getError() {
     	return getError(CONNECT_USER);
+    }
+    
+    public Connection getLink(int $link) {
+    	return _links.get($link);
+    }
+    
+    public Connection getLink() {
+    	return getLink(CONNECT_USER);
     }
 }

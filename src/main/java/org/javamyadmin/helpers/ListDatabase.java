@@ -77,7 +77,7 @@ public class ListDatabase extends ListAbstract {
 		List<String> $database_list = new ArrayList<>();
 
 		if (GLOBALS.getDbToTest() == null) {
-			Connection connection = GLOBALS.getDbi()._links.get(DatabaseInterface.CONNECT_USER);
+			Connection connection = GLOBALS.getDbi().getLink(DatabaseInterface.CONNECT_USER);
 			ResultSet rs = connection.getMetaData().getSchemas($like_catalog_name, $like_db_name);
 			while (rs.next()) {
 				$database_list.add(rs.getString(1));
