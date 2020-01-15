@@ -13,8 +13,8 @@ import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.php.Globals;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Exporting of translated messages from PHP to Javascript
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @see messages.php
  *
  */
-@Controller
+@RestController
 public class MessagesJs extends AbstractController {
 
 	@RequestMapping(value = "/js/messages.php")

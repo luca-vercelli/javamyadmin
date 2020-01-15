@@ -19,8 +19,8 @@ import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * original dispatcher
  *
  */
-@Controller
+@RestController
 public class HomeController extends AbstractController {
 	
 	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})

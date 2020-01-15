@@ -7,14 +7,14 @@ import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Core;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @see whitelist.php
  *
  */
-@Controller
+@RestController
 public class WhitelistJs extends AbstractController {
 
 	@RequestMapping(value = "/js/whitelist.php")

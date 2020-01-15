@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,18 +19,17 @@ import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Header;
 import org.javamyadmin.helpers.Message;
-import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequestMapping(value = "/databases")
 public class DatabasesController extends AbstractController {
 

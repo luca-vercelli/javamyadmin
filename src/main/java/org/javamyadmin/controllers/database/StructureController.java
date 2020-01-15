@@ -1,7 +1,6 @@
 package org.javamyadmin.controllers.database;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,12 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
-import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
@@ -22,10 +18,9 @@ import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
-import org.javamyadmin.php.Php.SessionMap;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -34,7 +29,7 @@ import static org.javamyadmin.php.Php.*;
  *
  * @package PhpMyAdmin\Controllers
  */
-@Controller
+@RestController
 public class StructureController extends AbstractController {
 
     /**
