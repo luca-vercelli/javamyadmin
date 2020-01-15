@@ -196,8 +196,8 @@ public class LanguageManager {
 		/* Process all files */
 		String[] locales = localePath.list();
 		for (String locale : locales) {
-			// FIXME
-			if (new File(locale, "LC_MESSAGES" + File.separator + "phpmyadmin.mo").exists()) {
+			// FIXME was LC_MESSAGES/phpmyadmin.mo
+			if (new File(locale, "phpmyadmin.properties").exists()) {
 				$result.add(locale);
 			}
 		}
