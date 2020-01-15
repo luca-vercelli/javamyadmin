@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Url;
+import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
@@ -99,8 +100,8 @@ public class HomeController extends AbstractController {
                 $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, httpRequest);
             }
 
-            /* TODO
-            if ($server > 0) {
+            if (GLOBALS.getServer() > 0) {
+                /* TODO
                 $checkUserPrivileges = new CheckUserPrivileges(this.dbi);
                 $checkUserPrivileges.getPrivileges();
 
@@ -141,27 +142,25 @@ public class HomeController extends AbstractController {
                         "collations" => $collationsList,
                     ];
                 }
-
-                $userPreferences = this.template.render("list/item", [
-                    "content" => Util.getImage("b_tblops") . " " . __(
+				*/
+            
+	            Map<String,Object> model0 = new HashMap<>();
+	        	model0.put("content", Util.getImage("b_tblops") + " " + __(
                         "More settings"
-                    ),
-                    "id" => "li_user_preferences",
-                    "class" => "no_bullets",
-                    "url" => [
-                        "href" => Url.getFromRoute("/preferences/manage"),
-                        "target" => null,
-                        "id" => null,
-                        "class" => null,
-                    ],
-                    "mysql_help_page" => null,
-                ]);
-            }*/
+                    ));
+            	model0.put("id", "li_user_preferences");
+            	model0.put("class", "no_bullets");
+	            Map<String,Object> modelUrl = new HashMap<>();
+            	modelUrl.put("href", Url.getFromRoute("/preferences/manage", httpRequest, GLOBALS));
+            	model0.put("url", modelUrl);
+                $userPreferences = JtwigFactory.render("list/item", model0);
+            }
         }
 		
 		LanguageManager $languageManager = LanguageManager.getInstance();
 		String $languageSelector = "";
-        if (empty(Globals.getConfig().get("Lang")) && $languageManager.hasChoice()) {
+        
+		if (empty(Globals.getConfig().get("Lang")) && $languageManager.hasChoice()) {
             $languageSelector = $languageManager.getSelectorDisplay(GLOBALS);
         }
 
@@ -170,7 +169,7 @@ public class HomeController extends AbstractController {
             $themeSelection = GLOBALS.getThemeManager().getHtmlSelectBox();
         }
 
-        List<String> $databaseServer = new ArrayList<>();
+        Map<String, Object> $databaseServer = new HashMap<>();
         if (GLOBALS.getServer() > 0 && "true".equals(Globals.getConfig().get("ShowServerInfo"))) {
             String $hostInfo = "";
             if (! empty(((Map) Globals.getConfig().get("Server")).get("verbose"))) {
@@ -188,15 +187,15 @@ public class HomeController extends AbstractController {
 
             /*
             String $serverCharset = Charsets.getServerCharset($this.dbi, Globals.getConfig().get("Server").get("DisableIS"));
-            $databaseServer = [
-                "host" => $hostInfo,
-                "type" => Util.getServerType(),
-                "connection" => Util.getServerSSL(),
-                "version" => $this.dbi.getVersionString() . " - " . $this.dbi.getVersionComment(),
-                "protocol" => $this.dbi.getProtoInfo(),
-                "user" => $this.dbi.fetchValue("SELECT USER();"),
-                "charset" => $serverCharset.getDescription() + " (" + $serverCharset.getName() + ")",
-            ];*/
+            */
+            $databaseServer.put("host", $hostInfo);
+            // More properties not supported
+            // $databaseServer.put("type", Util.getServerType());
+            // $databaseServer.put("connection", Util.getServerSSL());
+            // $databaseServer.put("version", this.dbi.getVersionString() . " - " . $this.dbi.getVersionComment());
+            // $databaseServer.put("protocol", this.dbi.getProtoInfo());
+            // $databaseServer.put("user", this.dbi.fetchValue("SELECT USER();"));
+            // $databaseServer.put("charset", serverCharset.getDescription() + " (" + $serverCharset.getName() + ")");
         }
 
 		WebServer $webServer = new WebServer();
