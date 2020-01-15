@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Config;
@@ -101,9 +102,10 @@ public class StructureController extends AbstractController {
      * @throws IOException 
      * @throws ServletException 
      * @throws SQLException 
+     * @throws NamingException 
      */
     @RequestMapping(value = "/structure")
-	public String index(Map $parameters) throws ServletException, IOException, SQLException
+	public String index(Map $parameters) throws ServletException, IOException, SQLException, NamingException
     {
     	Config $cfg = Globals.getConfig();
     	
@@ -126,10 +128,10 @@ public class StructureController extends AbstractController {
         // If there are no tables, the user is redirected to the last page
         // having any.
         if (this.totalNumTables > 0 && this.position > this.totalNumTables) {
-        	Map map = new HashMap();
+        	Map<String, String> map = new HashMap();
         	map.put("db", this.db);
-        	map.put("pos", Math.max(0, this.totalNumTables - new Integer((String)$cfg.get("MaxTableList"))));
-        	map.put("reload", 1);
+        	map.put("pos", Integer.toString(Math.max(0, this.totalNumTables - new Integer((String)$cfg.get("MaxTableList")))));
+        	map.put("reload", "1");
             String $uri = "./index.php?route=/database/structure" + Url.getCommonRaw(map, "&", httpRequest, GLOBALS);
             Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
@@ -138,7 +140,7 @@ public class StructureController extends AbstractController {
         String $tableList = null;
         String $listNavigator = null;
         if (this.numTables > 0) {
-            Map $urlParams = new HashMap();
+            Map<String, Object> $urlParams = new HashMap<>();
             $urlParams.put("db", this.db);
             $urlParams.put("pos", this.position);
             if (!empty($parameters.get("sort"))) {
@@ -161,7 +163,7 @@ public class StructureController extends AbstractController {
         if (empty(this.dbIsSystemSchema)) {
             // TODO $createTable = CreateTable.getHtml(this.db);
         }
-        Map model = new HashMap();
+        Map<String, Object> model = new HashMap();
         model.put("database", this.db);
         model.put("has_tables", this.numTables > 0);
         model.put("list_navigator_html", $listNavigator);
@@ -184,9 +186,11 @@ public class StructureController extends AbstractController {
      * @return array JSON
      * @throws IOException 
      * @throws ServletException 
+	 * @throws NamingException 
+	 * @throws SQLException 
      */
     @RequestMapping(value = "/structure/real-row-count")
-    public Map handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException
+    public Map handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException, SQLException, NamingException
     {
     	super.prepareResponse();
     	

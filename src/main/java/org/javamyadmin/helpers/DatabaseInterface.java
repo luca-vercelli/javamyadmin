@@ -768,7 +768,7 @@ public class DatabaseInterface {
     	//currently: 1 row only, and the resultset must be open
     	Array map = new Array();
     	int $n = $result.getMetaData().getColumnCount();
-    	for (int i = 0; i < $n; ++i) {
+    	for (int i = 1; i <= $n; ++i) {
     		map.put($result.getMetaData().getColumnName(i), $result.getObject(i));
     	}
         return map;
