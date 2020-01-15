@@ -4488,12 +4488,12 @@ public class Util {
     	//ResultSet metadata = this._links.get($link).getMetaData()
 		//		.getTables($catalogName, $database, null, new String[] {"TABLE"});
     	
-        Config $cfg = GLOBALS.getConfig();
+        Config $cfg = Globals.getConfig();
 
         // limits for table list
          
-        if (! !empty(multiget($_SESSION, "tmpval", "table_limit_offset"))
-            || !$db.equals(multiget($_SESSION, "tmpval", "table_limit_offset_db"))
+        if (empty(multiget($_SESSION, "tmpval", "table_limit_offset"))
+            || ($db!= null && !$db.equals(multiget($_SESSION, "tmpval", "table_limit_offset_db")))
         ) {
             multiput($_SESSION, "tmpval", "table_limit_offset", 0);
             multiput($_SESSION, "tmpval", "table_limit_offset_db", $db);
