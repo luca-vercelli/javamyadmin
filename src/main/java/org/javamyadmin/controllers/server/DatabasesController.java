@@ -169,7 +169,7 @@ public class DatabasesController extends AbstractController {
 		Array $json = new Array();
 		
         if (empty(new_db) || ! this.response.isAjax()) {
-        	$json.put("message", Message.error(null, httpRequest, GLOBALS));
+        	$json.put("message", Message.error(null));
         	return $json;
         }
 
@@ -183,14 +183,14 @@ public class DatabasesController extends AbstractController {
         	// avoid displaying the not-created db name in header or navi panel
             GLOBALS.setDb(null);
 
-            Message $message = Message.rawError(this.getDbi().getError(), httpRequest, GLOBALS);
+            Message $message = Message.rawError(this.getDbi().getError());
             $json.put("message", $message);
 
             this.response.setRequestStatus(false);
         } else {
             GLOBALS.setDb(new_db);
 
-            Message $message = Message.success(__("Database %1$s has been created."), httpRequest, GLOBALS);
+            Message $message = Message.success(__("Database %1$s has been created."));
             $message.addParam(new_db);
 
             String $scriptName = Util.getScriptNameForOption(
@@ -235,9 +235,9 @@ public class DatabasesController extends AbstractController {
             || ! this.response.isAjax()
             || (! this.getDbi().isSuperuser() && "false".equals($cfg.get("AllowUserDropDatabase")))
         ) {
-            $message = Message.error(null, httpRequest, GLOBALS);
+            $message = Message.error(null);
         } else if (empty(selected_dbs)) {
-            $message = Message.error(__("No databases selected."), httpRequest, GLOBALS);
+            $message = Message.error(__("No databases selected."));
         } else {
             // for mult_submits.inc.php
             String $action = Url.getFromRoute("/server/databases", httpRequest, GLOBALS);
@@ -255,7 +255,7 @@ public class DatabasesController extends AbstractController {
                         "%1$d database has been dropped successfully.",
                         "%1$d databases have been dropped successfully.",
                         $numberOfDatabases
-                    ), httpRequest, GLOBALS
+                    )
                 );
                 $message.addParam($numberOfDatabases);
             }

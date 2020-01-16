@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.html.Generator;
@@ -132,9 +131,6 @@ public class Message {
      * @var     array
      */
     protected List<Object> addedMessages = new ArrayList<>();
-
-    private HttpServletRequest request;
-    private Globals GLOBALS;
     
     /**
      * Constructor
@@ -149,21 +145,15 @@ public class Message {
         String String /*= ""*/,
         int number /*= Message.NOTICE*/,
         List<Object> params /*= []*/,
-        int sanitize /*= Message.SANITIZE_NONE*/,
-        HttpServletRequest request,
-        Globals GLOBALS
+        int sanitize /*= Message.SANITIZE_NONE*/
     ) {
         this.setString(String, (sanitize & Message.SANITIZE_STRING) != 0);
         this.setNumber(number);
         this.setParams(params, (sanitize & Message.SANITIZE_PARAMS) != 0);
-        this.request = request;
-        this.GLOBALS = GLOBALS;
     }
 
-    public Message(String string, int success,
-    		HttpServletRequest request,
-            Globals GLOBALS) {
-		this(string,success, new ArrayList<>(), SANITIZE_NONE, request, GLOBALS);
+    public Message(String string, int success) {
+		this(string,success, new ArrayList<>(), SANITIZE_NONE);
 	}
 
 	/**
@@ -174,7 +164,7 @@ public class Message {
     @Override
     public String toString()
     {
-        return this.getMessage(request, GLOBALS);
+        return this.getMessage();
     }
 
     /**
@@ -190,15 +180,13 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message success(String string,
-    		HttpServletRequest request,
-            Globals GLOBALS )
+    public static Message success(String string)
     {
         if (empty(string)) {
             string = __("Your SQL query has been executed successfully.");
         }
 
-        return new Message(string, SUCCESS, request, GLOBALS);
+        return new Message(string, SUCCESS);
     }
 
     /**
@@ -212,15 +200,13 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message error(String string,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message error(String string)
     {
         if (empty(string)) {
             string = __("Error");
         }
 
-        return new Message(string, ERROR, request, GLOBALS);
+        return new Message(string, ERROR);
     }
 
     /**
@@ -236,11 +222,9 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message notice(String String,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message notice(String String)
     {
-        return new Message(String, NOTICE, request, GLOBALS);
+        return new Message(String, NOTICE);
     }
 
     /**
@@ -254,11 +238,9 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message raw(String message, int type /*= Message.NOTICE*/,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message raw(String message, int type /*= Message.NOTICE*/)
     {
-    	Message r = new Message("", type, request, GLOBALS);
+    	Message r = new Message("", type);
         r.setMessage(message, false);
         r.setBBCode(false);
         return r;
@@ -274,12 +256,10 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForAffectedRows(int rows,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message getMessageForAffectedRows(int rows)
     {
         Message message = success(
-            _ngettext("%1d row affected.", "%1d rows affected.", rows), request, GLOBALS
+            _ngettext("%1d row affected.", "%1d rows affected.", rows)
         );
         message.addParam(rows);
         return message;
@@ -295,12 +275,10 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForDeletedRows(int rows,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message getMessageForDeletedRows(int rows)
     {
     	Message message = success(
-            _ngettext("%1d row deleted.", "%1d rows deleted.", rows), request, GLOBALS
+            _ngettext("%1d row deleted.", "%1d rows deleted.", rows)
         );
         message.addParam(rows);
         return message;
@@ -316,12 +294,10 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message getMessageForInsertedRows(int rows,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message getMessageForInsertedRows(int rows)
     {
     	Message message = success(
-            _ngettext("%1d row inserted.", "%1d rows inserted.", rows), request, GLOBALS
+            _ngettext("%1d row inserted.", "%1d rows inserted.", rows)
         );
         message.addParam(rows);
         return message;
@@ -337,11 +313,9 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawError(String message,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message rawError(String message)
     {
-        return raw(message, ERROR, request, GLOBALS);
+        return raw(message, ERROR);
     }
 
     /**
@@ -354,11 +328,9 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawNotice(String message,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message rawNotice(String message)
     {
-        return raw(message, NOTICE, request, GLOBALS);
+        return raw(message, NOTICE);
     }
 
     /**
@@ -371,11 +343,9 @@ public class Message {
      * @return Message
      * @static
      */
-    public static Message rawSuccess(String message,
-    		HttpServletRequest request,
-            Globals GLOBALS)
+    public static Message rawSuccess(String message)
     {
-        return raw(message, SUCCESS, request, GLOBALS);
+        return raw(message, SUCCESS);
     }
 
     /**
@@ -524,7 +494,7 @@ public class Message {
      */
     public void addParamHtml(String param)
     {
-        this.params.add(notice(param, request, GLOBALS));
+        this.params.add(notice(param));
     }
 
     /**
@@ -596,7 +566,7 @@ public class Message {
      */
     public void addText(String message, String separator /*= " "*/)
     {
-        this.addMessageToList(notice(htmlspecialchars(message), request, GLOBALS), separator);
+        this.addMessageToList(notice(htmlspecialchars(message)), separator);
     }
 
     /**
@@ -609,7 +579,7 @@ public class Message {
      */
     public void addHtml(String message, String separator)
     {
-        this.addMessageToList(rawNotice(message, request, GLOBALS), separator);
+        this.addMessageToList(rawNotice(message), separator);
     }
 
     /**
@@ -690,9 +660,9 @@ public class Message {
      * @access  public
      * @static
      */
-    public static String decodeBB(String message, HttpServletRequest request, Globals GLOBALS)
+    public static String decodeBB(String message)
     {
-        return Sanitize.sanitizeMessage(message, false, true, request, GLOBALS);
+        return Sanitize.sanitizeMessage(message, false, true);
     }
 
     /**
@@ -724,7 +694,7 @@ public class Message {
      *
      * @return String complete message
      */
-    public String getMessage(HttpServletRequest request, Globals GLOBALS)
+    public String getMessage()
     {
         String message = this.message;
 
@@ -745,7 +715,7 @@ public class Message {
         }
 
         if (this.useBBCode) {
-            message = decodeBB(message, request, GLOBALS);
+            message = decodeBB(message);
         }
 
         for (Object add_message: this.getAddedMessages()) {
@@ -866,7 +836,7 @@ public class Message {
         } else {
             image = "s_notice";
         }
-        message = Message.notice(Generator.getImage(image, null, null), request, GLOBALS) + " " + message;
+        message = Message.notice(Generator.getImage(image, null, null)) + " " + message;
         return message;
     }
 

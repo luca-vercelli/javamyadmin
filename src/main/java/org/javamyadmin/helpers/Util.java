@@ -4546,7 +4546,7 @@ public class Util {
         String $tbl_type = null;
         int $limit_offset = 0;
         Integer $limit_count = null;
-        Map $groupTable = null;
+        Map $groupTable = new HashMap<>();
         Integer $total_num_tables = null;
         
         if (! empty(request.getParameter("tbl_group")) || ! empty(request.getParameter("tbl_type"))) {

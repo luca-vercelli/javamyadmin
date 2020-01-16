@@ -343,7 +343,7 @@ public abstract class AbstractController {
 		    	response.setRequestStatus(false);
 		    	response.addJSON(
 		            "message",
-		            Message.error(__("Error: Token mismatch"), httpRequest, GLOBALS)
+		            Message.error(__("Error: Token mismatch"))
 		        );
 		        //exit();	// FIXME
 		    }

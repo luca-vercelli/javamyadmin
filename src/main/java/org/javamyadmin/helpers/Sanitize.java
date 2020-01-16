@@ -81,7 +81,7 @@ public class Sanitize {
      *
      * @return string Replaced string
      */
-    public static String replaceBBLink(String[] $found, HttpServletRequest request, Globals GLOBALS)
+    public static String replaceBBLink(String[] $found)
     {
         /* Check for valid link */
         if (! checkLink($found[1])) {
@@ -130,8 +130,7 @@ public class Sanitize {
      *
      * @return String   the sanitized message
      */
-    public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/,
-    		HttpServletRequest request, Globals GLOBALS)
+    public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/)
     {
     	if (message == null) {
     		message = "";
@@ -168,7 +167,7 @@ public class Sanitize {
 
 			@Override
 			public String apply(String[] match) {
-				return Sanitize.replaceBBLink(match, request, GLOBALS);
+				return Sanitize.replaceBBLink(match);
 			}
         }, message);
 

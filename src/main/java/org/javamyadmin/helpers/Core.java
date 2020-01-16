@@ -241,12 +241,12 @@ public class Core {
             && Globals.getConfig().get("is_setup").equals("false")
             && pmaResponse.isAjax()) {
         	pmaResponse.setRequestStatus(false);
-        	pmaResponse.addJSON("message", Message.error($error_message, req, GLOBALS));
+        	pmaResponse.addJSON("message", Message.error($error_message));
         } else if (! empty(req.getParameter("ajax_request"))) {
             // Generate JSON manually
             headerJSON(resp);
             try {
-				resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message, req, GLOBALS).getDisplay()))
+				resp.getWriter().write(json_encode(new ErrorBean(false, Message.error($error_message).getDisplay()))
 				);
 			} catch (IOException e) {
 				e.printStackTrace();

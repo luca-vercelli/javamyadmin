@@ -186,6 +186,7 @@ public class DatabaseInterface {
     {
 		ResultSet metadata = this._links.get($link).getMetaData()
 				.getTables($catalogName, $database, null, new String[] {"TABLE"});
+		System.out.println("Here "+$catalogName+"."+$database);
 		return fetchResult(metadata);
 		
     	/* TODO see $GLOBALS['cfg']['NaturalOrder'] */
@@ -765,13 +766,18 @@ public class DatabaseInterface {
      */
     public Array fetchAssoc(ResultSet $result) throws SQLException
     {
-    	//currently: 1 row only, and the resultset must be open
-    	Array map = new Array();
-    	int $n = $result.getMetaData().getColumnCount();
-    	for (int i = 1; i <= $n; ++i) {
-    		map.put($result.getMetaData().getColumnName(i), $result.getObject(i));
+    	//currently: 1 row only
+    	if ($result.next()) {
+    		Array map = new Array();
+	    	int $n = $result.getMetaData().getColumnCount();
+	    	System.out.println("Here columns:"+$n);
+	    	for (int i = 1; i <= $n; ++i) {
+	    		map.put($result.getMetaData().getColumnName(i), $result.getObject(i));
+	    	}
+	    	return map;
+    	} else {
+    		return null;
     	}
-        return map;
     }
 
     /**
