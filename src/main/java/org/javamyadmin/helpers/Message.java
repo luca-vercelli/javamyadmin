@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.html.Generator;
-import org.javamyadmin.php.Globals;
+import org.javamyadmin.jtwig.JtwigFactory;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -784,8 +784,6 @@ public class Message {
      */
     public String getDisplay()
     {
-    	throw new IllegalStateException("Not implemented");
-    	/*
     	this.isDisplayed(true);
 
         String context = "primary";
@@ -796,11 +794,10 @@ public class Message {
             context = "success";
         }
 
-        Template template = new Template();
-        Map<String,Object> model = new HashMap<String,Object>();
+        Map<String, Object> model = new HashMap<String, Object>();
         model.put("context", context);
         model.put("message", this.getMessage());
-        return template.render("message", model);*/
+        return JtwigFactory.render("message", model);
     }
 
     /**
