@@ -31,9 +31,9 @@ public class Functions {
 	public static List<JtwigFunction> getFunctions() {
 		if (functions == null) {
 			functions = new ArrayList<>();
-			functions.add(new JtwigFunction1Ary("notice", x -> Message.notice((String)x).getDisplay()));
-			functions.add(new JtwigFunction1Ary("error", x -> Message.error((String)x).getDisplay()));
-			functions.add(new JtwigFunction1Ary("raw_success", x -> Message.rawSuccess((String)x).getDisplay()));
+			functions.add(new JtwigFunction1Ary("notice", x -> Message.notice(x == null? null : x.toString()).getDisplay()));
+			functions.add(new JtwigFunction1Ary("error", x -> Message.error(x == null? null : x.toString()).getDisplay()));
+			functions.add(new JtwigFunction1Ary("raw_success", x -> Message.rawSuccess(x == null? null : x.toString()).getDisplay()));
 			functions.add(new JtwigFunction1Ary("url", x -> x)); // TODO
 			functions.add(new JtwigFunction1Ary("link", x -> x)); // TODO
 			functions.add(new JtwigFunction1Ary("trans", x -> __((String)x)));

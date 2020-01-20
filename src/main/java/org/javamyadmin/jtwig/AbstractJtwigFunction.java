@@ -8,6 +8,8 @@ import org.jtwig.functions.JtwigFunction;
 /**
  * Abstract implementation
  * 
+ * Just a little more than a SimpleJtwigFunction
+ * 
  * @author lucav
  *
  */
