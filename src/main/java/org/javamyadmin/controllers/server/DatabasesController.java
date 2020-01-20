@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/databases")
 public class DatabasesController extends AbstractController {
 
     /**
@@ -58,8 +57,12 @@ public class DatabasesController extends AbstractController {
      */
     private int position;
     
-	@RequestMapping(value = "/")
-	public void index(@RequestParam String sort_by, @RequestParam String sort_order, @RequestParam String statistics, @RequestParam(defaultValue="0") Integer pos) throws ServletException, IOException, SQLException, NamingException {
+	@RequestMapping(value = "/databases")
+	public void index(@RequestParam(required=false) String sort_by,
+			@RequestParam(required=false) String sort_order,
+			@RequestParam(required=false) String statistics,
+			@RequestParam(defaultValue="0") Integer pos)
+	throws ServletException, IOException, SQLException, NamingException {
 
 		super.prepareResponse();
         //global $cfg, $server, $dblist, $is_create_db_priv;
@@ -144,7 +147,7 @@ public class DatabasesController extends AbstractController {
 	    model.put("pma_theme_image", GLOBALS.getPmaThemeImage());
 	    model.put("text_dir", GLOBALS.getTextDir());
 
-		String html = JtwigFactory.render("databases/index", model);
+		String html = JtwigFactory.render("server/databases/index", model);
 		response.addHTML(html);
 	}
 

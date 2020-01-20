@@ -101,11 +101,8 @@
                 <th></th>
               {% endif %}
               <th>
-                <a href="{{ url('/server/databases', url_params|merge({
-                  'sort_by': 'SCHEMA_NAME',
-                  'sort_order': url_params.sort_by == 'SCHEMA_NAME'
-                  and url_params.sort_order == 'asc' ? 'desc' : 'asc'
-                })) }}">
+              
+                <a href="{{ url('/server/databases') }}">
                   {% trans 'Database' %}
                   {% if url_params.sort_by == 'SCHEMA_NAME' %}
                     {% if url_params.sort_order == 'asc' %}
@@ -118,11 +115,7 @@
               </th>
 
               <th>
-                <a href="{{ url('/server/databases', url_params|merge({
-                  'sort_by': 'DEFAULT_COLLATION_NAME',
-                  'sort_order': url_params.sort_by == 'DEFAULT_COLLATION_NAME'
-                    and url_params.sort_order == 'asc' ? 'desc' : 'asc'
-                })) }}">
+                <a href="{{ url('/server/databases') }}">
                   {% trans 'Collation' %}
                   {% if url_params.sort_by == 'DEFAULT_COLLATION_NAME' %}
                     {% if url_params.sort_order == 'asc' %}
@@ -137,11 +130,7 @@
               {% if has_statistics %}
                 {% for name, statistic in header_statistics %}
                   <th{{ statistic.format == 'byte' ? ' colspan="2"' }}>
-                    <a href="{{ url('/server/databases', url_params|merge({
-                      'sort_by': name,
-                      'sort_order': url_params.sort_by == name
-                      and url_params.sort_order == 'asc' ? 'desc' : 'asc'
-                    })) }}">
+                    <a href="{{ url('/server/databases') }}">
                       {{ statistic.title }}
                       {% if url_params.sort_by == name %}
                         {% if url_params.sort_order == 'asc' %}
