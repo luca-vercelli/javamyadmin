@@ -4902,6 +4902,10 @@ public class Util {
         return linkOrButton($url, $title + $orderImg, $orderLinkParams);*/
     }
 
+    public static String sortableTableHeader(String $title, String $sort) {
+    	return sortableTableHeader($title, $sort, "ASC");
+    }
+    
     /**
      * Check that input is an int or an int in a String
      *
