@@ -56,7 +56,7 @@ public class StructureController extends AbstractController {
     /**
      * @var array Tables in the database
      */
-    protected Map<String,Map<String, Object>> tables; //TODO was array<Table>
+    protected Map<Integer, Map<String, String>> tables; //TODO was array<Table>
 
     /**
      * @var bool whether stats show or not
@@ -85,7 +85,7 @@ public class StructureController extends AbstractController {
     {
         // [$tables, $numTables, $totalNumTables,, $isShowStats, $dbIsSystemSchema,,, $position]
         Object[] ret = Util.getDbInfo(this.db, $subPart, httpRequest, GLOBALS, $_SESSION);
-        this.tables = (Map<String, Map<String, Object>>) ret[0];
+        this.tables = (Map<Integer, Map<String, String>>) ret[0];
         this.numTables = (int) ret[1];
         this.position = (Integer) ret[8];
         this.dbIsSystemSchema = (boolean) ret[5];
@@ -190,13 +190,13 @@ public class StructureController extends AbstractController {
 	 * @throws SQLException 
      */
     @RequestMapping(value = "/structure/real-row-count")
-    public Map handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException, SQLException, NamingException
+    public Map<String, Object> handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException, SQLException, NamingException
     {
     	super.prepareResponse();
     	
         // TODO require_once ROOT_PATH + "libraries/db_common.inc.php";
         if (! this.response.isAjax()) {
-            return new HashMap();
+            return new HashMap<>();
         }
         // If there is a request to update all table"s row count.
         if (empty(real_row_count_all)) {
@@ -206,21 +206,21 @@ public class StructureController extends AbstractController {
                 .getRealRowCountTable();
             // Format the number.
             String $realRowCount = Util.formatNumber(new Double($realRowCount_int), 0);
-            Map map = new HashMap();
+            Map<String, Object> map = new HashMap<>();
             map.put("real_row_count", $realRowCount);
             return map;
         }
         // Array to store the results.
-        Map $realRowCountAll = new HashMap();
+        Map<String, Object> $realRowCountAll = new HashMap<>();
         // Iterate over each table and fetch real row count.
-        for (Map<String, Object> $table : this.tables.values()) {
+        for (Map<String, String> $table : this.tables.values()) {
             int $rowCount = this.getDbi()
                 .getTable(this.db, (String) $table.get("TABLE_NAME"))
                 .getRealRowCountTable();
             $realRowCountAll.put("table", $table.get("TABLE_NAME"));
             $realRowCountAll.put("row_count", $rowCount);
         }
-        Map map = new HashMap();
+        Map<String, Object> map = new HashMap<>();
         map.put("real_row_count_all", json_encode($realRowCountAll));
         return map;
     }
@@ -234,15 +234,15 @@ public class StructureController extends AbstractController {
     {
         String $html = "";
         // filtering
-        Map model = new HashMap();
+        Map<String, Object> model = new HashMap<>();
         model.put("filter_value", "");
         $html += JtwigFactory.render("filter", model);
         int $i = 0;
         int $sum_entries = 0;
         boolean $overhead_check = false;
-        String $create_time_all = "";
-        String $update_time_all = "";
-        String $check_time_all = "";
+        //String $create_time_all = "";
+        //String $update_time_all = "";
+        //String $check_time_all = "";
         int PropertiesNumColumns = new Integer((String) Globals.getConfig().get("PropertiesNumColumns"));
         int $num_columns = PropertiesNumColumns > 1
             ? (int)Math.ceil(this.numTables / PropertiesNumColumns) + 1
@@ -250,11 +250,11 @@ public class StructureController extends AbstractController {
         int $row_count      = 0;
         int $sum_size       = 0;
         int $overhead_size  = 0;
-        List $hidden_fields = new ArrayList();
+        List<String> $hidden_fields = new ArrayList<>();
         boolean $overall_approx_rows = false;
-        List $structure_table_rows = new ArrayList();
-        for (String $keyname : this.tables.keySet()) {
-        	Map $current_table = this.tables.get($keyname);
+        List<Map<String,Object>> $structure_table_rows = new ArrayList();
+        for (Integer $keyname : this.tables.keySet()) {
+        	Map<String, String> $current_table = this.tables.get($keyname);
             // Get valid statistics whatever is the table type
             String $drop_query = "";
             String $drop_message = "";
@@ -262,7 +262,7 @@ public class StructureController extends AbstractController {
             String[] $input_class = new String[] {"checkall"};
             boolean $table_is_view = false;
             // Sets parameters for links
-            Map $tableUrlParams = new HashMap();
+            Map<String, Object> $tableUrlParams = new HashMap<>();
             $tableUrlParams.put("db", this.db);
             $tableUrlParams.put("table", $current_table.get("TABLE_NAME"));
             // do not list the previous table"s size info for a view
@@ -282,9 +282,9 @@ public class StructureController extends AbstractController {
                 );*/
             Table $curTable = this.getDbi()
                 .getTable(this.db, (String) $current_table.get("TABLE_NAME"));
-            if (! $curTable.isMerge()) {
+            /*if (! $curTable.isMerge()) {
                 $sum_entries += (Integer)$current_table.get("TABLE_ROWS");
-            }
+            }*/
             String $collationDefinition = "---";
             /*if (!empty($current_table.get("Collation"))) {
                 String $tableCollation = Charsets.findCollationByName(
@@ -362,7 +362,7 @@ public class StructureController extends AbstractController {
              * I could have used the PHP ternary conditional operator but I find
              * the code easier to read without this operator.
              */
-            boolean $may_have_rows = (Integer)$current_table.get("TABLE_ROWS") > 0 || $table_is_view;
+            boolean $may_have_rows = true ; // (Integer)$current_table.get("TABLE_ROWS") > 0 || $table_is_view;
             Map<String, String> $titles = Util.buildActionTitles(GLOBALS, $_SESSION);
             if (! this.dbIsSystemSchema) {
                 $drop_query = String.format(
@@ -400,14 +400,14 @@ public class StructureController extends AbstractController {
                 model1.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
                 model1.put("structure_table_rows", $structure_table_rows);
                 $html += JtwigFactory.render("database/structure/table_header", model1);
-                $structure_table_rows = new ArrayList();
+                $structure_table_rows = new ArrayList<>();
             }
             /*[$approx_rows, $show_superscript] = this.isRowCountApproximated(
                 $current_table,
                 $table_is_view
             );
             [$do, $ignored] = this.getReplicationStatus($truename);*/
-            Array $row = new Array();
+            Map<String, Object> $row = (Map)new Array();
             $structure_table_rows.add($row);
             $row.put("table_name_hash", md5((String)$current_table.get("TABLE_NAME")));
             $row.put("db_table_name_hash", md5(this.db + "." + $current_table.get("TABLE_NAME")));
@@ -483,7 +483,7 @@ public class StructureController extends AbstractController {
             $databaseCharset = $collation.getCharset();
         }*/
         // table form
-        Map body_for_table_summary = new HashMap();
+        Map<String, Object> body_for_table_summary = new HashMap<>();
         body_for_table_summary.put("num_tables", this.numTables);
 //        body_for_table_summary.put("server_slave_status", $GLOBALS.get("replication_info").get("slave").get("status"));
         body_for_table_summary.put("db_is_system_schema", this.dbIsSystemSchema);
@@ -506,7 +506,7 @@ public class StructureController extends AbstractController {
         body_for_table_summary.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
         body_for_table_summary.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
         body_for_table_summary.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
-        Map check_all_tables = new HashMap();
+        Map<String, Object> check_all_tables = new HashMap<>();
         check_all_tables.put("pma_theme_image", GLOBALS.getPmaThemeImage());
         check_all_tables.put("text_dir", GLOBALS.getTextDir());
         check_all_tables.put("overhead_check", $overhead_check);

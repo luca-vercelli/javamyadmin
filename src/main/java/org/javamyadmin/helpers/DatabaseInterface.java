@@ -180,14 +180,14 @@ public class DatabaseInterface {
         return $this->_extension->realMultiQuery($this->_links[$linkIndex], $multiQuery);*/
     }
     
-    public Array getTables(String $catalogName, String $database,
+    public Map<Integer,Map<String,String>> getTables(String $catalogName, String $database,
     		int $link /*= DatabaseInterface::CONNECT_USER*/
     ) throws SQLException
     {
 		ResultSet metadata = this._links.get($link).getMetaData()
 				.getTables($catalogName, $database, null, new String[] {"TABLE"});
 		System.out.println("Here "+$catalogName+"."+$database);
-		return fetchResult(metadata);
+		return (Map)fetchResult(metadata);
 		
     	/* TODO see $GLOBALS['cfg']['NaturalOrder'] */
     }
@@ -201,13 +201,13 @@ public class DatabaseInterface {
      * @return array   tables names
      * @throws SQLException 
      */
-    public Array getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/) throws SQLException
+    public Map<Integer,Map<String,String>> getTables(String $database, int $link /*= DatabaseInterface::CONNECT_USER*/) throws SQLException
     {
     	return getTables(null, $database, $link);
     	/* TODO see $GLOBALS['cfg']['NaturalOrder'] */
     }
 
-	public Array getTables(String $database) throws SQLException {
+	public Map<Integer,Map<String,String>> getTables(String $database) throws SQLException {
 		return getTables($database, DatabaseInterface.CONNECT_USER);
 	}
 
@@ -290,7 +290,7 @@ public class DatabaseInterface {
      *
      * @todo    move into Table
      */
-    public Array getTablesFull(
+    public Map<Integer, Map<String,String>> getTablesFull(
     	String $catalogName,
         String $database,
         String $table /*= null*/,
@@ -305,12 +305,12 @@ public class DatabaseInterface {
     	
     	ResultSet metadata = this._links.get($link).getMetaData()
 				.getTables($catalogName, $database, $table, new String[] {"TABLE"});
-		return fetchResult(metadata);
+		return (Map)fetchResult(metadata);
 		
 		// TODO respect parameters
     }
     
-    public Array getTablesFull(
+    public Map<Integer, Map<String,String>> getTablesFull(
         	String $database,
             String $table /*= null*/,
             boolean $tbl_is_group /*= false*/,
@@ -326,7 +326,7 @@ public class DatabaseInterface {
         			$limit_count, $sort_by, $sort_order, $table_type, $link);
         }
 
-    public Array getTablesFull(
+    public Map<Integer, Map<String,String>> getTablesFull(
         	String $database,
             String $table /*= null*/,
             boolean $tbl_is_group /*= false*/,
@@ -341,7 +341,7 @@ public class DatabaseInterface {
         			$limit_count, $sort_by, $sort_order, $table_type, CONNECT_USER);
         }
     
-    public Array getTablesFull(String $database) throws SQLException {
+    public Map<Integer, Map<String,String>> getTablesFull(String $database) throws SQLException {
     	return getTablesFull(null, $database, null, false, 0, null, "Name", "ASC", null, CONNECT_USER);
     }
     

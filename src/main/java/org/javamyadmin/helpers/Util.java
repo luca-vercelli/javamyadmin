@@ -4521,7 +4521,7 @@ public class Util {
         /**
          * information about tables in db
          */
-        Map $tables = new HashMap();
+        Map<Integer, Map<String,String>> $tables = new HashMap<>();
 
         Map $tooltip_truename = new HashMap();
         Map $tooltip_aliasname = new HashMap();
@@ -4546,7 +4546,7 @@ public class Util {
         String $tbl_type = null;
         int $limit_offset = 0;
         Integer $limit_count = null;
-        Map $groupTable = new HashMap<>();
+        Map<Integer, Map<String,String>> $groupTable = new HashMap<>();
         Integer $total_num_tables = null;
         
         if (! empty(request.getParameter("tbl_group")) || ! empty(request.getParameter("tbl_type"))) {
