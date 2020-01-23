@@ -14,8 +14,8 @@
     </th>
     {% if server_slave_status %}
         <td class="text-center">
-            {{ ignored ? get_image('s_cancel', 'Not replicated'|trans) : ''}}
-            {{ do ? get_image('s_success', 'Replicated'|trans) : '' }}
+            {{ ignored ? get_image('s_cancel', 'Not replicated'|trans) }}
+            {{ doit ? get_image('s_success', 'Replicated'|trans) }}
         </td>
     {% endif %}
 
@@ -27,7 +27,8 @@
                 'db': db,
                 'ajax_request': true,
                 'favorite_table': current_table['TABLE_NAME'],
-                ((already_favorite ? 'remove' : 'add') ~ '_favorite'): true
+                'remove_favorite' : already_favorite,
+                'add_favorite' : not already_favorite
             } %}
             {% include 'database/structure/favorite_anchor.twig' with {
                 'table_name_hash': table_name_hash,
@@ -91,7 +92,7 @@
         </td>
     {% endif %}
 
-    {% if current_table['TABLE_ROWS'] is defined
+    {% if (current_table['TABLE_ROWS'] is defined)
         and (current_table['ENGINE'] != null or table_is_view) %}
         {# Get the row count #}
         {% set row_count = format_number(current_table['TABLE_ROWS'], 0) %}
@@ -221,7 +222,7 @@
         {% endif %}
 
         {% set colspan_for_structure = action_colspan + 3 %}
-        <td colspan="{{ colspan_for_structure - db_is_system_schema ? 6 : 9 }}"
+        <td colspan="{{ (colspan_for_structure > db_is_system_schema) ? 6 : 9 }}"
             class="text-center">
             {% trans 'in use' %}
         </td>

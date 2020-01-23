@@ -251,7 +251,7 @@ public class StructureController extends AbstractController {
         int $overhead_size  = 0;
         List<String> $hidden_fields = new ArrayList<>();
         boolean $overall_approx_rows = false;
-        List<Map<String,Object>> $structure_table_rows = new ArrayList();
+        List<Map<String,Object>> $structure_table_rows = new ArrayList<>();
         for (Integer $keyname : this.tables.keySet()) {
         	Map<String, String> $current_table = this.tables.get($keyname);
             // Get valid statistics whatever is the table type
@@ -455,7 +455,7 @@ public class StructureController extends AbstractController {
 //            $row.put("charset", $charset);
             $row.put("is_show_stats", this.isShowStats);
             $row.put("ignored", $ignored);
-            $row.put("do", $do);
+            $row.put("doit", $do);
             $row.put("approx_rows", $approx_rows);
             $row.put("show_superscript", $show_superscript);
             $row.put("already_favorite", this.checkFavoriteTable(

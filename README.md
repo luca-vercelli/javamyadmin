@@ -77,8 +77,12 @@ All paths have been defined inside GLOBALS class.
 
 JTwig has some limitations. We added some configuration, however that's not enough.
  
-(1) The construct for ... if is not allowed.
+(*) The construct for ... if is not allowed.
 
-(2) The "?" construct requires parenthesis, e.g. (condition) ? x : y
+(*) The "?" construct requires parenthesis, e.g. (condition) ? x : y
 
-(3) The precedence of "|" operator is different
+(*) The precedence of "|" operator is different
+
+(*) "include" is different, path must be relative to current file and not to root
+
+(*)"do" is not a valid variable name
