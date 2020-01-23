@@ -64,7 +64,7 @@
     </thead>
     <tbody>
     {% for structure_table_row in structure_table_rows %}
-        {% include 'database/structure/structure_table_row.twig' with structure_table_row only %}
+        {% include './structure_table_row.twig' with structure_table_row only %}
     {% endfor %}
     </tbody>
     {% if body_for_table_summary %}

@@ -14,8 +14,8 @@
     </th>
     {% if server_slave_status %}
         <td class="text-center">
-            {{ ignored ? get_image('s_cancel', 'Not replicated'|trans) }}
-            {{ do ? get_image('s_success', 'Replicated'|trans) }}
+            {{ ignored ? get_image('s_cancel', 'Not replicated'|trans) : ''}}
+            {{ do ? get_image('s_success', 'Replicated'|trans) : '' }}
         </td>
     {% endif %}
 
