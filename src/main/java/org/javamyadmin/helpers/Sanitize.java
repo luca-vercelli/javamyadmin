@@ -1,8 +1,5 @@
 package org.javamyadmin.helpers;
 
-import org.javamyadmin.helpers.html.Generator;
-import org.javamyadmin.php.Globals;
-
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
@@ -11,8 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.javamyadmin.php.Globals;
 
 /**
  * This class includes various sanitization methods that can be called statically
@@ -157,7 +155,7 @@ public class Sanitize {
             // used in common.inc.php:
         message = message.replace(    "[conferr]" , "<iframe src='show_config_errors.php'><a href='show_config_errors.php'>show_config_errors.php</a></iframe>");
             // used in libraries/Util.php
-        message = message.replace(    "[dochelpicon]" , Generator.getImage("b_help", __("Documentation"), null));
+        message = message.replace(    "[dochelpicon]" , Util.getImage("b_help", __("Documentation"), null));
 
         // Match links in bb code ([a@url@target], where @target is options) 
         String pattern = "/\\[a@([^]\"@]*)(@([^]\"]*))?\\]/";

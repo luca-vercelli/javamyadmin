@@ -15,7 +15,6 @@ import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
-import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
@@ -149,7 +148,7 @@ public class StructureController extends AbstractController {
             if (!empty($parameters.get("sort_order"))) {
                 $urlParams.put("sort_order", $parameters.get("sort_order"));
             }
-            $listNavigator = Generator.getListNavigator(
+            $listNavigator = Util.getListNavigator(
                 this.totalNumTables,
                 this.position,
                 $urlParams,
@@ -405,8 +404,12 @@ public class StructureController extends AbstractController {
             /*[$approx_rows, $show_superscript] = this.isRowCountApproximated(
                 $current_table,
                 $table_is_view
-            );
-            [$do, $ignored] = this.getReplicationStatus($truename);*/
+            );*/
+            boolean $approx_rows = false;
+            String $show_superscript = "";
+            /*[$do, $ignored] = this.getReplicationStatus($truename);*/
+            boolean $do = true;
+            boolean $ignored = false;
             Map<String, Object> $row = (Map)new Array();
             $structure_table_rows.add($row);
             $row.put("table_name_hash", md5((String)$current_table.get("TABLE_NAME")));
@@ -451,13 +454,13 @@ public class StructureController extends AbstractController {
 //                    ? Util.localisedDate(strtotime($check_time)) : "-");
 //            $row.put("charset", $charset);
             $row.put("is_show_stats", this.isShowStats);
-//            $row.put("ignored", $ignored);
-//            $row.put("do", $do);
-//            $row.put("approx_rows", $approx_rows);
-//            $row.put("show_superscript", $show_superscript);
-//            $row.put("already_favorite", this.checkFavoriteTable(
-//                $current_table.get("TABLE_NAME")
-//            ));
+            $row.put("ignored", $ignored);
+            $row.put("do", $do);
+            $row.put("approx_rows", $approx_rows);
+            $row.put("show_superscript", $show_superscript);
+            $row.put("already_favorite", this.checkFavoriteTable(
+                $current_table.get("TABLE_NAME"), $_SESSION, GLOBALS
+            ));
             $row.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
             $row.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
             $row.put("limit_chars", Globals.getConfig().get("LimitChars"));
@@ -577,6 +580,27 @@ public class StructureController extends AbstractController {
                     $truename
                 )
             ) {
+                return true;
+            }
+        }*/
+        return false;
+    }
+
+    /**
+     * Function to check if a table is already in favorite list.
+     *
+     * @param string $currentTable current table
+     *
+     * @return bool
+     */
+    protected boolean checkFavoriteTable(String $currentTable, SessionMap $_SESSION, Globals GLOBALS)
+    {
+    	/* TODO
+        // ensure $_SESSION['tmpval']['favoriteTables'] is initialized
+        RecentFavoriteTable.getInstance("favorite");
+        Map $favoriteTables = (Map) multiget($_SESSION, "tmpval", "favoriteTables", GLOBALS.getServer());
+        for (Object $value : $favoriteTables.values()) {
+            if (this.db.equals($value.get("db")) && $currentTable.equals($value.get("table"))) {
                 return true;
             }
         }*/

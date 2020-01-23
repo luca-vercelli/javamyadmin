@@ -9,7 +9,6 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
-import org.javamyadmin.helpers.html.Generator;
 import org.jtwig.functions.JtwigFunction;
 
 import static org.javamyadmin.php.Php.*;
@@ -55,7 +54,7 @@ public class Functions {
 							new Class[] { String.class, String.class, Map.class, String.class, String.class }),
 					"", "", null, "", ""));
 			functions.add(new JtwigFunctionVarargs("get_image",
-					getMethod(Generator.class, "getImage", new Class[] { String.class, String.class, Map.class }), "",
+					getMethod(Util.class, "getImage", new Class[] { String.class, String.class, Map.class }), "",
 					"", null));
 		}
 		return functions;

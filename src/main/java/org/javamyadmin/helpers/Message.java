@@ -8,7 +8,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
 
 import static org.javamyadmin.php.Php.*;
@@ -833,7 +832,7 @@ public class Message {
         } else {
             image = "s_notice";
         }
-        message = Message.notice(Generator.getImage(image, null, null)) + " " + message;
+        message = Message.notice(Util.getImage(image, null, null)) + " " + message;
         return message;
     }
 

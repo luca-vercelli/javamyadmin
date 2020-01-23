@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1227,4 +1228,115 @@ public class DatabaseInterface {
     public Connection getLink() {
     	return getLink(CONNECT_USER);
     }
+    
+    /**
+     * Returns descriptions of columns in given table (all or given by $column)
+     *
+     * @param string  $database name of database
+     * @param string  $table    name of table to retrieve columns from
+     * @param string  $column   name of column, null to show all columns
+     * @param boolean $full     whether to return full info or only column names
+     * @param integer $link     link type
+     *
+     * @return array array indexed by column names or,
+     *               if $column is given, flat array description
+     * @throws SQLException 
+     */
+    public Array getColumns(
+    	String $catalogName,
+        String $database,
+        String $table,
+        String $column /*= null*/,
+        boolean $full /*= false*/,
+        int $link /*= DatabaseInterface::CONNECT_USER*/
+    ) throws SQLException {
+    	ResultSet metadata = this._links.get($link).getMetaData()
+				.getColumns($catalogName, $database, $table, $column);
+		Array $fields = fetchResult(metadata, "COLUMN_NAME", null);
+    	
+    	ResultSet keys = this._links.get($link).getMetaData().getPrimaryKeys($catalogName, $database, $table);
+    	while(keys.next()) {
+    		String pkColName = keys.getString("COLUMN_NAME");
+    		for (Object field : $fields) {
+    			if (((Map)field).get("COLUMN_NAME").equals(pkColName)) {
+    				((Map)field).put("Key", "UNI");
+    			}
+    		}
+    	}
+    	//TO DO CHECK FOR OTHER INDEXES
+
+        return $fields; // FIXME was $column != null ? array_shift($fields) : $fields;
+    }
+
+    public ResultSet getColumns(
+            String $database,
+            String $table,
+            String $column /*= null*/,
+            boolean $full /*= false*/,
+            int $link /*= DatabaseInterface::CONNECT_USER*/
+    ) {
+    	return getColumns($database, $table, $column, $full, $link);
+    }
+    
+    public ResultSet getColumns(
+            String $database,
+            String $table
+    ) {
+    	return getColumns($database, $table, null, false, CONNECT_USER);
+    }
+    
+    /**
+     * Returns all column names in given table
+     *
+     * @param string $database name of database
+     * @param string $table    name of table to retrieve columns from
+     * @param mixed  $link     mysql link resource
+     *
+     * @return null|array
+     * @throws SQLException 
+     */
+    public List<String> getColumnNames(
+        String $catalogName,
+        String $database,
+        String $table,
+        int $link /*= DatabaseInterface::CONNECT_USER*/
+    ) throws SQLException {
+    	ResultSet metadata = this._links.get($link).getMetaData()
+				.getColumns($catalogName, $database, $table, null);
+		Map<String, Map<String, Object>> $fields = (Map)fetchResult(metadata, "COLUMN_NAME", null);
+		List<String> retval = new ArrayList<>();
+		retval.addAll($fields.keySet());
+        return retval;
+    }
+    
+    public List<String> getColumnNames(
+            String $database,
+            String $table,
+            int $link /*= DatabaseInterface::CONNECT_USER*/
+    ) throws SQLException {
+    	return getColumnNames(null, $database, $table, CONNECT_USER);
+    }
+    
+    public List<String> getColumnNames(
+            String $database,
+            String $table
+    ) throws SQLException {
+    	return getColumnNames($database, $table, CONNECT_USER);
+    }
+    
+    /**
+     * returns properly escaped string for use in MySQL queries
+     *
+     * @param string $str  string to be escaped
+     *
+     * @return string a MySQL escaped string
+     */
+    public String escapeString(String $str) {
+    	// FIXME is this portable?
+    	if ($str == null) {
+    		return $str;
+    	}
+    	return $str.replace("'", "''");
+    }
+    
 }

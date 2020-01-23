@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.javamyadmin.helpers.Scripts.FStruct2;
-import org.javamyadmin.helpers.html.Generator;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,7 +212,7 @@ public class Footer {
         $retval += "<a href='" + htmlspecialchars($url) + "'"
             + " title='" + __("Open new phpMyAdmin window") + "' target='_blank' rel='noopener noreferrer'>";
         if (Util.showIcons("TabsMode", GLOBALS)) {
-            $retval += Generator.getImage(
+            $retval += Util.getImage(
                 "window-new",
                 __("Open new phpMyAdmin window"),
                 null
