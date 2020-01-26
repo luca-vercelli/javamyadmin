@@ -991,10 +991,12 @@ public class Config {
      */
     public String getCookie(String cookieName, HttpServletRequest req)
     {
-    	for (Cookie c: req.getCookies()) {
-    		if (c.getName().equals(this.getCookieName(cookieName))) {
-    			return c.getValue();
-    		}
+    	if (req.getCookies() != null) {
+	    	for (Cookie c: req.getCookies()) {
+	    		if (c.getName().equals(this.getCookieName(cookieName))) {
+	    			return c.getValue();
+	    		}
+	    	}
     	}
     	return null;
     }
@@ -1019,10 +1021,12 @@ public class Config {
      */
     public boolean issetCookie(String cookieName, HttpServletRequest req)
     {
-    	for (Cookie c: req.getCookies()) {
-    		if (c.getName().equals(this.getCookieName(cookieName))) {
-    			return true;
-    		}
+    	if (req.getCookies() != null) {
+	    	for (Cookie c: req.getCookies()) {
+	    		if (c.getName().equals(this.getCookieName(cookieName))) {
+	    			return true;
+	    		}
+	    	}
     	}
     	return false;
     	
