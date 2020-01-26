@@ -6,13 +6,11 @@ import java.util.ResourceBundle;
 public class Gettext {
 	
 	//see https://www.gnu.org/software/gettext/manual/html_node/Java.html
-	private static ResourceBundle myResources = ResourceBundle.getBundle("translations");
+	// May throw a MissingResourceException !
+	private static ResourceBundle myResources = ResourceBundle.getBundle("translations"); //FIXME Globals.LOCALES_BUNDLE
 
 	public static String __(String s) {
 		try {
-			
-			// FIXME
-			
 			return myResources.getString(s);
 		} catch(MissingResourceException exc) {
 			return s;

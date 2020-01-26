@@ -31,9 +31,9 @@ public class Globals {
 	private static String ROOT_PATH;
 	private static String THEMES_PATH;
 	private static String TEMPLATES_PATH;
+	public static String LOCALES_BUNDLE = "org.javamyadmin";
 	private static Config PMA_Config = new Config(null);
 	private static boolean pma_config_loading = false;
-	private static String LOCALE_PATH = "/"; // FIXME Where is it? files *.mo should be there
 	private static File PMA_PHP_SELF = new File("???"); // TODO
 	private ListDatabase dblist;
 	
@@ -149,14 +149,6 @@ public class Globals {
 
 	public void setIsUpload(boolean is_upload) {
 		this.is_upload = is_upload;
-	}
-
-	public static String getLocalePath() {
-		return LOCALE_PATH;
-	}
-
-	public static void setLocalePath(String path) {
-		LOCALE_PATH = path;
 	}
 
 	public static File get_PMA_PHP_SELF() {
