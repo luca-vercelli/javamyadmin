@@ -31,7 +31,7 @@ public class Globals {
 	private static String ROOT_PATH;
 	private static String THEMES_PATH;
 	private static String TEMPLATES_PATH;
-	public static String LOCALES_BUNDLE = "org.javamyadmin";
+	public static String LOCALES_BUNDLE = "org.javamyadmin.Translations";
 	private static Config PMA_Config = new Config(null);
 	private static boolean pma_config_loading = false;
 	private static File PMA_PHP_SELF = new File("???"); // TODO
