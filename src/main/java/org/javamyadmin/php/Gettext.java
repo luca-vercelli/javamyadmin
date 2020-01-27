@@ -7,7 +7,7 @@ public class Gettext {
 	
 	//see https://www.gnu.org/software/gettext/manual/html_node/Java.html
 	// May throw a MissingResourceException !
-	private static ResourceBundle myResources = ResourceBundle.getBundle("translations"); //FIXME Globals.LOCALES_BUNDLE
+	private static ResourceBundle myResources = ResourceBundle.getBundle(Globals.LOCALES_BUNDLE);
 
 	public static String __(String s) {
 		try {
