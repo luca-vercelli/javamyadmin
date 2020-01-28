@@ -74,7 +74,7 @@ public class UserPreferences {
      */
     public Map load()
     {
-    	return null;
+    	return new HashMap<>();
     	/* TODO
         $cfgRelation = this.relation.getRelationsParam();
         if (! $cfgRelation["userconfigwork"]) {
@@ -192,7 +192,7 @@ public class UserPreferences {
      */
     public Map apply(Map $config_data)
     {
-    	return null;
+    	return new HashMap();
     	/* TODO
         $cfg = [];
         $blacklist = array_flip(Globals.getConfig()["UserprefsDisallow"]);
