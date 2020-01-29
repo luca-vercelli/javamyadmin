@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -639,5 +640,23 @@ public class Php {
 
 	public static List<Integer> range(int start, int end) {
 		return range(start, end, 1);
+	}
+
+	/**
+	 * Encodes data with MIME base64
+	 * @param data
+	 */
+	public static String base64_encode(String data) {
+		return Base64.getEncoder().encodeToString(data.getBytes());
+	}
+	
+	/**
+	 * Decodes data encoded with MIME base64
+	 * @param data
+	 * @return
+	 */
+	public static String base64_decode(String encodedString) {
+		byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
+		return new String(decodedBytes);
 	}
 }
