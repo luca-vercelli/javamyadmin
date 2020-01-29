@@ -151,22 +151,22 @@ public class Util {
      *
      * @return string an html IMG tag
      */
-    public static String getImage(String image, String alternate /*= ""*/, Map<String, Object> attributes /*= []*/)
+    public static String getImage(String $image, String $alternate /*= ""*/, Map<String, Object> $attributes /*= []*/)
     {
-    	if (alternate == null) alternate = "";
-    	if (attributes == null) attributes = new HashMap<>();
+    	if ($alternate == null) $alternate = "";
+    	if ($attributes == null) $attributes = new HashMap<>();
     			
-        alternate = htmlspecialchars(alternate);
+        $alternate = htmlspecialchars($alternate);
 
-        if (attributes.containsKey("class")) {
-            attributes.put("class", "icon ic_" + image + " " + attributes.get("class"));
+        if ($attributes.containsKey("class")) {
+            $attributes.put("class", "icon ic_" + $image + " " + $attributes.get("class"));
         } else {
-            attributes.put("class", "icon ic_" + image);
+            $attributes.put("class", "icon ic_" + $image);
         }
 
         // set all other attributes
         String attr_str = "";
-        for (Entry<String, Object> entry: attributes.entrySet()) {
+        for (Entry<String, Object> entry: $attributes.entrySet()) {
             if (!entry.getKey().equals("alt") && ! entry.getKey().equals("title")) {
                 attr_str += " " + entry.getKey() + "='" + entry.getValue() + "'";
             }
@@ -174,18 +174,18 @@ public class Util {
 
         // override the alt attribute
         String alt;
-        if (attributes.containsKey("alt")) {
-            alt = (String) attributes.get("alt");
+        if ($attributes.containsKey("alt")) {
+            alt = (String) $attributes.get("alt");
         } else {
-            alt = alternate;
+            alt = $alternate;
         }
 
         // override the title attribute
         String title;
-        if (attributes.containsKey("title")) {
-            title = (String) attributes.get("title");
+        if ($attributes.containsKey("title")) {
+            title = (String) $attributes.get("title");
         } else {
-            title = alternate;
+            title = $alternate;
         }
 
         // generate the IMG tag
@@ -196,6 +196,11 @@ public class Util {
     public static String getImage(String $image) {
     	return getImage($image, "", null);
     }
+    
+    public static String getImage(String $image, String $alternate) {
+    	return getImage($image, $alternate, null);
+    }
+    
     /**
      * Returns the formatted maximum size for an upload
      *
