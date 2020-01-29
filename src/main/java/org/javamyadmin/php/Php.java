@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -312,6 +313,40 @@ public class Php {
 	}
 
 	/**
+	 * Shift an element off the beginning of array.
+	 * 
+	 * Shifts the first value of the array off and returns it, shortening the array
+	 * by one element and moving everything down. All numerical array keys will be
+	 * modified to start counting from zero while literal keys won't be affected.
+	 * 
+	 * @param array
+	 * @return removed element
+	 */
+	public static <T> T array_shift(List<T> array) {
+		return array.remove(0);
+	}
+
+	/**
+	 * Shift an element off the beginning of array.
+	 * 
+	 * Shifts the first value of the array off and returns it, shortening the array
+	 * by one element and moving everything down. All numerical array keys will be
+	 * modified to start counting from zero while literal keys won't be affected.
+	 * 
+	 * @param array
+	 * @return removed element
+	 */
+	public static <U,V> V array_shift(LinkedHashMap<U, V> array) {
+		// This method is meaningless for a generic Map
+		U firstKey = null;
+		for (U key: array.keySet()) {
+			firstKey = key;
+			break;
+		}
+		return firstKey != null ? array.remove(firstKey) : null;
+	}
+
+	/**
 	 * True if array contains object
 	 */
 	public static boolean in_array(Object x, Object[] array) {
@@ -322,7 +357,7 @@ public class Php {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Return true if Object represents a number
 	 * 
@@ -393,11 +428,13 @@ public class Php {
 	/**
 	 * Quote string with slashes in a C style
 	 * 
-	 * @param str The string to be escaped
-	 * @param charlist A list of characters to be escaped. If charlist contains
-	 * characters \n, \r etc., they are converted in C-like style, while other
-	 * non-alphanumeric characters with ASCII codes lower than 32 and higher than
-	 * 126 converted to octal representation.
+	 * @param str
+	 *            The string to be escaped
+	 * @param charlist
+	 *            A list of characters to be escaped. If charlist contains
+	 *            characters \n, \r etc., they are converted in C-like style, while
+	 *            other non-alphanumeric characters with ASCII codes lower than 32
+	 *            and higher than 126 converted to octal representation.
 	 * @return
 	 */
 	public static String addcslashes(String str, CharSequence charlist) {
@@ -469,7 +506,7 @@ public class Php {
 			sb.append($subject.substring(lastMatchPos, matcher.start()));
 			String[] matches = new String[matcher.groupCount()];
 			for (int i = 0; i < matches.length; ++i) {
-				matches[i] = matcher.group(i+1); // group(0) is full match
+				matches[i] = matcher.group(i + 1); // group(0) is full match
 			}
 			lastMatchPos = matcher.end();
 			sb.append($callback.apply(matches));
@@ -644,14 +681,16 @@ public class Php {
 
 	/**
 	 * Encodes data with MIME base64
+	 * 
 	 * @param data
 	 */
 	public static String base64_encode(String data) {
 		return Base64.getEncoder().encodeToString(data.getBytes());
 	}
-	
+
 	/**
 	 * Decodes data encoded with MIME base64
+	 * 
 	 * @param data
 	 * @return
 	 */
