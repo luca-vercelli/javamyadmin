@@ -8,10 +8,14 @@ import static org.javamyadmin.php.Php.trigger_error;
 import static org.javamyadmin.php.Php.ucfirst;
 
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -20,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.reflections.Reflections;
 
 /**
  * Language selection manager
@@ -179,28 +184,27 @@ public class LanguageManager {
 	}
 
 	/**
-	 * Returns list of available locales. Search files in GLOBALS.LOCALE_PATH.
+	 * Returns list of available locales. Search classes in Globals.LOCALES_BUNDLE.
 	 *
 	 * @return array
 	 */
 	public List<String> listLocaleDir() {
+		// In Java, locales are classes inside a package, and not files in a directory
 		List<String> $result = Arrays.asList(new String[] { "en" });
 
-		File localePath = new File(Globals.getLocalePath());
-
-		/* Check for existing directory */
-		if (!localePath.isDirectory()) {
-			return $result;
-		}
-
-		/* Process all files */
-		String[] locales = localePath.list();
-		for (String locale : locales) {
-			// FIXME was LC_MESSAGES/phpmyadmin.mo
-			if (new File(locale, "phpmyadmin.properties").exists()) {
-				$result.add(locale);
-			}
-		}
+		String pkg = (Globals.LOCALES_BUNDLE.indexOf(".") > 0)
+				? Globals.LOCALES_BUNDLE.substring(0, Globals.LOCALES_BUNDLE.lastIndexOf("."))
+				: "";
+		Reflections reflections = new Reflections(pkg);
+		 Set<Class<? extends Object>> allClasses = 
+		     reflections.getSubTypesOf(Object.class);
+		 String bundlesPrefix = Globals.LOCALES_BUNDLE + "_";
+		 for (Class<? extends Object> clazz : allClasses) {
+			 if (clazz.getName().startsWith(bundlesPrefix)) {
+				 String locale = clazz.getName().substring(bundlesPrefix.length());
+				 $result.add(locale);
+			 }
+		 }
 
 		return $result;
 	}
