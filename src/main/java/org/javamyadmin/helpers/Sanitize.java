@@ -69,6 +69,10 @@ public class Sanitize {
     public static boolean checkLink(String $url) {
     	return checkLink($url, false, false);
     }
+    
+    public static boolean checkLink(String $url, boolean $http) {
+    	return checkLink($url, $http, false);
+    }
 
     /**
      * Callback function for replacing [a@link@target] links in bb code.

@@ -2437,6 +2437,43 @@ public class Util {
         return $list_navigator_html;*/
     }
 
+    public static String getListNavigator(
+            int $count,
+            int $pos,
+            Map<String, String> $_url_params,
+            String $script,
+            String $frame,
+            int $max_count,
+            String $name) {
+    	return getListNavigator(
+                $count,
+                $pos,
+                $_url_params,
+                $script,
+                $frame,
+                $max_count,
+                $name,
+                new String [] {});
+    }
+
+    public static String getListNavigator(
+            int $count,
+            int $pos,
+            Map<String, String> $_url_params,
+            String $script,
+            String $frame,
+            int $max_count) {
+    	return getListNavigator(
+                $count,
+                $pos,
+                $_url_params,
+                $script,
+                $frame,
+                $max_count,
+                "pos",
+                new String [] {});
+    }
+    
     /**
      * replaces %u in given path with current user name
      *
@@ -4381,6 +4418,21 @@ public class Util {
         return $retval;
     }
 
+    public static String getNavigationLink(
+        	String $link,
+            boolean $showText,
+            String $text,
+            boolean $showIcon,
+            String $icon,
+            String $linkId) {
+    	return getNavigationLink($link,
+                $showText,
+                $text,
+                $showIcon,
+                $icon,
+                $linkId, false, "", new ArrayList<>());
+    }
+    
     /**
      * Provide COLLATE clause, if required, to perform case sensitive comparisons
      * for queries on information_schema.

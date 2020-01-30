@@ -21,7 +21,7 @@ import static org.javamyadmin.php.Php.*;
  * @TODO Change the release version in table pma_recent
  * (#recent in documentation)
  */
-class RecentFavoriteTable
+public class RecentFavoriteTable
 {
     /**
      * Reference to session variable containing recently used or favorite tables.

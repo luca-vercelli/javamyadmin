@@ -94,6 +94,7 @@ public class Globals {
 	private boolean is_create_db_priv;
 	private String db_to_create;
 	private Map url_parameters = new HashMap();
+	private boolean PMA_DISABLE_NAVI_SETTINGS = false;
 
 	public static String getRootPath() {
 		return ROOT_PATH;
@@ -467,5 +468,13 @@ public class Globals {
 
 	public void setUrlParameters(Map url_parameters) {
 		this.url_parameters = url_parameters;
+	}
+
+	public boolean getPMA_DISABLE_NAVI_SETTINGS() {
+		return PMA_DISABLE_NAVI_SETTINGS;
+	}
+
+	public void setPMA_DISABLE_NAVI_SETTINGS(boolean PMA_DISABLE_NAVI_SETTINGS) {
+		this.PMA_DISABLE_NAVI_SETTINGS = PMA_DISABLE_NAVI_SETTINGS;
 	}
 }
