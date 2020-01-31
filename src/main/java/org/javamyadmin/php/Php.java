@@ -3,6 +3,8 @@ package org.javamyadmin.php;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -336,10 +338,10 @@ public class Php {
 	 * @param array
 	 * @return removed element
 	 */
-	public static <U,V> V array_shift(LinkedHashMap<U, V> array) {
+	public static <U, V> V array_shift(LinkedHashMap<U, V> array) {
 		// This method is meaningless for a generic Map
 		U firstKey = null;
-		for (U key: array.keySet()) {
+		for (U key : array.keySet()) {
 			firstKey = key;
 			break;
 		}
@@ -697,5 +699,67 @@ public class Php {
 	public static String base64_decode(String encodedString) {
 		byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
 		return new String(decodedBytes);
+	}
+
+	public static class UrlComponents {
+
+		public String scheme;
+		public String host;
+		public Integer port;
+		public String path;
+		public String fragment; // after the hashmark #
+		public String query; // after the question mark ?
+
+	}
+
+	/**
+	 * Retreive components of URL.
+	 * 
+	 * Differently from Java URL() function, a URL may also be just path such as
+	 * /index.php. In this case some of its components are empty.
+	 * 
+	 * Original PHP function return an array with keys PHP_URL_SCHEME, PHP_URL_HOST,
+	 * PHP_URL_PORT, PHP_URL_USER, PHP_URL_PASS, PHP_URL_PATH, PHP_URL_QUERY (after
+	 * the question mark), PHP_URL_FRAGMENT (after the hashmark)
+	 * 
+	 * @throws MalformedURLException
+	 */
+	public static UrlComponents parse_url(String str) throws MalformedURLException {
+		UrlComponents components = new UrlComponents();
+		if (!empty(str)) {
+			try {
+				URL url = new URL(str);
+				components.scheme = url.getProtocol();
+				components.host = url.getHost();
+				components.port = url.getPort();
+				components.path = url.getPath();
+				components.fragment = url.getRef();
+				components.query = url.getQuery();
+			} catch (MalformedURLException e) {
+				if (str.startsWith("/")) {
+					URL url;
+					try {
+						url = new URL("http://someserver" + str);
+					} catch (MalformedURLException e1) {
+						throw new MalformedURLException("Invalid URL: " + str);
+					}
+					components.path = url.getPath();
+					components.query = url.getQuery();
+				} else {
+					URL url;
+					try {
+						url = new URL("http://someserver/" + str);
+					} catch (MalformedURLException e1) {
+						throw new MalformedURLException("Invalid URL: " + str);
+					}
+					components.path = url.getPath();
+					components.query = url.getQuery();
+				}
+			}
+			if (components.port != null && components.port < 0) {
+				components.port = null;
+			}
+		}
+		return components;
 	}
 }
