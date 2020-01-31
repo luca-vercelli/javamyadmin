@@ -162,14 +162,14 @@ public class StructureController extends AbstractController {
         if (empty(this.dbIsSystemSchema)) {
             // TODO $createTable = CreateTable.getHtml(this.db);
         }
-        Map<String, Object> model = new HashMap();
+        Map<String, Object> model = new HashMap<>();
         model.put("database", this.db);
         model.put("has_tables", this.numTables > 0);
         model.put("list_navigator_html", $listNavigator);
         model.put("table_list_html", $tableList);
         model.put("is_system_schema", ! empty(this.dbIsSystemSchema));
         model.put("create_table_html", $createTable);
-        return JtwigFactory.render("database/structure/index", model);
+        return template.render("database/structure/index", model);
     }
     
     private void multiSubmitAction() {

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.javamyadmin.helpers.Scripts.FStruct2;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +55,8 @@ public class Footer {
     /**
      * @var Template
      */
-    //private Template template;
+    @Autowired
+    private Template template;
 
     @Autowired
     private Globals GLOBALS;
@@ -388,7 +388,7 @@ public class Footer {
             model.put("footer", $footer);
             
         }
-        return JtwigFactory.render("footer", model);
+        return template.render("footer", model);
     }
 
 }

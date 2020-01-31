@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.java.SmartMap;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -517,7 +516,7 @@ public class Header {
 			model.put("has_recent_table", empty(request.getParameter("recent_table")));
 			model.put("recent_table", $recentTable);            
             
-            return JtwigFactory.render("header", model);
+            return template.render("header", model);
         }
         return "";
     }

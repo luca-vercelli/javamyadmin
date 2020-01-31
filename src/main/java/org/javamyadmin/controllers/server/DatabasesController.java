@@ -22,7 +22,6 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -147,7 +146,7 @@ public class DatabasesController extends AbstractController {
 	    model.put("pma_theme_image", GLOBALS.getPmaThemeImage());
 	    model.put("text_dir", GLOBALS.getTextDir());
 
-		String html = JtwigFactory.render("server/databases/index", model);
+		String html = template.render("server/databases/index", model);
 		response.addHTML(html);
 	}
 

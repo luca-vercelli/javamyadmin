@@ -18,7 +18,6 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.server.Select;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -226,7 +225,7 @@ public class HomeController extends AbstractController {
 		model.put("phpmyadmin_version", Globals.getPmaVersion());
 		model.put("config_storage_message", null);
 
-		String html = JtwigFactory.render("home/index", model);
+		String html = template.render("home/index", model);
 		response.addHTML(html);
 		response.response();
 	}

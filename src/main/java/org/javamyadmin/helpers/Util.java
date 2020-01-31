@@ -3068,7 +3068,7 @@ public class Util {
      */
     public static String getFKCheckbox()
     {
-        Map model = new HashMap();
+        Map<String, Object> model = new HashMap<>();
         model.put("checked", isForeignKeyCheck());
         return JtwigFactory.render("fk_checkbox", model);
     }
