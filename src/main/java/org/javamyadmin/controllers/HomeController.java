@@ -153,7 +153,7 @@ public class HomeController extends AbstractController {
 	            Map<String,Object> modelUrl = new HashMap<>();
             	modelUrl.put("href", Url.getFromRoute("/preferences/manage", httpRequest, GLOBALS));
             	model0.put("url", modelUrl);
-                $userPreferences = JtwigFactory.render("list/item", model0);
+                $userPreferences = template.render("list/item", model0);
             }
         }
 		

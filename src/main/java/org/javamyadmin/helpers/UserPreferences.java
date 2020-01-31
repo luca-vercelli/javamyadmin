@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -27,7 +28,8 @@ public class UserPreferences {
     /**
      * @var Template
      */
-    // public Template template;
+	@Autowired
+    public Template template;
 
     /**
      * Constructor
@@ -299,6 +301,6 @@ public class UserPreferences {
         model.put("hidden_inputs", Url.getHiddenInputs(request, GLOBALS, $_SESSION));
         model.put("return_url", $return_url);
         
-        return JtwigFactory.render("preferences/autoload", model);
+        return template.render("preferences/autoload", model);
     }
 }

@@ -40,6 +40,7 @@ public class Functions {
 			functions.add(new JtwigFunction1Ary("trans", x -> __((String)x)));
 			functions.add(new JtwigFunction1Ary("show_php_docu", x -> "")); // DON'T !
 			functions.add(new JtwigFunction1Ary("show_mysql_docu", x -> "")); // DON'T !
+			functions.add(new JtwigFunction1Ary("get_mysql_docu_url", x -> "")); // DON'T !
 			functions.add(new JtwigFunction1Ary("show_hint", x -> "")); // TODO
 			functions.add(
 					new JtwigFunction2Ary("get_docu_link", (x, y) -> Util.getDocuLink((String) x, (String) y), "", ""));

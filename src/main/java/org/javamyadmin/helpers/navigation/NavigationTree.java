@@ -119,7 +119,7 @@ public class NavigationTree {
      * @param Template          $template Template instance
      * @param DatabaseInterface $dbi      DatabaseInterface instance
      */
-    public NavigationTree(HttpServletRequest httpRequest)
+    public NavigationTree(HttpServletRequest httpRequest, Globals GLOBALS)
     {
 
         /* TODO $checkUserPrivileges = new CheckUserPrivileges(this.dbi);

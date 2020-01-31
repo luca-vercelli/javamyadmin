@@ -3,6 +3,7 @@ package org.javamyadmin.helpers;
 import static org.javamyadmin.php.Php.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,12 @@ public class Sanitize {
     public static boolean checkLink(String $url, boolean $http /*= false*/, boolean $other /*= false*/)
     {
         $url = $url.toLowerCase();
-        List<String> $valid_starts = Arrays.asList(new String[] {
+        List<String> $valid_starts = new ArrayList<>(Arrays.asList(new String[] {
             "https://",
             "./url.php?url=https%3a%2f%2f",
             "./doc/html/",
             "./index.php?",
-        });
+        }));
         boolean $is_setup = Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"));
         // Adjust path to setup script location
         if ($is_setup) {

@@ -22,6 +22,7 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Scripts;
+import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.jtwig.JtwigFactory;
@@ -32,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractController {
 
-	protected final JtwigRenderer renderer = JtwigFactory.getRenderer();
-	
 	@Autowired
 	protected Globals GLOBALS;
 	
@@ -51,6 +50,9 @@ public abstract class AbstractController {
 	
 	@Autowired
 	protected DatabaseInterface dbi;
+	
+    @Autowired
+    protected Template template;
 	
 	/**
 	 * Prepare global variables.

@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
@@ -38,7 +39,7 @@ public class Header {
      * @access private
      * @var Console
      */
-    // TODO private Console _console;
+    private Console _console = new Console(); // TODO
     /**
      * Menu instance
      *
@@ -115,17 +116,20 @@ public class Header {
     /**
      * @var UserPreferences
      */
-    // TODO private UserPreferences userPreferences;
+    @Autowired
+    private UserPreferences userPreferences;
 
     /**
      * @var Template
      */
-    //private Template template;
+    @Autowired
+    private Template template;
 
     /**
      * @var Navigation
      */
-    // TODO private Navigation navigation;
+    @Autowired
+    private Navigation navigation;
 
     @Autowired
     private Globals GLOBALS;
@@ -147,14 +151,11 @@ public class Header {
     @PostConstruct
     private void init() {
     	this.cfg = Globals.getConfig().settings;
-    	
-        //this.template = new Template();
 
         this._isEnabled = true;
         this._isAjax = false;
         this._bodyId = "";
         this._title = "";
-        // TODO this._console = new Console();
         String $db = GLOBALS.getDb();
         String $table = GLOBALS.getTable();
         this._menu.setDb($db);
@@ -174,14 +175,6 @@ public class Header {
         ) {
             this._userprefsOfferImport = true;
         }
-
-        /* TODO
-        this.userPreferences = new UserPreferences();
-        this.navigation = new Navigation(
-            this.template,
-            new Relation(GLOBALS.getDbi()),
-            GLOBALS.getDbi()
-        );*/
     }
 
     /**
@@ -340,7 +333,7 @@ public class Header {
     public void setAjax(boolean $isAjax)
     {
         this._isAjax = $isAjax;
-        // TODO this._console.setAjax($isAjax);
+        this._console.setAjax($isAjax);
     }
 
     /**
@@ -395,7 +388,7 @@ public class Header {
     public void disableMenuAndConsole()
     {
         this._menuEnabled = false;
-        // TODO this._console.disable();
+        this._console.disable();
     }
 
     /**
@@ -468,26 +461,26 @@ public class Header {
                     "ConsoleEnterExecutes="
                     + cfg.get("ConsoleEnterExecutes")
                 );
-                // TODO this._scripts.addFiles(this._console.getScripts());
+                this._scripts.addFiles(this._console.getScripts());
                 if (this._userprefsOfferImport) {
                     this._scripts.addFile("config.js");
                 }
 
                 if (this._menuEnabled && GLOBALS.getServer() > 0) {
-                    // TODO $navigation = this.navigation.getDisplay();
+                    $navigation = this.navigation.getDisplay(request, session, GLOBALS);
                 }
 
                 $customHeader = Config.renderHeader();
 
                 // offer to load user preferences from localStorage
                 if (this._userprefsOfferImport) {
-                    // TODO $loadUserPreferences = this.userPreferences.autoloadGetHeader();
+                    $loadUserPreferences = this.userPreferences.autoloadGetHeader(request, GLOBALS, session);
                 }
 
                 if (this._menuEnabled && GLOBALS.getServer() > 0) {
                     $menu = this._menu.getDisplay(request, GLOBALS);
                 }
-                // TODO $console = this._console.getDisplay();
+                $console = this._console.getDisplay();
                 $messages = this.getMessage();
             }
             if (this._isEnabled && empty(request.getParameter("recent_table"))) {

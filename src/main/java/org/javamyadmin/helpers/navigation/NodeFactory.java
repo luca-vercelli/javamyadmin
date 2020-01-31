@@ -18,7 +18,10 @@ import org.javamyadmin.php.Globals;
  */
 public class NodeFactory {
 	
-	private static String $namespace = "org.javamyadmin.helpers.navigation.nodes";
+	
+	// TODO replace this class with Spring BeanFactory
+	
+	private final static String $namespace = "org.javamyadmin.helpers.navigation.nodes.";
 	
     /**
      * Sanitizes the name of a Node class
@@ -83,7 +86,8 @@ public class NodeFactory {
      *
      * @return mixed
      */
-    public static Node getInstance(
+    @SuppressWarnings("unchecked")
+	public static Node getInstance(
         String $class /*= "Node"*/,
         String $name /*= "default"*/,
         int $type /*= Node.OBJECT*/,
@@ -91,10 +95,34 @@ public class NodeFactory {
         HttpServletRequest httpRequest, Globals GLOBALS
     ) {
         $class = sanitizeClass($class);
-        try {
-        	@SuppressWarnings("unchecked")
-			Class<Node> clazz = (Class<Node>) Class.forName($class);
-        	Constructor<Node> constructor = clazz.getConstructor(String.class, int.class, boolean.class, HttpServletRequest.class, Globals.class); 
+        Class<Node> clazz;
+        Constructor<Node> constructor = null;
+    	try {
+			clazz = (Class<Node>) Class.forName($class);
+		} catch (ClassNotFoundException e1) {
+			throw new IllegalStateException(e1);
+		}
+    	
+    	try {
+                
+        	
+        	try {
+        		// This is for NodeContainer's
+        		constructor = clazz.getConstructor(String.class, HttpServletRequest.class, Globals.class);
+        		
+        	} catch (NoSuchMethodException e) {
+				// DO NOTHING
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// DO NOTHING
+			} catch (IllegalArgumentException e) {
+				// DO NOTHING
+			}
+        	if (constructor != null) {
+        		return constructor.newInstance($name, httpRequest, GLOBALS);
+        	}
+        	
+        	constructor = clazz.getConstructor(String.class, int.class, boolean.class, HttpServletRequest.class, Globals.class); 
 			return constructor.newInstance($name, $type, $isGroup, httpRequest, GLOBALS);
 		} catch (InstantiationException e) {
 			throw new IllegalStateException(e);
@@ -107,8 +135,6 @@ public class NodeFactory {
 		} catch (NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		} catch (SecurityException e) {
-			throw new IllegalStateException(e);
-		} catch (ClassNotFoundException e) {
 			throw new IllegalStateException(e);
 		}
     }

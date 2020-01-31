@@ -11,6 +11,7 @@ import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
+import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.helpers.navigation.NavigationTree;
 import org.javamyadmin.php.Globals;
@@ -103,7 +104,13 @@ public class SpringConfig implements WebMvcConfigurer {
 
 	@Bean
 	@RequestScope
-	public NavigationTree getNavigationTree(HttpServletRequest req) {
-		return new NavigationTree(req);
+	public NavigationTree getNavigationTree(HttpServletRequest req, Globals GLOBALS) {
+		return new NavigationTree(req, GLOBALS);
+	}
+
+	@Bean
+	@RequestScope
+	public UserPreferences getUserPreferences() {
+		return new UserPreferences();
 	}
 }

@@ -19,6 +19,7 @@ import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.javamyadmin.php.Php.UrlComponents;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -98,7 +99,8 @@ public class Navigation {
             }
             if ("main".equals($cfg.get("NavigationLogoLinkWindow"))) {
                 try {
-					if (empty(new URL((String)$logo.get("link")).getHost())) {
+                	UrlComponents components = parse_url((String)$logo.get("link"));
+					if (empty(components.host)) {
 					    boolean $hasStartChar = ((String)$logo.get("link")).contains("?");
 					    $logo.put("link", $logo.get("link") + Url.getCommon(
 					        new HashMap<>(),
@@ -107,7 +109,6 @@ public class Navigation {
 					    ));
 					}
 				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
                 $logo.put("attributes", "");
