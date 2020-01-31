@@ -44,7 +44,7 @@ Less trivial conversions:
 | echo x                |  response.getWriter().write(x)             |
 | header("x:y")         |  response.addHeader(x, y)                  |
 
-PHP "array" can be either a List or a Map
+PHP "array" can be either a List or a Map.
 In the first case:
 
 |  PHP     |   Java   |
@@ -68,8 +68,6 @@ In the second case:
 
 Please notice that a "Singleton" in PHP is not a singleton in Java, and a "global variable" in PHP is not global (nor static) in Java.
 
-
-`Template` class has been merged into `JtwigFactory`.
 
 All paths have been defined inside GLOBALS class.
 
