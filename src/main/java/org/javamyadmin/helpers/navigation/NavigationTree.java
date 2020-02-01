@@ -1489,7 +1489,7 @@ public class NavigationTree {
         boolean $showIcon = true;
         boolean $showText = false;
 
-        String $retval = "<!-- CONTROLS START -.";
+        String $retval = "<!-- CONTROLS START -->";
         $retval += "<li id='navigation_controls_outer'>";
         $retval += "<div id='navigation_controls'>";
         $retval += Util.getNavigationLink(
@@ -1516,7 +1516,7 @@ public class NavigationTree {
         );
         $retval += "</div>";
         $retval += "</li>";
-        $retval += "<!-- CONTROLS ENDS -.";
+        $retval += "<!-- CONTROLS ENDS -->";
 
         return $retval;
     }
