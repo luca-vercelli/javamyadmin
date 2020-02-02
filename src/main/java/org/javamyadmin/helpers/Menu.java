@@ -80,8 +80,9 @@ public class Menu {
 		Map<String, MenuStruct> retmap = new HashMap<>();
         @SuppressWarnings("unchecked")
 		Map<String, Map<String, String>> m = (Map<String, Map<String, String>>) menuProperties.get(whatfor);
-        for (String tabname: m.keySet()) {
-        	Map<String, String> tabattrs = m.get(tabname);
+        for (Entry<String, Map<String, String>> entry: m.entrySet()) {
+        	String tabname = entry.getKey();
+        	Map<String, String> tabattrs = entry.getValue();
         	retmap.put(tabname, new MenuStruct(tabattrs.get("icon"), tabattrs.get("link"), tabattrs.get("text"),
         			"true".equals(tabattrs.get("active"))));
         }
