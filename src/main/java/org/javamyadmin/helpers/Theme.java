@@ -49,7 +49,7 @@ public class Theme {
      * @var String theme path
      * @access  protected
      */
-    public File path = null;
+    public String path = null;
 
     /**
      * @var String image path
@@ -91,12 +91,12 @@ public class Theme {
     /**
      * @var Template
      */
-    //public Template template = new Template();
+    // TODO public Template template = new Template();
 
     /**
      * Theme constructor.
      */
-    private Theme(File path)
+    private Theme(String path)
     {
     	this.path = path;
     }
@@ -107,9 +107,9 @@ public class Theme {
      * @return boolean whether loading them info was successful or not
      * @access  public
      */
-    public boolean loadInfo()
+    public boolean loadInfo(Globals GLOBALS)
     {
-    	File infofile = new File(this.getPath() + "/theme.json");
+    	File infofile = new File(Globals.getRootPath() + "/" + Globals.getThemesPath() + "/" + this.getPath() + "/theme.json");
         if (!infofile.exists()) {
             return false;
         }
@@ -180,15 +180,15 @@ public class Theme {
      * @static
      * @access public
      */
-    public static Theme load(File folder)
+    public static Theme load(String path, Globals GLOBALS)
     {
-        Theme theme = new Theme(folder);
+        Theme theme = new Theme(path);
 
-        if (! theme.loadInfo()) {
+        if (! theme.loadInfo(GLOBALS)) {
             return null;
         }
 
-        theme.checkImgPath();
+        theme.checkImgPath(GLOBALS);
 
         return theme;
     }
@@ -199,10 +199,11 @@ public class Theme {
      * @access public
      * @return boolean
      */
-    public boolean checkImgPath()
+    public boolean checkImgPath(Globals GLOBALS)
     {
+    	File pathFile = new File(Globals.getRootPath() + "/" + Globals.getThemesPath() +"/" + this.getPath());
         // try current theme first
-        if (new File(this.getPath() + "/img/").isDirectory()) {
+        if (new File(pathFile, "img").isDirectory()) {
             this.setImgPath(this.getPath() + "/img/");
             return true;
         }
@@ -226,12 +227,12 @@ public class Theme {
     }
 
     /**
-     * returns path to theme
+     * returns **relative** path to theme
      *
      * @access public
      * @return String path to theme
      */
-    public File getPath()
+    public String getPath()
     {
         return this.path;
     }

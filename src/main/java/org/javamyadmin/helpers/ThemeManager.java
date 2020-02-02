@@ -33,7 +33,7 @@ public class ThemeManager {
 	 * @var String path to theme folder
 	 * @access protected
 	 */
-	private String _themes_path = "./themes/";
+	private String _themes_path;
 
 	/**
 	 * @var array available themes
@@ -243,7 +243,7 @@ public class ThemeManager {
 	public boolean loadThemes() {
 		this.themes = new HashMap<>();
 
-		File themesDir = new File(this._themes_path);
+		File themesDir = new File(Globals.getRootPath() + "/" + this._themes_path);
 		if (!themesDir.isDirectory() || !themesDir.canRead()) {
 			trigger_error("phpMyAdmin-ERROR: cannot open themes folder: " + this._themes_path, E_USER_WARNING);
 			return false;
@@ -261,7 +261,7 @@ public class ThemeManager {
 			if (this.themes.containsKey(name)) {
 				continue;
 			}
-			Theme new_theme = Theme.load(PMA_Theme);
+			Theme new_theme = Theme.load(PMA_Theme.getName(), GLOBALS);
 			if (new_theme != null) {
 				new_theme.setId(name);
 				this.themes.put(name, new_theme);
@@ -368,8 +368,7 @@ public class ThemeManager {
 		 * 
 		 * @global String GLOBALS["pmaThemePath"]
 		 */
-		GLOBALS.setPmaThemeFullPath(tmanager.theme.getPath());
-		GLOBALS.setPmaThemeUrlPath("themes/" + tmanager.theme.getPath().getName()); // TODO improve this...
+		GLOBALS.setPmaThemePath("themes/" + tmanager.theme.getPath());
 		
 		/**
 		 * the theme image path
