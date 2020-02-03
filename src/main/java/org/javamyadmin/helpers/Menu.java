@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -103,13 +102,13 @@ public class Menu {
     	private String sep = "?";
     	private String link = "";
     	private String warning;
-    	private Map args;
+    	private Map<String, String> args;
     	private Boolean active = null;
 
     	public MenuStruct(String icon, String link, String text, boolean active) {
     		this(icon, text, link, active, null);
     	}
-    	public MenuStruct(String icon, String link, String text, boolean active, Map args) {
+    	public MenuStruct(String icon, String link, String text, boolean active, Map<String, String> args) {
     		this.icon = icon;
     		this.text = text;
     		this.link = link;
@@ -140,10 +139,10 @@ public class Menu {
 		public void setWarning(String warnings) {
 			this.warning = warnings;
 		}
-		public Map getArgs() {
+		public Map<String, String> getArgs() {
 			return args;
 		}
-		public void setArgs(Map args) {
+		public void setArgs(Map<String, String> args) {
 			this.args = args;
 		}
 		public Boolean getActive() {
@@ -499,7 +498,7 @@ public class Menu {
             || GLOBALS.getDbi().isUserType("create");*/
 
         Map<String, MenuStruct> $tabs = new HashMap<>();
-        $tabs.putAll(serverTabs);
+        $tabs.putAll(tableTabs);
         
 
         /*Map<String, String> params = new HashMap<>();
