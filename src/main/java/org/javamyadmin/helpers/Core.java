@@ -1,21 +1,15 @@
 package org.javamyadmin.helpers;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import static org.javamyadmin.php.Php.*;
 
@@ -25,7 +19,7 @@ public class Core {
      * @static array $goto_whitelist
      */
     public static String[] $goto_whitelist = new String[] {
-        "index.php",
+        "Home",
     };
     /**
      * checks given $var and returns it if valid, or $default of not valid

@@ -571,7 +571,7 @@ public class Config {
         String cookie_name,
         String cfg_path,
         String new_cfg_value,
-        String default_value 
+        String default_value /* = null */
     ) {
     	UserPreferences userPreferences = new UserPreferences();
     	Message result = null;
@@ -594,6 +594,13 @@ public class Config {
         return result;
     }
 
+    public Message setUserValue(
+            String cookie_name,
+            String cfg_path,
+            String new_cfg_value) {
+    	return setUserValue(cookie_name, cfg_path, new_cfg_value, null);
+    }
+    
     /**
      * Reads value stored by {@link setUserValue()}
      * @param req 

@@ -375,7 +375,7 @@ Indexes.showAddIndexDialog = function (sourceArray, arrayIndex, targetColumns, c
         $(this).dialog('close');
     };
     var $msgbox = Functions.ajaxShowMessage();
-    $.post('index.php?route=/table/indexes', postData, function (data) {
+    $.post('/table/indexes', postData, function (data) {
         if (data.success === false) {
             // in the case of an error, show the error message returned.
             Functions.ajaxShowMessage(data.error, false);

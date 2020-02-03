@@ -131,7 +131,7 @@ public class StructureController extends AbstractController {
         	map.put("db", this.db);
         	map.put("pos", Integer.toString(Math.max(0, this.totalNumTables - new Integer((String)$cfg.get("MaxTableList")))));
         	map.put("reload", "1");
-            String $uri = "./index.php?route=/database/structure" + Url.getCommonRaw(map, "&", httpRequest, GLOBALS);
+            String $uri = "./database/structure" + Url.getCommonRaw(map, "&", httpRequest, GLOBALS);
             Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";

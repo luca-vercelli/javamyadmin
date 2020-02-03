@@ -67,7 +67,7 @@ AJAX.registerOnload('database/central_columns.js', function () {
         var editColumnData = editColumnList + '' + argsep + 'edit_central_columns_page=true' + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep + 'db=' + encodeURIComponent(CommonParams.get('db'));
         Functions.ajaxShowMessage();
         AJAX.source = $(this);
-        $.post('index.php?route=/database/central_columns', editColumnData, AJAX.responseHandler);
+        $.post('/database/central_columns', editColumnData, AJAX.responseHandler);
     });
     $('#multi_edit_central_columns').submit(function (event) {
         event.preventDefault();
@@ -76,7 +76,7 @@ AJAX.registerOnload('database/central_columns.js', function () {
         var multiColumnEditData = $('#multi_edit_central_columns').serialize() + argsep + 'multi_edit_central_column_save=true' + argsep + 'ajax_request=true' + argsep + 'ajax_page_request=true' + argsep + 'db=' + encodeURIComponent(CommonParams.get('db'));
         Functions.ajaxShowMessage();
         AJAX.source = $(this);
-        $.post('index.php?route=/database/central_columns', multiColumnEditData, AJAX.responseHandler);
+        $.post('/database/central_columns', multiColumnEditData, AJAX.responseHandler);
     });
     $('#add_new').find('td').each(function () {
         if ($(this).attr('name') !== 'undefined') {
@@ -152,7 +152,7 @@ AJAX.registerOnload('database/central_columns.js', function () {
         var datastring = $('#f_' + rownum + ' :input').serialize();
         $.ajax({
             type: 'POST',
-            url: 'index.php?route=/database/central_columns',
+            url: '/database/central_columns',
             data: datastring + CommonParams.get('arg_separator') + 'ajax_request=true',
             dataType: 'json',
             success: function (data) {
@@ -193,7 +193,7 @@ AJAX.registerOnload('database/central_columns.js', function () {
     $('#table-select').on('change', function () {
         var selectValue = $(this).val();
         var defaultColumnSelect = $('#column-select').find('option:first');
-        var href = 'index.php?route=/database/central_columns';
+        var href = '/database/central_columns';
         var params = {
             'ajax_request' : true,
             'server' : CommonParams.get('server'),

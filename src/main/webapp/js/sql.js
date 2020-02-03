@@ -641,12 +641,12 @@ AJAX.registerOnload('sql.js', function () {
                     var url;
                     if (data.db) {
                         if (data.table) {
-                            url = 'index.php?route=/table/sql';
+                            url = '/table/sql';
                         } else {
-                            url = 'index.php?route=/database/sql';
+                            url = '/database/sql';
                         }
                     } else {
-                        url = 'index.php?route=/server/sql';
+                        url = '/server/sql';
                     }
                     CommonActions.refreshMain(url, function () {
                         $('#sqlqueryresultsouter')
