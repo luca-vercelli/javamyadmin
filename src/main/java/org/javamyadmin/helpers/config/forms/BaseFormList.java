@@ -1,9 +1,12 @@
 package org.javamyadmin.helpers.config.forms;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.javamyadmin.helpers.config.ConfigFile;
+import org.javamyadmin.helpers.config.Form;
 
 /**
  * Class BaseFormList
@@ -24,7 +27,7 @@ public class BaseFormList {
     /**
      * @var array
      */
-    private List<BaseForm> _forms;
+    private List<Form> _forms;
 
     /**
      * @return array
@@ -65,9 +68,21 @@ public class BaseFormList {
         this._forms = new ArrayList<>();
         for (String $form : all) {
             String $class = get($form);
-            Class<BaseForm> clazz = Class.forName($class);
-            Constructor<>
-            this._forms.add( new $class($cf));
+            try {
+	            Class<Form> clazz = (Class<Form>) Class.forName($class);
+	            Constructor<Form> constructor = clazz.getConstructor(ConfigFile.class);
+	            this._forms.add( constructor.newInstance($cf));
+            } catch (InstantiationException e) {
+				throw new IllegalStateException(e);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			} catch (InvocationTargetException e) {
+				throw new IllegalStateException(e);
+			} catch (NoSuchMethodException e) {
+				throw new IllegalStateException(e);
+			} catch (ClassNotFoundException e) {
+				throw new IllegalStateException(e);
+			}
         }
     }
 
@@ -83,7 +98,7 @@ public class BaseFormList {
     public boolean process(boolean $allowPartialSave /*= true*/, boolean $checkFormSubmit /*= true*/)
     {
         boolean $ret = true;
-        for (Object $form : this._forms) {
+        for (Form $form : this._forms) {
             $ret = $ret && $form.process($allowPartialSave, $checkFormSubmit);
         }
         return $ret;
@@ -110,7 +125,7 @@ public class BaseFormList {
      */
     public void fixErrors()
     {
-        for (Object $form : this._forms) {
+        for (Form $form : this._forms) {
             $form.fixErrors();
         }
     }
@@ -123,7 +138,7 @@ public class BaseFormList {
     public boolean hasErrors()
     {
     	boolean $ret = false;
-        for (Object $form : this._forms) {
+        for (Form $form : this._forms) {
             $ret = $ret || $form.hasErrors();
         }
         return $ret;
@@ -136,7 +151,7 @@ public class BaseFormList {
      */
     public static List<String> getFields()
     {
-        $names = [];
+    	List<String> $names = new ArrayList<>();
         for (Object $form : $all) {
             $class = get($form);
             $names = array_merge($names, $class.getFields());
