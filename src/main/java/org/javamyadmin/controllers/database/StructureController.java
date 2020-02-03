@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
+import org.javamyadmin.helpers.PageSettings;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
@@ -135,7 +136,7 @@ public class StructureController extends AbstractController {
             Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";
-        // TODO PageSettings.showGroup("DbStructure");
+        PageSettings.showGroup("DbStructure");
         String $tableList = null;
         String $listNavigator = null;
         if (this.numTables > 0) {

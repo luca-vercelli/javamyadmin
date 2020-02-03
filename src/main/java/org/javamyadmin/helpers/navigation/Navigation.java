@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
+import org.javamyadmin.helpers.PageSettings;
 import org.javamyadmin.helpers.Relation;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
@@ -116,7 +117,7 @@ public class Navigation {
 			}
 
 			if (!GLOBALS.getPMA_DISABLE_NAVI_SETTINGS()) {
-				// TODO $navigationSettings = PageSettings.getNaviSettings();
+				$navigationSettings = PageSettings.getNaviSettings();
 			}
 		}
 		String $navRender = "";
@@ -232,6 +233,14 @@ public class Navigation {
 		model.put("item_type", $itemType);
 
 		return this.template.render("navigation/item_unhide_dialog", model);
+	}
+	
+	public String getItemUnhideDialog(String $database) {
+		return getItemUnhideDialog($database, null, null);
+	}
+	
+	public String getItemUnhideDialog(String $database, String $itemType) {
+		return getItemUnhideDialog($database, $itemType, null);
 	}
 
 	/**
