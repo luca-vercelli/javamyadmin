@@ -21,7 +21,7 @@ public class FormDisplay {
      * Form list
      * @var Form[]
      */
-    private Form _forms = [];
+    private List<Form> _forms = new ArrayList<>();
 
     /**
      * Stores validation errors, indexed by paths
@@ -122,7 +122,7 @@ public class FormDisplay {
             $serverId
         );
         this._isValidated = false;
-        foreach (this._forms[$formName].fields as $path) {
+        for (this._forms[$formName].fields as $path) {
             $workPath = $serverId === null
                 ? $path
                 : str_replace('Servers/1/', "Servers/$serverId/", $path);
@@ -166,11 +166,11 @@ public class FormDisplay {
 
         $paths = [];
         $values = [];
-        foreach (this._forms as $form) {
+        for (this._forms as $form) {
             /** @var Form $form */
             $paths[] = $form.name;
             // collect values and paths
-            foreach ($form.fields as $path) {
+            for ($form.fields as $path) {
                 $workPath = array_search($path, this._systemPaths);
                 $values[$path] = this._configFile.getValue($workPath);
                 $paths[] = $path;
@@ -188,7 +188,7 @@ public class FormDisplay {
         // change error keys from canonical paths to work paths
         if (is_array($errors) && count($errors) > 0) {
             this._errors = [];
-            foreach ($errors as $path => $errorList) {
+            for ($errors as $path => $errorList) {
                 $workPath = array_search($path, this._systemPaths);
                 // field error
                 if (! $workPath) {
@@ -219,10 +219,10 @@ public class FormDisplay {
         array &$js,
         boolean $showButtons
     ) {
-        $htmlOutput = '';
+        String $htmlOutput = "";
         $validators = Validator.getValidators(this._configFile);
 
-        foreach (this._forms as $form) {
+        for (this._forms as $form) {
             /** @var Form $form */
             $formErrors = isset(this._errors[$form.name])
                 ? this._errors[$form.name] : null;
@@ -233,7 +233,7 @@ public class FormDisplay {
                 ['id' => $form.name]
             );
 
-            foreach ($form.fields as $field => $path) {
+            for ($form.fields as $field => $path) {
                 $workPath = array_search($path, this._systemPaths);
                 $translatedPath = this._translatedPaths[$workPath];
                 // always true/false for user preferences display
@@ -293,7 +293,7 @@ public class FormDisplay {
 
         if ($tabbedForm) {
             $tabs = [];
-            foreach (this._forms as $form) {
+            for (this._forms as $form) {
                 $tabs[$form.name] = Descriptions.get("Form_$form.name");
             }
             $htmlOutput += this.formDisplayTemplate.displayTabsTop($tabs);
@@ -301,7 +301,7 @@ public class FormDisplay {
 
         // validate only when we aren't displaying a "new server" form
         $isNewServer = false;
-        foreach (this._forms as $form) {
+        for (this._forms as $form) {
             /** @var Form $form */
             if ($form.index === 0) {
                 $isNewServer = true;
@@ -332,7 +332,7 @@ public class FormDisplay {
         if (! $jsLangSent) {
             $jsLangSent = true;
             $jsLang = [];
-            foreach (this._jsLangStrings as $strName => $strValue) {
+            for (this._jsLangStrings as $strName => $strValue) {
                 $jsLang[] = "'$strName': '" . Sanitize.jsFormat($strValue, false) . '\'';
             }
             $js[] = "$.extend(Messages, {\n\t"
@@ -451,7 +451,7 @@ public class FormDisplay {
 
         // TrustedProxies requires changes before displaying
         if ($systemPath == 'TrustedProxies') {
-            foreach ($value as $ip => &$v) {
+            for ($value as $ip => &$v) {
                 if (! preg_match('/^-\d+$/', $ip)) {
                     $v = $ip . ': ' . $v;
                 }
@@ -513,7 +513,7 @@ public class FormDisplay {
 
         $htmlOutput = '';
 
-        foreach (this._errors as $systemPath => $errorList) {
+        for (this._errors as $systemPath => $errorList) {
             if (isset(this._systemPaths[$systemPath])) {
                 $name = Descriptions.get(this._systemPaths[$systemPath]);
             } else {
@@ -538,7 +538,7 @@ public class FormDisplay {
         }
 
         $cf = this._configFile;
-        foreach (array_keys(this._errors) as $workPath) {
+        for (array_keys(this._errors) as $workPath) {
             if (! isset(this._systemPaths[$workPath])) {
                 continue;
             }
@@ -560,7 +560,7 @@ public class FormDisplay {
         $valueCmp = is_bool($value)
             ? (int) $value
             : $value;
-        foreach ($allowed as $vk => $v) {
+        for ($allowed as $vk => $v) {
             // equality comparison only if both values are numeric or not numeric
             // (allows to skip 0 == 'string' equalling to true)
             // or identity (for string-string)
@@ -599,7 +599,7 @@ public class FormDisplay {
         }
 
         this._errors = [];
-        foreach ($forms as $formName) {
+        for ($forms as $formName) {
             /** @var Form $form */
             if (isset(this._forms[$formName])) {
                 $form = this._forms[$formName];
@@ -611,7 +611,7 @@ public class FormDisplay {
                 ? this._configFile.getServerCount() + 1
                 : false;
             // grab POST values
-            foreach ($form.fields as $field => $systemPath) {
+            for ($form.fields as $field => $systemPath) {
                 $workPath = array_search($systemPath, this._systemPaths);
                 $key = this._translatedPaths[$workPath];
                 $type = $form.getOptionType($field);
@@ -669,7 +669,7 @@ public class FormDisplay {
                         if (! $successfullyValidated) {
                             this._errors[$workPath][] = __('Incorrect value!');
                             $result = false;
-                            // "continue" for the $form.fields foreach-loop
+                            // "continue" for the $form.fields for-loop
                             continue 2;
                         }
                         break;
@@ -707,12 +707,12 @@ public class FormDisplay {
             return $result;
         }
 
-        foreach ($toSave as $workPath => $path) {
+        for ($toSave as $workPath => $path) {
             // TrustedProxies requires changes before saving
             if ($path == 'TrustedProxies') {
                 $proxies = [];
                 $i = 0;
-                foreach ($values[$path] as $value) {
+                for ($values[$path] as $value) {
                     $matches = [];
                     $match = preg_match(
                         "/^(.+):(?:[ ]?)(\\w+)$/",
@@ -899,9 +899,9 @@ public class FormDisplay {
      *
      * @return void
      */
-    private function _fillPostArrayParameters(array $postValues, $key)
+    private void _fillPostArrayParameters(array $postValues, $key)
     {
-        foreach ($postValues as $v) {
+        for ($postValues as $v) {
             $v = Util.requestString($v);
             if ($v !== '') {
                 $_POST[$key][] = $v;
