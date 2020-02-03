@@ -38,7 +38,8 @@ public class Header {
      * @access private
      * @var Console
      */
-    private Console _console = new Console(); // TODO
+    @Autowired
+    private Console _console;
     /**
      * Menu instance
      *

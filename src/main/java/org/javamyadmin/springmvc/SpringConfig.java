@@ -4,6 +4,7 @@ import static org.javamyadmin.php.Php.$_SESSION;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.javamyadmin.helpers.Console;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Footer;
 import org.javamyadmin.helpers.Header;
@@ -11,7 +12,6 @@ import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
-import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.helpers.navigation.NavigationTree;
@@ -114,6 +114,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@RequestScope
 	public UserPreferences getUserPreferences() {
 		return new UserPreferences();
+	}
+
+	@Bean
+	@RequestScope
+	public Console getConsole() {
+		return new Console();
 	}
 
 	/* TODO @Bean

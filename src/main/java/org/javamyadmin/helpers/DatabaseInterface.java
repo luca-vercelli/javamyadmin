@@ -102,6 +102,17 @@ public class DatabaseInterface {
         return $res;
     }
     
+    public ResultSet query(
+            String $query,
+            int $link) throws SQLException {
+    	return query($query, $link, 0, true);
+    }
+    
+    public ResultSet query(
+            String $query) throws SQLException {
+    	return query($query, CONNECT_USER, 0, true);
+    }
+    
     /**
      * runs a query and returns the result
      *
