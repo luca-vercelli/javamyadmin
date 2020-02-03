@@ -82,8 +82,11 @@ public class Menu {
         for (Entry<String, Map<String, String>> entry: m.entrySet()) {
         	String tabname = entry.getKey();
         	Map<String, String> tabattrs = entry.getValue();
-        	retmap.put(tabname, new MenuStruct(tabattrs.get("icon"), tabattrs.get("link"), tabattrs.get("text"),
-        			"true".equals(tabattrs.get("active"))));
+        	retmap.put(tabname, new MenuStruct(tabattrs.get("icon"), //
+        			tabattrs.get("link"), //
+        			tabattrs.get("text"), //
+        			"true".equals(tabattrs.get("active") //
+        					)));
         }
         return retmap;
 	}
@@ -106,7 +109,7 @@ public class Menu {
     	private Boolean active = null;
 
     	public MenuStruct(String icon, String link, String text, boolean active) {
-    		this(icon, text, link, active, null);
+    		this(icon, link, text, active, null);
     	}
     	public MenuStruct(String icon, String link, String text, boolean active, Map<String, String> args) {
     		this.icon = icon;
