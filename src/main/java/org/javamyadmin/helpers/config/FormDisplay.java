@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.javamyadmin.php.Php.*;
+
 /**
  * Form management class, displays and processes forms
  *
@@ -49,7 +53,7 @@ public class FormDisplay {
      * Will be looked up in $GLOBALS: str{value} or strSetup{value}
      * @var array
      */
-    private Map _jsLangStrings = new HashMap<>();
+    private Map<String, String> _jsLangStrings = new HashMap<>();
 
     /**
      * Tells whether forms have been validated
@@ -72,22 +76,25 @@ public class FormDisplay {
     /**
      * @var FormDisplayTemplate
      */
+    @Autowired
     private FormDisplayTemplate formDisplayTemplate;
-
+    @Autowired
+    private Globals $GLOBALS;
+    
     /**
      * Constructor
      *
      * @param ConfigFile $cf Config file instance
      */
-    public function __construct(ConfigFile $cf)
+    public FormDisplay(ConfigFile $cf)
     {
-        this.formDisplayTemplate = new FormDisplayTemplate($GLOBALS['PMA_Config']);
-        this._jsLangStrings = [
-            'error_nan_p' => __('Not a positive number!'),
-            'error_nan_nneg' => __('Not a non-negative number!'),
-            'error_incorrect_port' => __('Not a valid port number!'),
-            'error_invalid_value' => __('Incorrect value!'),
-            'error_value_lte' => __('Value must be less than or equal to %s!'),
+        this.formDisplayTemplate = new FormDisplayTemplate($GLOBALS.getConfig());
+        this._jsLangStrings = new HashMap<>();
+            "error_nan_p" => __("Not a positive number!"),
+            "error_nan_nneg" => __("Not a non-negative number!"),
+            "error_incorrect_port" => __("Not a valid port number!"),
+            "error_invalid_value" => __("Incorrect value!"),
+            "error_value_lte" => __("Value must be less than or equal to %s!"),
         ];
         this._configFile = $cf;
         // initialize validators
@@ -125,9 +132,9 @@ public class FormDisplay {
         for (this._forms[$formName].fields as $path) {
             $workPath = $serverId === null
                 ? $path
-                : str_replace('Servers/1/', "Servers/$serverId/", $path);
+                : $path.replace("Servers/1/", "Servers/$serverId/");
             this._systemPaths[$workPath] = $path;
-            this._translatedPaths[$workPath] = str_replace('/', '-', $workPath);
+            this._translatedPaths[$workPath] = $workPath.replace('/', '-');
         }
     }
 
