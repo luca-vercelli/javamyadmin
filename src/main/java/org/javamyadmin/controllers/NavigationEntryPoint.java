@@ -2,9 +2,9 @@ package org.javamyadmin.controllers;
 
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Message;
-import org.javamyadmin.helpers.PageSettings;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Util;
+import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;

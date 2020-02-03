@@ -11,12 +11,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
-import org.javamyadmin.helpers.PageSettings;
 import org.javamyadmin.helpers.Relation;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.Url;
+import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;

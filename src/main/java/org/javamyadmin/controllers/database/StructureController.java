@@ -12,10 +12,10 @@ import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
-import org.javamyadmin.helpers.PageSettings;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
+import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
