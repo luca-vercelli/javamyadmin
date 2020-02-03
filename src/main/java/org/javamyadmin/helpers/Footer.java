@@ -1,9 +1,17 @@
 package org.javamyadmin.helpers;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Scripts.FStruct2;
 import org.javamyadmin.php.Globals;
@@ -62,6 +70,10 @@ public class Footer {
     private Globals GLOBALS;
     @Autowired
     private Response response;
+    @Autowired
+    private HttpServletRequest httpRequest;
+    @Autowired
+    private SessionMap $_SESSION;
     
     /**
      * Creates a new class instance
@@ -114,10 +126,50 @@ public class Footer {
      *
      * @return object Reference passed object
      */
-    private static Object _removeRecursion(Object $object, List<Object> $stack /*= []*/)
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Object _removeRecursion(Object $object, Stack<Object> $stack /*= []*/)
     {
-        // TODO (original impl was by reference)
+    	// Original PMA implementation was by reference
+    	if ($object != null) {
+    		if ($object instanceof Collection) {
+    			$stack.push($object);
+    			Collection $copy = new ArrayList((List)$object);
+    			for (Object $subobject : (List)$copy) {
+    				if ($stack.contains($subobject)) {
+    					try {
+    						((Collection) $object).remove($subobject);
+    					} catch (UnsupportedOperationException e) {
+    						System.out.println("Cannot remove recursive items! UnsupportedOperationException.");
+    						e.printStackTrace();
+    					}
+    				}
+    				_removeRecursion($subobject, $stack);
+    			}
+    			$stack.pop();
+    		} else if ($object instanceof Map) {
+    			$stack.push($object);
+    			Map $copy = new HashMap((Map)$object);
+    			Set<Entry> $entries = ((Map)$copy).entrySet(); 
+    			for (Entry $entry : $entries) {
+    				Object $subobject =$entry.getValue();  
+    				if ($stack.contains($subobject)) {
+    					try {
+    						((Map) $object).remove($entry.getKey());
+    					} catch (UnsupportedOperationException e) {
+    						System.out.println("Cannot remove recursive items! UnsupportedOperationException.");
+    						e.printStackTrace();
+    					}
+    				}
+    				_removeRecursion($subobject, $stack);
+    			}
+    			$stack.pop();
+    		}
+    	}
         return $object;
+    }
+    
+    private static Object _removeRecursion(Object $object) {
+    	return _removeRecursion($object, new Stack<>());
     }
 
     /**
@@ -127,23 +179,26 @@ public class Footer {
      */
     public String getDebugMessage()
     {
-    	return ""; /*
         String $retval = "\"null\"";
-        if ($GLOBALS.cfg.get("DBG.sql")
-            && empty($_REQUEST["no_debug"])
-            && ! empty($_SESSION["debug"])
+        if (!empty(Globals.getConfig().get("DBG.sql"))
+            && empty(httpRequest.getParameter("no_debug"))
+            && ! empty($_SESSION.get("debug"))
         ) {
             // Remove recursions and iterators from $_SESSION["debug"]
-            self._removeRecursion($_SESSION["debug"]);
+            _removeRecursion($_SESSION.get("debug"));
 
-            $retval = json_encode($_SESSION["debug"]);
-            $_SESSION["debug"] = [];
-            return json_last_error() ? "\"false\"" : $retval;
+            $retval = json_encode($_SESSION.get("debug"));
+            $_SESSION.put("debug", new HashMap<>());
+            return $retval;
         }
-        $_SESSION["debug"] = [];
-        return $retval;*/
+        $_SESSION.put("debug", new HashMap<>());
+        return $retval;
     }
 
+    private List<String> viewing_modes = Arrays.asList(
+    		new String[] {"server", "db", "table" }
+    		);
+    
     /**
      * Returns the url of the current page
      *
@@ -151,51 +206,42 @@ public class Footer {
      */
     public String getSelfUrl()
     {
-    	return ""; /* TODO
-        global $route, $db, $table, $server;
+        //global $route, $db, $table, $server;
 
-        $params = [];
-        if (isset($route)) {
-            $params["route"] = $route;
+        Map<String, String> $params = new HashMap<>();
+        if (!empty(GLOBALS.getRoute())) {
+            $params.put("route", GLOBALS.getRoute());
         }
-        if (isset($db) && strlen($db) > 0) {
-            $params["db"] = $db;
+        if (!empty(GLOBALS.getDb())) {
+            $params.put("db", GLOBALS.getDb());
         }
-        if (isset($table) && strlen($table) > 0) {
-            $params["table"] = $table;
+        if (!empty(GLOBALS.getTable())) {
+            $params.put("table", GLOBALS.getTable());
         }
-        $params["server"] = $server;
+        $params.put("server", Integer.toString(GLOBALS.getServer()));
 
         // needed for server privileges tabs
-        if (isset($_GET["viewing_mode"])
-            && in_array($_GET["viewing_mode"], ["server", "db", "table"])
+        if (!empty(httpRequest.getParameter("viewing_mode"))
+            && viewing_modes.contains(httpRequest.getParameter("viewing_mode"))
         ) {
-            $params["viewing_mode"] = $_GET["viewing_mode"];
+            $params.put("viewing_mode", httpRequest.getParameter("viewing_mode"));
         }
-        /*
-         * @todo    coming from /server/privileges, here $db is not set,
-         *          add the following condition below when that is fixed
-         *          && $_GET["checkprivsdb"] == $db
          
-        if (isset($_GET["checkprivsdb"])
+        if (!empty(httpRequest.getParameter("checkprivsdb"))
         ) {
-            $params["checkprivsdb"] = $_GET["checkprivsdb"];
+            $params.put("checkprivsdb", httpRequest.getParameter("checkprivsdb"));
         }
-        /*
-         * @todo    coming from /server/privileges, here $table is not set,
-         *          add the following condition below when that is fixed
-         *          && $_REQUEST["checkprivstable"] == $table
-         *
-        if (isset($_GET["checkprivstable"])
+
+        if (!empty(httpRequest.getParameter("checkprivstable"))
         ) {
-            $params["checkprivstable"] = $_GET["checkprivstable"];
+            $params.put("checkprivstable", httpRequest.getParameter("checkprivstable"));
         }
-        if (isset($_REQUEST["single_table"])
-            && in_array($_REQUEST["single_table"], [true, false])
+        if (!empty(httpRequest.getParameter("single_table"))
+            && (httpRequest.getParameter("single_table").equals("true") || httpRequest.getParameter("single_table").equals("false"))
         ) {
-            $params["single_table"] = $_REQUEST["single_table"];
+            $params.put("single_table", httpRequest.getParameter("single_table"));
         }
-        return basename(Core.getenv("SCRIPT_NAME")) . Url.getCommonRaw($params);*/
+        return /* TODO basename(Core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params, httpRequest, GLOBALS);
     }
 
     /**
@@ -233,7 +279,7 @@ public class Footer {
     public String getErrorMessages()
     {
         String $retval = "";
-        /* FIXME
+        /* TODO
         if (GLOBALS.error_handler.hasDisplayErrors()) {
             $retval += GLOBALS.error_handler..getDispErrors();
         }
@@ -254,19 +300,20 @@ public class Footer {
      */
     private void _setHistory()
     {
-        /* TODO if (! Core.isValid(request.getParameter("no_history"))
-            && empty(GLOBALS.error_message)
-            && ! empty(GLOBALS.sql_query)
+        if (! Core.isValid(httpRequest.getParameter("no_history"))
+            && empty(GLOBALS.getMessage())
+            && ! empty(GLOBALS.getSqlQuery())
             && GLOBALS.getDbi() != null
             && GLOBALS.getDbi().isUserType("logged")
         ) {
+        	/* TODO
             this.relation.setHistory(
                 Core.ifSetOr(GLOBALS.getDb(), ""),
                 Core.ifSetOr(GLOBALS.getTable(), ""),
-                GLOBALS.cfg.get("Server.user"),
-                GLOBALS.sql_query
-            );
-        }*/
+                Globals.getConfig().get("Server.user"),
+                GLOBALS.getSqlQuery()
+            ); */
+        }
     }
 
     /**

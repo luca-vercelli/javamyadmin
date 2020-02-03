@@ -260,6 +260,10 @@ public class Url {
         return "";
     }
     
+    public static String getCommonRaw(Map<String, String> params, HttpServletRequest req, Globals GLOBALS) {
+    	return getCommonRaw(params, "?", req, GLOBALS);
+    }
+    
     public static String getCommonRaw(HttpServletRequest req, Globals GLOBALS) {
     	return getCommonRaw(null, "?", req, GLOBALS);
     }
