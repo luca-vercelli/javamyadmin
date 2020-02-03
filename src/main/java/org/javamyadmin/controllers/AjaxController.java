@@ -13,14 +13,17 @@ import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.ListDatabase;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.php.Globals;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.javamyadmin.php.Php.*;
 
-@RestController
+@RestController()
+@RequestMapping(value="/ajax", produces=MediaType.APPLICATION_JSON_VALUE)
 public class AjaxController extends AbstractController {
 
     /**
@@ -49,7 +52,7 @@ public class AjaxController extends AbstractController {
     /**
      * @return array JSON
      */
-    @PostMapping("/ajax/list-databases")
+    @PostMapping(value="list-databases", produces=MediaType.APPLICATION_JSON_VALUE)
     public void databases() throws IOException, SQLException, ServletException, NamingException
     {
     	super.prepareResponse();
@@ -65,7 +68,7 @@ public class AjaxController extends AbstractController {
      * @param array $params Request parameters
      * @return array JSON
      */
-    @PostMapping("/ajax/list-tables/{database}")
+    @PostMapping("list-tables/{database}")
     public void tables(@PathVariable String database)
     	throws IOException, SQLException, ServletException, NamingException
     {
@@ -82,7 +85,7 @@ public class AjaxController extends AbstractController {
      * @param array $params Request parameters
      * @return array JSON
      */
-    @PostMapping("/list-columns/{database}/{table}")
+    @PostMapping("list-columns/{database}/{table}")
     public void columns(@PathVariable String database, @PathVariable String table)
     	throws IOException, SQLException, ServletException, NamingException
     {
@@ -103,7 +106,7 @@ public class AjaxController extends AbstractController {
      * @throws NamingException 
      * @throws ServletException 
      */
-    @PostMapping("/config-get")
+    @PostMapping("config-get")
     public void getConfig(@RequestParam String key)
     	throws IOException, SQLException, ServletException, NamingException
     {
@@ -129,7 +132,7 @@ public class AjaxController extends AbstractController {
      * @param array $params Request parameters
      * @return array
      */
-    @PostMapping("/config-set")
+    @PostMapping("config-set")
     public void setConfig(@RequestParam String key, @RequestParam String value)
     	throws IOException, SQLException, ServletException, NamingException
     {
