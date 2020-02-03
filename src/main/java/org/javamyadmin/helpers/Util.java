@@ -4233,6 +4233,59 @@ public class Util {
         return $regex;*/
     }
 
+
+    private static Map<String,String> server = new HashMap<>();
+    private static Map<String,String> db = new HashMap<>();
+    private static Map<String,String> table = new HashMap<>();
+    private static Map<String, Map<String,String>> $tabList = new HashMap<>(); 
+    
+    static {
+	    server.put("databases", __("Databases"));
+	    server.put("sql", __("SQL"));
+	    server.put("status", __("Status"));
+	    server.put("rights", __("Users"));
+	    server.put("export", __("Export"));
+	    server.put("export", __("Export"));
+	    server.put("settings", __("Settings"));
+	    server.put("binlog", __("Binary log"));
+	    server.put("replication", __("Replication"));
+	    server.put("vars", __("Variables"));
+	    server.put("charset", __("Charsets"));
+	    server.put("plugins", __("Plugins"));
+	    server.put("engine", __("Engines"));
+	    $tabList.put("server", server);
+	    
+	    db.put("structure", __("Structure"));
+	    db.put("sql", __("SQL"));
+	    db.put("search", __("Search"));
+	    db.put("query", __("Query"));
+	    db.put("structure", __("Structure"));
+	    db.put("export", __("Export"));
+	    db.put("import", __("Import"));
+	    db.put("operation", __("Operations"));
+	    db.put("privileges", __("Privileges"));
+	    db.put("routines", __("Routines"));
+	    db.put("events", __("Events"));
+	    db.put("triggers", __("Triggers"));
+	    db.put("tracking", __("Tracking"));
+	    db.put("designer", __("Designer"));
+	    db.put("central_columns", __("Central columns"));
+	    $tabList.put("db", db);
+	    
+	    table.put("browse", __("Browse"));
+	    table.put("structure", __("Structure"));
+	    table.put("sql", __("SQL"));
+	    table.put("search", __("Search"));
+	    table.put("insert", __("Insert"));
+	    db.put("export", __("Export"));
+	    db.put("import", __("Import"));
+	    db.put("privileges", __("Privileges"));
+	    db.put("operation", __("Operations"));
+	    db.put("tracking", __("Tracking"));
+	    db.put("triggers", __("Triggers"));
+	    $tabList.put("table", table);
+    }
+    
     /**
      * Return the list of tabs for the menu with corresponding names
      *
@@ -4240,61 +4293,15 @@ public class Util {
      *
      * @return array|null list of tabs for the menu
      */
-    public static Map getMenuTabList(String $level /*= null*/)
+    public static Map<String, String> getMenuTabList(String $level)
     {
-        Map<String, Map<String,String>> $tabList = new HashMap<>(); 
+    	if ($level == null) {
+    		throw new IllegalArgumentException("$level cannot be null in JMA");
+    		// if $level == null, this routine should return
+    		// the whole $tabList
+    	}
         
-        Map<String,String> server = new HashMap<>();
-        server.put("databases", __("Databases"));
-        server.put("sql", __("SQL"));
-        server.put("status", __("Status"));
-        server.put("rights", __("Users"));
-        server.put("export", __("Export"));
-        server.put("export", __("Export"));
-        server.put("settings", __("Settings"));
-        server.put("binlog", __("Binary log"));
-        server.put("replication", __("Replication"));
-        server.put("vars", __("Variables"));
-        server.put("charset", __("Charsets"));
-        server.put("plugins", __("Plugins"));
-        server.put("engine", __("Engines"));
-        $tabList.put("server", server);
-        
-        Map<String,String> db = new HashMap<>();
-        db.put("structure", __("Structure"));
-        db.put("sql", __("SQL"));
-        db.put("search", __("Search"));
-        db.put("query", __("Query"));
-        db.put("structure", __("Structure"));
-        db.put("export", __("Export"));
-        db.put("import", __("Import"));
-        db.put("operation", __("Operations"));
-        db.put("privileges", __("Privileges"));
-        db.put("routines", __("Routines"));
-        db.put("events", __("Events"));
-        db.put("triggers", __("Triggers"));
-        db.put("tracking", __("Tracking"));
-        db.put("designer", __("Designer"));
-        db.put("central_columns", __("Central columns"));
-        $tabList.put("db", db);
-        
-        Map<String,String> table = new HashMap<>();
-        table.put("browse", __("Browse"));
-        table.put("structure", __("Structure"));
-        table.put("sql", __("SQL"));
-        table.put("search", __("Search"));
-        table.put("insert", __("Insert"));
-        db.put("export", __("Export"));
-        db.put("import", __("Import"));
-        db.put("privileges", __("Privileges"));
-        db.put("operation", __("Operations"));
-        db.put("tracking", __("Tracking"));
-        db.put("triggers", __("Triggers"));
-        $tabList.put("table", table);
-        
-        if ($level == null) {
-            return $tabList;
-        } else if ($tabList.containsKey($level)) {
+        if ($tabList.containsKey($level)) {
             return $tabList.get($level);
         }
 

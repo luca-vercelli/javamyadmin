@@ -262,7 +262,7 @@ public class Menu {
             $level = "server";
         }
 
-        Map<String, Map<String, String>> $allowedTabs = this._getAllowedTabs($level);
+        Map<String, String> $allowedTabs = this._getAllowedTabs($level);
         Map<String, MenuStruct> $tabsCopy = new HashMap<>($tabs);
         for (Entry<String, MenuStruct> $entry : $tabsCopy.entrySet()) {
             if (! $allowedTabs.containsKey($entry.getKey())) {
@@ -279,13 +279,13 @@ public class Menu {
      *
      * @return array list of allowed ta0bs
      */
-    private Map<String, Map<String, String>> _getAllowedTabs(String $level)
+    private Map<String, String> _getAllowedTabs(String $level)
     {
         String $cache_key = "menu-levels-" + $level;
         if (Util.cacheExists($cache_key, GLOBALS, session)) {
-            return (Map<String, Map<String, String>>) Util.cacheGet($cache_key, null, GLOBALS, session);
+            return (Map<String, String>) Util.cacheGet($cache_key, null, GLOBALS, session);
         }
-        Map<String, Map<String, String>> $allowedTabs = Util.getMenuTabList($level);
+        Map<String, String> $allowedTabs = Util.getMenuTabList($level);
         /*
         TODO
         $cfgRelation = this.relation.getRelationsParam();
