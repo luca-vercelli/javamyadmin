@@ -31,6 +31,7 @@ public class Header {
      * @access private
      * @var Scripts
      */
+    @Autowired
     private Scripts _scripts;
     /**
      * PhpMyAdmin\Console instance
@@ -163,7 +164,6 @@ public class Header {
         this._menuEnabled = true;
         this._warningsEnabled = true;
         this._isPrintView = false;
-        this._scripts = new Scripts();
         this._addDefaultScripts();
         this._headerIsSent = false;
         // if database storage for user preferences is transient,

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Collects information about which JavaScript
@@ -65,14 +66,14 @@ public class Scripts {
 	/**
 	 * @var Template
 	 */
-	//private Template template;
+	@Autowired
+	private Template template;
 
 	/**
 	 * Generates new Scripts objects
 	 *
 	 */
 	public Scripts() {
-		//this.template = new Template();
 		this._files = new ArrayList<>();
 		this._code = "";
 	}
@@ -191,7 +192,7 @@ public class Scripts {
 		model.put("version", Globals.getPmaVersion());
 		model.put("code", this._code);
 
-		return JtwigFactory.render("scripts", model);
+		return this.template.render("scripts", model);
 
 	}
 

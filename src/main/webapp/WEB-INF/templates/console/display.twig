@@ -1,14 +1,14 @@
 <div id="pma_console_container">
     <div id="pma_console">
         {# Console toolbar #}
-        {% include 'console/toolbar.twig' with {
+        {% include './toolbar.twig' with {
             'parent_div_classes': 'collapsed',
             'content_array': [
                 {0: 'switch_button console_switch', 1: 'Console'|trans, 'image': image},
                 ['button clear', 'Clear'|trans],
                 ['button history', 'History'|trans],
                 ['button options', 'Options'|trans],
-                cfg_bookmark is defined ? ['button bookmarks', 'Bookmarks'|trans] : null,
+                (cfg_bookmark is defined) ? ['button bookmarks', ('Bookmarks'|trans)] : null,
                 ['button debug hide', 'Debug SQL'|trans]
             ]
         } only %}
@@ -37,14 +37,14 @@
                                     ['action edit', 'Edit'|trans],
                                     ['action explain', 'Explain'|trans],
                                     ['action profiling', 'Profiling'|trans],
-                                    cfg_bookmark is defined ? ['action bookmark', 'Bookmark'|trans] : null,
+                                    (cfg_bookmark is defined) ? ['action bookmark', ('Bookmark'|trans)] : null,
                                     ['text failed', 'Query failed'|trans],
-                                    {0: 'text targetdb', 1: 'Database'|trans, 'extraSpan': record['db']},
+                                    {0: 'text targetdb', 1: ('Database'|trans), 'extraSpan': record['db']},
                                     {
                                         0: 'text query_time',
-                                        1: 'Queried time'|trans,
-                                        'extraSpan': record['timevalue'] is defined ?
-                                            record['timevalue'] : 'During current session'|trans
+                                        1: ('Queried time'|trans),
+                                        'extraSpan': (record['timevalue'] is defined) ?
+                                            record['timevalue'] : ('During current session'|trans)
                                     }
                                 ]
                             } only %}
@@ -61,7 +61,7 @@
         <div class="mid_layer"></div>
         {# Debug SQL card #}
         <div class="card" id="debug_console">
-            {% include 'console/toolbar.twig' with {
+            {% include './toolbar.twig' with {
                 'parent_div_classes': '',
                 'content_array': [
                     ['button order order_asc', 'ascending'|trans],
@@ -81,7 +81,7 @@
                 <div class="debugLog"></div>
             </div> <!-- Content -->
             <div class="templates">
-                {% include 'console/query_action.twig' with {
+                {% include './query_action.twig' with {
                     'parent_div_classes': 'debug_query action_content',
                     'content_array': [
                         ['action collapse', 'Collapse'|trans],
@@ -96,7 +96,7 @@
         </div> <!-- Debug SQL card -->
         {% if cfg_bookmark %}
             <div class="card" id="pma_bookmarks">
-                {% include 'console/toolbar.twig' with {
+                {% include './toolbar.twig' with {
                     'parent_div_classes': '',
                     'content_array': [
                         ['switch_button', 'Bookmarks'|trans],
@@ -109,7 +109,7 @@
                 </div>
                 <div class="mid_layer"></div>
                 <div class="card add">
-                    {% include 'console/toolbar.twig' with {
+                    {% include './toolbar.twig' with {
                         'parent_div_classes': '',
                         'content_array': [
                             ['switch_button', 'Add bookmark'|trans]
@@ -137,7 +137,7 @@
         {% endif %}
         {# Options card #}
         <div class="card" id="pma_console_options">
-            {% include 'console/toolbar.twig' with {
+            {% include './toolbar.twig' with {
                 'parent_div_classes': '',
                 'content_array': [
                     ['switch_button', 'Options'|trans],
@@ -172,7 +172,7 @@
         </div> <!-- Options card -->
         <div class="templates">
             {# Templates for console message actions #}
-            {% include 'console/query_action.twig' with {
+            {% include './query_action.twig' with {
                 'parent_div_classes': 'query_actions',
                 'content_array': [
                     ['action collapse', 'Collapse'|trans],
@@ -181,7 +181,7 @@
                     ['action edit', 'Edit'|trans],
                     ['action explain', 'Explain'|trans],
                     ['action profiling', 'Profiling'|trans],
-                    cfg_bookmark is defined ? ['action bookmark', 'Bookmark'|trans] : null,
+                    (cfg_bookmark is defined) ? ['action bookmark', ('Bookmark'|trans)] : null,
                     ['text failed', 'Query failed'|trans],
                     {0: 'text targetdb', 1: 'Database'|trans, 'extraSpan': ''},
                     {0: 'text query_time', 1: 'Queried time'|trans, 'extraSpan': ''}

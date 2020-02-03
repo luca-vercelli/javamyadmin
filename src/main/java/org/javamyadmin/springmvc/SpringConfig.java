@@ -10,6 +10,7 @@ import org.javamyadmin.helpers.Footer;
 import org.javamyadmin.helpers.Header;
 import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
+import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.UserPreferences;
@@ -120,6 +121,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@RequestScope
 	public Console getConsole() {
 		return new Console();
+	}
+
+	@Bean
+	@RequestScope
+	public Scripts getScripts() {
+		return new Scripts();
 	}
 
 	/* TODO @Bean

@@ -31,6 +31,7 @@ public class Footer {
      * @access private
      * @var Scripts
      */
+	@Autowired
     private Scripts _scripts;
     /**
      * Whether we are servicing an ajax request.
@@ -81,7 +82,6 @@ public class Footer {
     public Footer()
     {
         this._isEnabled = true;
-        this._scripts = new Scripts();
         this._isMinimal = false;
         // TODO this.relation = new Relation(GLOBALS.getDbi());
         

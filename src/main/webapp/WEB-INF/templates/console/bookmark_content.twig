@@ -15,7 +15,7 @@
                 {0: 'text targetdb', 1: 'Database'|trans, 'extraSpan': bookmark.getDatabase()}
             ]
         } only %}
-        <span class="bookmark_label{{ bookmark.getUser() is empty ? ' shared' }}">
+        <span class="bookmark_label{{ (bookmark.getUser() is empty) ? ' shared' }}">
             {{ bookmark.getLabel() }}
         </span>
         <span class="query">
