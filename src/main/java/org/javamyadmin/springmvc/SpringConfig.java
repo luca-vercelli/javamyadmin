@@ -4,6 +4,7 @@ import static org.javamyadmin.php.Php.$_SESSION;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Console;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Footer;
@@ -44,9 +45,13 @@ public class SpringConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
+	@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+	public Config getConfig() {
+		return new Config(null);
+	}
+
+	@Bean
 	@RequestScope
-	// @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode =
-	// ScopedProxyMode.TARGET_CLASS)
 	public Globals getGLOBALS() {
 		return new Globals();
 	}
