@@ -5,11 +5,9 @@ import static org.javamyadmin.php.Php.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,10 +23,8 @@ import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Util;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
-import org.jtwig.web.servlet.JtwigRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractController {
@@ -67,14 +63,6 @@ public abstract class AbstractController {
 	 * @throws SQLException 
 	 */
 	public void prepareResponse() throws ServletException, IOException, SQLException, NamingException {
-		
-		if (Globals.getRootPath() == null) {
-			// this is executed only at first run
-			ServletContext servletContext = httpRequest.getServletContext();
-			Globals.setRootPath(servletContext.getRealPath("/WEB-INF/.."));
-			Globals.setThemesPath(servletContext.getRealPath("/themes/"));
-			Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
-		}
 		
 		// GLOBALS.setDbi(dbi);
 		

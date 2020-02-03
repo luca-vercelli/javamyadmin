@@ -11,6 +11,7 @@ import org.javamyadmin.helpers.Menu;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
+import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.helpers.navigation.NavigationTree;
@@ -43,7 +44,8 @@ public class SpringConfig implements WebMvcConfigurer {
 
 	@Bean
 	@RequestScope
-	//@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	// @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode =
+	// ScopedProxyMode.TARGET_CLASS)
 	public Globals getGLOBALS() {
 		return new Globals();
 	}
@@ -113,4 +115,10 @@ public class SpringConfig implements WebMvcConfigurer {
 	public UserPreferences getUserPreferences() {
 		return new UserPreferences();
 	}
+
+	/* TODO @Bean
+	@RequestScope
+	public ThemeManager getThemeManager(HttpServletRequest req) {
+		return new ThemeManager(req);
+	}*/
 }

@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.ListDatabase;
@@ -29,7 +33,7 @@ public class Globals {
 	 * Absolute path of /WEB-INF/..
 	 */
 	private static String ROOT_PATH;
-	private static String THEMES_PATH;
+	private static String THEMES_PATH = "/themes/";
 	private static String TEMPLATES_PATH;
 	public static String LOCALES_BUNDLE = "org.javamyadmin.Translations";
 	private static Config PMA_Config = new Config(null);
@@ -41,8 +45,7 @@ public class Globals {
 	private boolean PMA_MINIMUM_COMMON = false;
 	private boolean IS_TRANSFORMATION_WRAPPER = false;
 	private Theme PMA_Theme;
-	private File pmaThemeFullPath;
-	private String pmaThemeUrlPath;
+	private String pmaThemePath;
 	private String pmaThemeImage;
 	private String lang;
 	private String db;
@@ -64,6 +67,7 @@ public class Globals {
 	private String message;
 	private String buffer_message;
 	private String route;
+	
 	private ThemeManager themeManager;
 	
 	/* Backward compatibility (see Config.enableBc())
@@ -96,6 +100,17 @@ public class Globals {
 	private Map url_parameters = new HashMap();
 	private boolean PMA_DISABLE_NAVI_SETTINGS = false;
 
+	@Autowired
+	private HttpServletRequest httpRequest;
+	
+	@PostConstruct
+	public void init() {
+		ServletContext servletContext = httpRequest.getServletContext();
+		Globals.setRootPath(servletContext.getRealPath("/WEB-INF/.."));
+		Globals.setTemplatesPath(servletContext.getRealPath("/WEB-INF/templates/"));
+
+	}
+	
 	public static String getRootPath() {
 		return ROOT_PATH;
 	}
@@ -192,20 +207,12 @@ public class Globals {
 		this.PMA_Theme = theme;
 	}
 
-	public File getPmaThemeFullPath() {
-		return pmaThemeFullPath;
+	public String getPmaThemePath() {
+		return pmaThemePath;
 	}
 
-	public void setPmaThemeFullPath(File pmaThemeFullPath) {
-		this.pmaThemeFullPath = pmaThemeFullPath;
-	}
-
-	public String getPmaThemeUrlPath() {
-		return pmaThemeUrlPath;
-	}
-
-	public void setPmaThemeUrlPath(String pmaThemeUrlPath) {
-		this.pmaThemeUrlPath = pmaThemeUrlPath;
+	public void setPmaThemePath(String pmaThemePath) {
+		this.pmaThemePath = pmaThemePath;
 	}
 
 	public String getPmaThemeImage() {

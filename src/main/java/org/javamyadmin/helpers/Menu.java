@@ -80,8 +80,9 @@ public class Menu {
 		Map<String, MenuStruct> retmap = new HashMap<>();
         @SuppressWarnings("unchecked")
 		Map<String, Map<String, String>> m = (Map<String, Map<String, String>>) menuProperties.get(whatfor);
-        for (String tabname: m.keySet()) {
-        	Map<String, String> tabattrs = m.get(tabname);
+        for (Entry<String, Map<String, String>> entry: m.entrySet()) {
+        	String tabname = entry.getKey();
+        	Map<String, String> tabattrs = entry.getValue();
         	retmap.put(tabname, new MenuStruct(tabattrs.get("icon"), tabattrs.get("link"), tabattrs.get("text"),
         			"true".equals(tabattrs.get("active"))));
         }
@@ -263,9 +264,8 @@ public class Menu {
         }
 
         Map<String, Map<String, String>> $allowedTabs = this._getAllowedTabs($level);
-        Map<String, MenuStruct> $tabs_copy = new HashMap<>($tabs);
-        Set<Entry<String, MenuStruct>> entries = $tabs_copy.entrySet();
-        for (Entry<String, MenuStruct> $entry : entries) {
+        Map<String, MenuStruct> $tabsCopy = new HashMap<>($tabs);
+        for (Entry<String, MenuStruct> $entry : $tabsCopy.entrySet()) {
             if (! $allowedTabs.containsKey($entry.getKey())) {
                 $tabs.remove($entry.getKey());
             }
@@ -278,7 +278,7 @@ public class Menu {
      *
      * @param string $level "server", "db" or "table" level
      *
-     * @return array list of allowed tabs
+     * @return array list of allowed ta0bs
      */
     private Map<String, Map<String, String>> _getAllowedTabs(String $level)
     {

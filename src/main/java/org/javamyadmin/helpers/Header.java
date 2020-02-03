@@ -438,7 +438,7 @@ public class Header {
 
                 $baseDir = Globals.getPmaPathToBasedir();
                 $uniqueValue = Globals.getConfig().getThemeUniqueValue(GLOBALS);
-                $themePath = GLOBALS.getPmaThemeUrlPath();
+                $themePath = GLOBALS.getPmaThemePath();
                 $version = getVersionParameter();
 
                 // The user preferences have been merged at this point
