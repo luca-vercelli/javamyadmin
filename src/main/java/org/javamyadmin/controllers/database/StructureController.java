@@ -19,6 +19,8 @@ import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,7 +74,10 @@ public class StructureController extends AbstractController {
      * @var Replication
      */
     //private Replication $replication; //TODO ?
-    
+
+	@Autowired
+	private BeanFactory beanFactory;
+	
 	/**
      * Retrieves database information for further use
      *
@@ -136,7 +141,7 @@ public class StructureController extends AbstractController {
             Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";
-        PageSettings.showGroup("DbStructure");
+        PageSettings.showGroup("DbStructure", beanFactory);
         String $tableList = null;
         String $listNavigator = null;
         if (this.numTables > 0) {

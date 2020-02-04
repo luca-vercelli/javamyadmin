@@ -15,6 +15,7 @@ import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
 import org.javamyadmin.helpers.UserPreferences;
+import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.helpers.navigation.NavigationTree;
 import org.javamyadmin.php.Globals;
@@ -139,4 +140,10 @@ public class SpringConfig implements WebMvcConfigurer {
 	public ThemeManager getThemeManager(HttpServletRequest req) {
 		return new ThemeManager(req);
 	}*/
+
+	@Bean
+	@RequestScope
+	public PageSettings getPageSettings(String $formGroupName, String $elemId) {
+		return new PageSettings($formGroupName, $elemId);
+	}
 }

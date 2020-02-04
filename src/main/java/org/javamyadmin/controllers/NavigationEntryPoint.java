@@ -7,6 +7,7 @@ import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.navigation.Navigation;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,8 @@ public class NavigationEntryPoint {
 	DatabaseInterface $dbi;
 	@Autowired
 	Navigation $navigation;
+	@Autowired
+	BeanFactory beanFactory;
 
 	@RequestMapping(value="/navigation", produces=MediaType.APPLICATION_JSON_VALUE)
 	public void navigation() throws SQLException {
@@ -52,7 +55,7 @@ public class NavigationEntryPoint {
 		
 
 		if (!empty(httpRequest.getParameter("getNaviSettings"))) {
-		    $response.addJSON("message", PageSettings.getNaviSettings());
+		    $response.addJSON("message", PageSettings.getNaviSettings(beanFactory));
 		    return;
 		}
 		

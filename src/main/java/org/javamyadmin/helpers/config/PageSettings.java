@@ -9,6 +9,7 @@ import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.config.forms.page.PageFormList;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
@@ -238,10 +239,11 @@ public class PageSettings {
      * @param string $formGroupName The name of config form group to display
      * @return PageSettings
      */
-    public static PageSettings showGroup(String $formGroupName)
+    public static PageSettings showGroup(String $formGroupName, BeanFactory beanFactory)
     {
-    	PageSettings $object = new PageSettings($formGroupName);
-
+    	//PageSettings $object = new PageSettings($formGroupName);
+    	PageSettings $object = beanFactory.getBean(PageSettings.class, $formGroupName, null);
+    	
     	$object.$response.addHTML($object.getErrorHTML());
     	$object.$response.addHTML($object.getHTML());
 
@@ -252,9 +254,10 @@ public class PageSettings {
      * Get HTML for navigation settings
      * @return string
      */
-    public static String getNaviSettings()
+    public static String getNaviSettings(BeanFactory beanFactory)
     {
-    	PageSettings $object = new PageSettings("Navi", "pma_navigation_settings");
+    	// PageSettings $object = new PageSettings("Navi", "pma_navigation_settings");
+    	PageSettings $object = beanFactory.getBean(PageSettings.class, "Navi", "pma_navigation_settings");
 
     	$object.$response.addHTML($object.getErrorHTML());
         return $object.getHTML();

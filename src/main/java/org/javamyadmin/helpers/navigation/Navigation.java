@@ -21,6 +21,7 @@ import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.javamyadmin.php.Php.UrlComponents;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
@@ -56,7 +57,10 @@ public class Navigation {
 	 */
 	@Autowired
 	private NavigationTree tree;
-
+	
+	@Autowired
+	private BeanFactory beanFactory;
+	
 	/**
 	 * Navigation constructor.
 	 * 
@@ -117,7 +121,7 @@ public class Navigation {
 			}
 
 			if (!GLOBALS.getPMA_DISABLE_NAVI_SETTINGS()) {
-				$navigationSettings = PageSettings.getNaviSettings();
+				$navigationSettings = PageSettings.getNaviSettings(beanFactory);
 			}
 		}
 		String $navRender = "";
