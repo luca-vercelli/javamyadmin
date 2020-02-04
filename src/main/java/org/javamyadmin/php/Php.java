@@ -304,10 +304,9 @@ public class Php {
 	 * @param map
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Map array_merge(Map... maps) {
-		Map result = new HashMap();
-		for (Map map : maps) {
+	public static <U,V> Map<U,V> array_merge(@SuppressWarnings("unchecked") Map<U,V>... maps) {
+		Map<U,V> result = new HashMap<>();
+		for (Map<U,V> map : maps) {
 			result.putAll(map);
 		}
 		return result;
@@ -349,6 +348,41 @@ public class Php {
 	}
 
 	/**
+	 * Exchanges all keys with their associated values in an array
+	 * 
+	 * If a value has several occurrences, the latest key will be used as its value,
+	 * and all others will be lost.
+	 * 
+	 * @param array
+	 * @return
+	 */
+	public static <U, V> Map<V, U> array_flip(Map<U, V> array) {
+		Map<V, U> retval = new LinkedHashMap<>();
+		for (Entry<U, V> entry : array.entrySet()) {
+			retval.put(entry.getValue(), entry.getKey());
+		}
+		return retval;
+	}
+
+	/**
+	 * Exchanges all keys with their associated values in an array
+	 * 
+	 * If a value has several occurrences, the latest key will be used as its value,
+	 * and all others will be lost.
+	 * 
+	 * @param array
+	 * @return
+	 */
+	public static <U> Map<U, Integer> array_flip(List<U> array) {
+		Map<U, Integer> retval = new LinkedHashMap<>();
+		int i = 0;
+		for (U item : array) {
+			retval.put(item, new Integer(i++));
+		}
+		return retval;
+	}
+
+	/**
 	 * True if array contains object
 	 */
 	public static boolean in_array(Object x, Object[] array) {
@@ -358,6 +392,20 @@ public class Php {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * True if array contains object
+	 */
+	public static <U> boolean in_array(U x, List<? extends U> array) {
+		return array != null && array.contains(x);
+	}
+
+	/**
+	 * True if array contains object
+	 */
+	public static <U, V> boolean in_array(U x, Map<V, ? extends U> array) {
+		return array != null && array.containsValue(x);
 	}
 
 	/**
