@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -390,6 +391,53 @@ public class Php {
 			retval.put(item, new Integer(i++));
 		}
 		return retval;
+	}
+
+	/**
+	 * Applies the user-defined callback function to each element of the array
+	 * array.
+	 * 
+	 * Warning: the Map is modified in-place, even if it changes the Map generic
+	 * type.
+	 * 
+	 * @param $array
+	 * @param $callback
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <U, V, W> Map<U, W> array_walk(Map<U, V> $array, Function<V, W> $callback) {
+		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
+		Map uncastedArray = (Map) $array;
+		for (U key : arrayCopy.keySet()) {
+			V oldItem = $array.get(key);
+			W newItem = $callback.apply(oldItem);
+			uncastedArray.put(key, newItem);
+		}
+		return uncastedArray;
+	}
+
+	/**
+	 * Applies the user-defined callback function to each element of the array
+	 * array.
+	 * 
+	 * Warning: the Map is modified in-place, even if it changes the Map generic
+	 * type.
+	 * 
+	 * @param $array
+	 * @param $callback
+	 * @param $userdata
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <U, V, W, X> Map<U, W> array_walk(Map<U, V> $array, BiFunction<V, X, W> $callback, X $userdata) {
+		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
+		Map uncastedArray = (Map) $array;
+		for (U key : arrayCopy.keySet()) {
+			V oldItem = $array.get(key);
+			W newItem = $callback.apply(oldItem, $userdata);
+			uncastedArray.put(key, newItem);
+		}
+		return uncastedArray;
 	}
 
 	/**
@@ -819,5 +867,49 @@ public class Php {
 			}
 		}
 		return components;
+	}
+
+	/**
+	 * Strip whitespace (or other characters) from the beginning of a string.
+	 * 
+	 * Java 8 does not have this!?!
+	 * 
+	 * @return
+	 */
+	public static String ltrim(String $str) {
+		return $str.replaceAll("^\\s+", "");
+	}
+
+	/**
+	 * Strip whitespace (or other characters) from the beginning of a string.
+	 * 
+	 * Java 8 does not have this!?!
+	 * 
+	 * @return
+	 */
+	public static String ltrim(String $str, String $character_mask) {
+		return $str.replaceAll("^[" + $character_mask + "]+", "");
+	}
+
+	/**
+	 * Strip whitespace (or other characters) from the edn of a string.
+	 * 
+	 * Java 8 does not have this!?!
+	 * 
+	 * @return
+	 */
+	public static String rtrim(String $str) {
+		return $str.replaceAll("\\s+$", "");
+	}
+
+	/**
+	 * Strip whitespace (or other characters) from the end of a string.
+	 * 
+	 * Java 8 does not have this!?!
+	 * 
+	 * @return
+	 */
+	public static String rtrim(String $str, String $character_mask) {
+		return $str.replaceAll("[" + $character_mask + "]+$", "");
 	}
 }
