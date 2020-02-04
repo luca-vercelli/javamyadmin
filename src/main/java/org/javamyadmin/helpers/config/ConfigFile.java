@@ -1,12 +1,14 @@
 package org.javamyadmin.helpers.config;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.javamyadmin.helpers.Core;
+import org.javamyadmin.php.Callable;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,19 +26,19 @@ public class ConfigFile {
      * Stores default PMA config from config.default.php
      * @var array
      */
-    private Map _defaultCfg;
+    private Map<String, Object> _defaultCfg;
 
     /**
      * Stores allowed values for non-standard fields
      * @var array
      */
-    private Map _cfgDb;
+    private Map<String, Object> _cfgDb;
 
     /**
      * Stores original PMA config, not modified by user preferences
      * @var array|null
      */
-    private Map _baseCfg;
+    private Map<String, Object> _baseCfg;
 
     /**
      * Whether we are currently working in PMA Setup context
@@ -48,20 +50,20 @@ public class ConfigFile {
      * Keys which will be always written to config file
      * @var array
      */
-    private Map _persistKeys = new HashMap<>();
+    private Set<String> _persistKeys = new HashSet<>();
 
     /**
      * Changes keys while updating config in {@link updateWithGlobalConfig()}
      * or reading by {@link getConfig()} or {@link getConfigArray()}
      * @var array
      */
-    private Map _cfgUpdateReadMapping = new HashMap<>();
+    private Map<String, String> _cfgUpdateReadMapping = new HashMap<>();
 
     /**
      * Key filter for {@link set()}
      * @var array|null
      */
-    private Map _setFilter;
+    private Set<String> _setFilter;
 
     /**
      * Instance id (key in $_SESSION array, separate for each server -
@@ -74,12 +76,12 @@ public class ConfigFile {
      * Result for {@link _flattenArray()}
      * @var array|null
      */
-    private Map _flattenArrayResult;
+    private Map<String, Object> _flattenArrayResult;
 
     @Autowired
-    SessionMap $_SESSION;
+    private SessionMap $_SESSION;
     @Autowired
-    Globals $GLOBALS;
+    private Globals $GLOBALS;
     
     /**
      * Constructor
@@ -88,11 +90,11 @@ public class ConfigFile {
      *                               {@link PhpMyAdmin\Config.$base_config},
      *                               use only when not in PMA Setup
      */
-    public ConfigFile(Map $baseConfig /*= null*/)
+    public ConfigFile(Map<String, Object> $baseConfig /*= null*/)
     {
         // load default config values
-        Map $cfg = this._defaultCfg;
-        // TODO? include ROOT_PATH + "libraries/config.default.php";
+        Map<String, Object> $cfg = this._defaultCfg;
+        // FIXME must load config include ROOT_PATH + "libraries/config.default.php";
 
         // load additional config information
         // TODO this._cfgDb = include ROOT_PATH + "libraries/config.values.php";
@@ -122,11 +124,11 @@ public class ConfigFile {
      *
      * @return void
      */
-    public void setPersistKeys(Map $keys)
+    public void setPersistKeys(Collection<String> $keys)
     {
         // checking key presence is much faster than searching so move values
         // to keys
-        this._persistKeys = array_flip($keys);
+        this._persistKeys = new HashSet<>($keys);
     }
 
     /**
@@ -134,7 +136,7 @@ public class ConfigFile {
      *
      * @return array
      */
-    public Map getPersistKeysMap()
+    public Set<String> getPersistKeysMap()
     {
         return this._persistKeys;
     }
@@ -147,7 +149,7 @@ public class ConfigFile {
      *
      * @return void
      */
-    public void setAllowedKeys(Map $keys)
+    public void setAllowedKeys(Collection<String> $keys)
     {
         if ($keys == null) {
             this._setFilter = null;
@@ -155,7 +157,7 @@ public class ConfigFile {
         }
         // checking key presence is much faster than searching so move values
         // to keys
-        this._setFilter = array_flip($keys);
+        this._setFilter = new HashSet<>($keys);
     }
 
     /**
@@ -168,7 +170,7 @@ public class ConfigFile {
      *
      * @return void
      */
-    public void setCfgUpdateReadMapping(Map $mapping)
+    public void setCfgUpdateReadMapping(Map<String, String> $mapping)
     {
         this._cfgUpdateReadMapping = $mapping;
     }
@@ -180,7 +182,7 @@ public class ConfigFile {
      */
     public void resetConfigData()
     {
-        $_SESSION.put(this._id, new HashMap());
+        $_SESSION.put(this._id, new HashMap<>());
     }
 
     /**
@@ -190,7 +192,7 @@ public class ConfigFile {
      *
      * @return void
      */
-    public void setConfigData(Map $cfg)
+    public void setConfigData(Map<String, Object> $cfg)
     {
         $_SESSION.put(this._id, $cfg);
     }
@@ -211,12 +213,12 @@ public class ConfigFile {
         }
         // apply key whitelist
         if (this._setFilter != null
-            && ! (this._setFilter.containsKey($canonicalPath))
+            && ! (this._setFilter.contains($canonicalPath))
         ) {
             return;
         }
         // if the path isn"t protected it may be removed
-        if ((this._persistKeys.containsKey($canonicalPath))) {
+        if ((this._persistKeys.contains($canonicalPath))) {
             Core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
             return;
         }
@@ -262,9 +264,15 @@ public class ConfigFile {
     private void _flattenArray(Object $value, String $key, String $prefix)
     {
         // no recursion for numeric arrays
-        if (is_array($value) && ! isset($value[0])) {
+        if ($value instanceof Map) {
             $prefix += $key + "/";
-            array_walk($value, [this, "_flattenArray"], $prefix);
+            ConfigFile that = this;
+            Callable callback = new Callable() {
+				@Override
+				public void apply(Object... args) {
+					that._flattenArray(args[0], (String)args[1], (String)args[2]);
+				}};
+            array_walk((Map)$value, callback, $prefix);
         } else {
             this._flattenArrayResult.put($prefix + $key, $value);
         }
@@ -275,11 +283,17 @@ public class ConfigFile {
      *
      * @return array
      */
-    public Map getFlatDefaultConfig()
+    public Map<String, Object> getFlatDefaultConfig()
     {
         this._flattenArrayResult = new HashMap<>();
-        array_walk(this._defaultCfg, [this, "_flattenArray"], "");
-        Map $flatConfig = this._flattenArrayResult;
+        ConfigFile that = this;
+        Callable callback = new Callable() {
+			@Override
+			public void apply(Object... args) {
+				that._flattenArray(args[0], (String)args[1], (String)args[2]);
+			}};
+        array_walk(this._defaultCfg, callback, "");
+        Map<String, Object> $flatConfig = this._flattenArrayResult;
         this._flattenArrayResult = null;
         return $flatConfig;
     }
@@ -292,22 +306,29 @@ public class ConfigFile {
      *
      * @return void
      */
-    public void updateWithGlobalConfig(Map $cfg)
+    public void updateWithGlobalConfig(Map<String, Object> $cfg)
     {
         // load config array and flatten it
         this._flattenArrayResult = new HashMap<>();
-        array_walk($cfg, [this, "_flattenArray"], "");
-        Map $flatConfig = this._flattenArrayResult;
+        ConfigFile that = this;
+        Callable callback = new Callable() {
+			@Override
+			public void apply(Object... args) {
+				that._flattenArray(args[0], (String)args[1], (String)args[2]);
+			}};
+        array_walk($cfg, callback, "");
+        Map<String, Object> $flatConfig = this._flattenArrayResult;
         this._flattenArrayResult = null;
 
         // save values map for translating a few user preferences paths,
         // should be complemented by code reading from generated config
         // to perform inverse mapping
-        for ($flatConfig as $path => $value) {
-            if (isset(this._cfgUpdateReadMapping[$path])) {
-                $path = this._cfgUpdateReadMapping[$path];
+        for (Object $path : $flatConfig.keySet()) {
+        	Object $value = $flatConfig.get($path);
+            if (this._cfgUpdateReadMapping.containsKey($path)) {
+                $path = this._cfgUpdateReadMapping.get($path);
             }
-            this.set($path, $value, $path);
+            this.set((String)$path, $value, (String)$path);
         }
     }
 
@@ -324,6 +345,10 @@ public class ConfigFile {
         return Core.arrayRead($path, (Map) $_SESSION.get(this._id), $default);
     }
 
+    public Object get(String $path) {
+    	return get($path, null);
+    }
+    
     /**
      * Returns default config value or $default it it"s not set ie. it doesn"t
      * exist in config.default.php ($cfg) and config.values.php
@@ -361,6 +386,10 @@ public class ConfigFile {
         $path = this.getCanonicalPath($path);
         return this.getDefault($path, $default);
     }
+    
+    public Object getValue(String $path) {
+    	return getValue($path, null);
+    }
 
     /**
      * Returns canonical path
@@ -387,6 +416,10 @@ public class ConfigFile {
         return Core.arrayRead($path, this._cfgDb, $default);
     }
 
+    public Object getDbEntry(String $path) {
+    	return getDbEntry($path, null);
+    }
+    
     /**
      * Returns server count
      *
@@ -431,14 +464,14 @@ public class ConfigFile {
      */
     public String getServerName(int $id)
     {
-        if (! isset($_SESSION[this._id]["Servers"][$id])) {
+        if (multiget($_SESSION, this._id, "Servers", $id) == null) {
             return "";
         }
-        $verbose = this.get("Servers/$id/verbose");
+        String $verbose = (String) this.get("Servers/$id/verbose");
         if (! empty($verbose)) {
             return $verbose;
         }
-        $host = this.get("Servers/$id/host");
+        String $host = (String) this.get("Servers/$id/host");
         return empty($host) ? "localhost" : $host;
     }
 
@@ -451,21 +484,21 @@ public class ConfigFile {
      */
     public void removeServer(int $server)
     {
-        if (! isset($_SESSION[this._id]["Servers"][$server])) {
+        if (multiget($_SESSION, this._id, "Servers", $server) == null) {
             return;
         }
-        $lastServer = this.getServerCount();
+        int $lastServer = this.getServerCount();
 
-        for ($i = $server; $i < $lastServer; $i++) {
-            $_SESSION[this._id]["Servers"][$i]
-                = $_SESSION[this._id]["Servers"][$i + 1];
+        for (int $i = $server; $i < $lastServer; $i++) {
+        	multiput($_SESSION, this._id, "Servers", $i,
+        	multiget($_SESSION, this._id, "Servers", $i +1));
         }
-        unset($_SESSION[this._id]["Servers"][$lastServer]);
+        multiremove($_SESSION, this._id, "Servers", $lastServer);
 
-        if (isset($_SESSION[this._id]["ServerDefault"])
-            && $_SESSION[this._id]["ServerDefault"] == $lastServer
+        if (multiget($_SESSION, this._id, "ServerDefault") != null
+            && multiget($_SESSION, this._id, "ServerDefault").equals($lastServer)
         ) {
-            unset($_SESSION[this._id]["ServerDefault"]);
+        	multiremove($_SESSION, this._id, "ServerDefault");
         }
     }
 
@@ -474,12 +507,14 @@ public class ConfigFile {
      *
      * @return array
      */
-    public Map getConfig()
+    public Map<String, Object> getConfig()
     {
-        $c = $_SESSION[this._id];
-        foreach (this._cfgUpdateReadMapping as $mapTo => $mapFrom) {
+		Map $c = (Map) $_SESSION.get(this._id);
+        for (Entry<String, String> $entry : this._cfgUpdateReadMapping.entrySet()) {
+        	String $mapTo = $entry.getKey();
+        	String $mapFrom = $entry.getValue();
             // if the key $c exists in $map_to
-            if (Core.arrayRead($mapTo, $c) !== null) {
+            if (Core.arrayRead($mapTo, $c) != null) {
                 Core.arrayWrite($mapTo, $c, Core.arrayRead($mapFrom, $c));
                 Core.arrayRemove($mapFrom, $c);
             }
@@ -492,27 +527,34 @@ public class ConfigFile {
      *
      * @return array
      */
-    public Map getConfigArray()
+    public Map<String, Object> getConfigArray()
     {
         this._flattenArrayResult = new HashMap<>();
-        array_walk($_SESSION[this._id], [this, "_flattenArray"], "");
-        $c = this._flattenArrayResult;
+        ConfigFile that = this;
+        Callable callback = new Callable() {
+			@Override
+			public void apply(Object... args) {
+				that._flattenArray(args[0], (String)args[1], (String)args[2]);
+			}};
+        array_walk((Map)$_SESSION.get(this._id), callback, "");
+        Map<String, Object> $c = this._flattenArrayResult;
         this._flattenArrayResult = null;
 
-        $persistKeys = array_diff(
-            array_keys(this._persistKeys),
-            array_keys($c)
-        );
-        foreach ($persistKeys as $k) {
-            $c[$k] = this.getDefault(this.getCanonicalPath($k));
+        Set<String> $persistKeys = new HashSet<>(this._persistKeys);
+        $persistKeys.removeAll($c.keySet());
+        
+        for (String $k : $persistKeys) {
+            $c.put($k, this.getDefault(this.getCanonicalPath($k)));
         }
 
-        foreach (this._cfgUpdateReadMapping as $mapTo => $mapFrom) {
-            if (! isset($c[$mapFrom])) {
+        for (Entry<String, String> $entry : this._cfgUpdateReadMapping.entrySet()) {
+        	String $mapTo = $entry.getKey();
+        	String $mapFrom = $entry.getValue();
+            if (! ($c.containsKey($mapFrom))) {
                 continue;
             }
-            $c[$mapTo] = $c[$mapFrom];
-            unset($c[$mapFrom]);
+            $c.put($mapTo, $c.get($mapFrom));
+            $c.remove($mapFrom);
         }
         return $c;
     }
