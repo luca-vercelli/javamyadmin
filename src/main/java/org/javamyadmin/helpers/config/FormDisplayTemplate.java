@@ -2,13 +2,16 @@ package org.javamyadmin.helpers.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Config;
+import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Template;
+import org.javamyadmin.helpers.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
@@ -55,11 +58,11 @@ public class FormDisplayTemplate
     /**
      * Displays top part of the form
      *
-     * @param string     $action       default: $_SERVER['REQUEST_URI']
-     * @param string     $method       'post' or 'get'
+     * @param String     $action       default: $_SERVER['REQUEST_URI']
+     * @param String     $method       'post' or 'get'
      * @param array|null $hiddenFields array of form hidden fields (key: field name)
      *
-     * @return string
+     * @return String
      */
     public String displayFormTop(
         String $action /*= null*/,
@@ -96,7 +99,7 @@ public class FormDisplayTemplate
      *
      * @param array $tabs tab names
      *
-     * @return string
+     * @return String
      */
     public String displayTabsTop(Map<String, String> $tabs)
     {
@@ -122,18 +125,18 @@ public class FormDisplayTemplate
     /**
      * Displays top part of a fieldset
      *
-     * @param string     $title       title of fieldset
-     * @param string     $description description shown on top of fieldset
+     * @param String     $title       title of fieldset
+     * @param String     $description description shown on top of fieldset
      * @param array|null $errors      error messages to display
      * @param array      $attributes  optional extra attributes of fieldset
      *
-     * @return string
+     * @return String
      */
     public String displayFieldsetTop(
         String $title /*= ""*/,
         String $description /*= ""*/,
         Map $errors /*= null*/,
-        Map<K, V> $attributes /*= []*/
+        Map $attributes /*= []*/
     ) {
         this.group = 0;
 
@@ -153,35 +156,35 @@ public class FormDisplayTemplate
         return this.template.render("config/form_display/fieldset_top", model);
     }
 
-    static Map $icons;    // An array of IMG tags used further below in the function
+    static Map<String, String> $icons;    // An array of IMG tags used further below in the function
 
     /**
      * Displays input field
      *
      * $opts keys:
-     * o doc - (string) documentation link
+     * o doc - (String) documentation link
      * o errors - error array
-     * o setvalue - (string) shows button allowing to set predefined value
+     * o setvalue - (String) shows button allowing to set predefined value
      * o show_restore_default - (boolean) whether show 'restore default' button
      * o userprefs_allow - whether user preferences are enabled for this field
      *                    (null - no support, true/false - enabled/disabled)
-     * o userprefs_comment - (string) field comment
+     * o userprefs_comment - (String) field comment
      * o values - key - value pairs for <select> fields
      * o values_escaped - (boolean) tells whether values array is already escaped
      *                    (defaults to false)
      * o values_disabled -  (array)list of disabled values (keys from values)
-     * o comment - (string) tooltip comment
+     * o comment - (String) tooltip comment
      * o comment_warning - (bool) whether this comments warns about something
      *
-     * @param string     $path           config option path
-     * @param string     $name           config option name
-     * @param string     $type           type of config option
+     * @param String     $path           config option path
+     * @param String     $name           config option name
+     * @param String     $type           type of config option
      * @param mixed      $value          current value
-     * @param string     $description    verbose description
+     * @param String     $description    verbose description
      * @param bool       $valueIsDefault whether value is default
      * @param array|null $opts           see above description
      *
-     * @return string
+     * @return String
      */
     public String displayInput(
         String $path,
@@ -195,88 +198,90 @@ public class FormDisplayTemplate
 
         boolean $isSetupScript = "true".equals(this.config.get("is_setup"));
         if ($icons == null) { // if the static variables have not been initialised
-            $icons = [];
+            $icons = new HashMap<>();
             // Icon definitions:
             // The same indexes will be used in the $icons array.
             // The first element contains the filename and the second
             // element is used for the 'alt' and 'title' attributes.
-            $iconInit = [
-                "edit"   => [
-                    "b_edit",
-                    "",
-                ],
-                "help"   => [
-                    "b_help",
-                    __("Documentation"),
-                ],
-                "reload" => [
-                    "s_reload",
-                    "",
-                ],
-                "tblops" => [
-                    "b_tblops",
-                    "",
-                ],
-            ];
+            Map<String, List<String>> $iconInit = new LinkedHashMap<>();
+            List<String> $iconInitEdit = new ArrayList<>();
+            List<String> $iconInitHelp = new ArrayList<>();
+            List<String> $iconInitReloads = new ArrayList<>();
+            List<String> $iconInitTBlops = new ArrayList<>();
+            $iconInit.put("edit", $iconInitEdit);
+            $iconInit.put("help", $iconInitHelp);
+            $iconInit.put("reload", $iconInitReloads);
+            $iconInit.put("tblops", $iconInitTBlops);
+            $iconInitEdit.add("b_edit");
+            $iconInitEdit.add("");
+            $iconInitHelp.add("b_help");
+            $iconInitHelp.add(__("Documentation"));
+            $iconInitReloads.add("s_reload");
+            $iconInitReloads.add("");
+            $iconInitTBlops.add("b_tblops");
+            $iconInitTBlops.add("");
+            
             if ($isSetupScript) {
                 // When called from the setup script, we don"t have access to the
                 // sprite-aware getImage() function because the PMA_theme class
                 // has not been loaded, so we generate the img tags manually.
-                for ($iconInit as $k => $v) {
-                    $title = "";
-                    if (! empty($v[1])) {
-                        $title = " title='" + $v[1] + "'";
+                for (String $k : $iconInit.keySet()) {
+                	List<String> $v = $iconInit.get($k);
+                    String $title = "";
+                    String $first = $v.isEmpty() ? "" : $v.get(0);
+                    if (! empty($first)) {
+                        $title = " title='" + $first + "'";
                     }
-                    $icons[$k] = String.format(
+                    $icons.put($k, String.format(
                         "<img alt='%s' src='%s'%s>",
-                        $v[1],
+                        $first,
                         "../themes/pmahomme/img/{$v[0]}.png",
                         $title
-                    );
+                    ));
                 }
             } else {
                 // In this case we just use getImage() because it"s available
-                for ($iconInit as $k => $v) {
-                    $icons[$k] = Util.getImage(
-                        $v[0],
-                        $v[1]
-                    );
+            	for (String $k : $iconInit.keySet()) {
+                	List<String> $v = $iconInit.get($k);
+                    $icons.put($k, Util.getImage(
+                        $v.get(0),
+                        $v.get(1)
+                    ));
                 }
             }
         }
-        $hasErrors = isset($opts["errors"]) && ! empty($opts["errors"]);
-        $optionIsDisabled = ! $isSetupScript && isset($opts["userprefs_allow"])
-            && ! $opts["userprefs_allow"];
-        $nameId = "name='" + htmlspecialchars($path) + "' id='"
+        boolean $hasErrors = ! empty($opts.get("errors"));
+        boolean $optionIsDisabled = ! $isSetupScript && "false".equals($opts.get("userprefs_allow"));
+        String $nameId = "name='" + htmlspecialchars($path) + "' id='"
             + htmlspecialchars($path) + "'";
-        $fieldClass = $type == "checkbox" ? "checkbox" : "";
+        String $fieldClass = $type == "checkbox" ? "checkbox" : "";
         if (! $valueIsDefault) {
             $fieldClass += ($fieldClass == "" ? "" : " ")
                 + ($hasErrors ? "custom field-error" : "custom");
         }
-        $fieldClass = $fieldClass ? " class='" + $fieldClass + "'" : "";
-        $trClass = this.group > 0
+        $fieldClass = !empty($fieldClass) ? " class='" + $fieldClass + "'" : "";
+        String $trClass = this.group > 0
             ? "group-field group-field-" + this.group
             : "";
-        if (isset($opts["setvalue"]) && $opts["setvalue"] == ":group") {
-            unset($opts["setvalue"]);
+        if (":group".equals($opts.get("setvalue"))) {
+            $opts.remove("setvalue");
             this.group++;
             $trClass = "group-header-field group-header-" + this.group;
         }
         if ($optionIsDisabled) {
-            $trClass += ($trClass ? " " : "") + "disabled-field";
+            $trClass += (!empty($trClass) ? " " : "") + "disabled-field";
         }
-        $trClass = $trClass ? " class='" + $trClass + "'" : "";
+        $trClass = !empty($trClass) ? " class='" + $trClass + "'" : "";
 
-        $htmlOutput = "<tr" + $trClass + ">";
+        String $htmlOutput = "<tr" + $trClass + ">";
         $htmlOutput += "<th>";
         $htmlOutput += "<label for='" + htmlspecialchars($path) + "'>" + htmlspecialchars_decode($name)
             + "</label>";
 
-        if (! empty($opts["doc"])) {
+        if (! empty($opts.get("doc"))) {
             $htmlOutput += "<span class='doc'>";
-            $htmlOutput += "<a href='" + $opts["doc"]
-                + "' target='documentation'>" + $icons["help"] + "</a>";
+            $htmlOutput += "<a href='" + $opts.get("doc")
+                + "' target='documentation'>" + $icons.get("help") + "</a>";
             $htmlOutput += '\n';
             $htmlOutput += "</span>";
         }
@@ -286,7 +291,7 @@ public class FormDisplayTemplate
             $htmlOutput += __(
                 "This setting is disabled, it will not be applied to your configuration."
             );
-            $htmlOutput += "'>" + __("Disabled") + '</span>';
+            $htmlOutput += "'>" + __("Disabled") + "</span>";
         }
 
         if (! empty($description)) {
@@ -299,11 +304,11 @@ public class FormDisplayTemplate
         switch ($type) {
             case "text":
                 $htmlOutput += "<input type='text' class='w-75' " + $nameId + $fieldClass
-                + " value='" + htmlspecialchars($value) + "'>";
+                + " value='" + htmlspecialchars((String)$value) + "'>";
                 break;
             case "password":
                 $htmlOutput += "<input type='password' class='w-75' " + $nameId + $fieldClass
-                + " value='" + htmlspecialchars($value) + "'>";
+                + " value='" + htmlspecialchars((String)$value) + "'>";
                 break;
             case "short_text":
                 // As seen in the reporting server (#15042) we sometimes receive
@@ -311,48 +316,48 @@ public class FormDisplayTemplate
                 // a notice on htmlspecialchars().
                 if (! is_array($value)) {
                     $htmlOutput += "<input type='text' size='25' " + $nameId
-                    + $fieldClass + " value='" + htmlspecialchars($value)
+                    + $fieldClass + " value='" + htmlspecialchars((String)$value)
                     + "'>";
                 }
                 break;
             case "number_text":
                 $htmlOutput += "<input type='number' " + $nameId + $fieldClass
-                + " value='" + htmlspecialchars((string) $value) + "'>";
+                + " value='" + htmlspecialchars((String) $value) + "'>";
                 break;
             case "checkbox":
                 $htmlOutput += "<span" + $fieldClass + "><input type='checkbox' " + $nameId
-                  + ($value ? " checked='checked'" : "") + "></span>";
+                  + (!empty($value) ? " checked='checked'" : "") + "></span>";
                 break;
             case "select":
                 $htmlOutput += "<select class='w-75' " + $nameId + $fieldClass + ">";
-                $escape = ! (isset($opts["values_escaped"]) && $opts["values_escaped"]);
-                $valuesDisabled = isset($opts["values_disabled"])
-                ? array_flip($opts["values_disabled"]) : [];
-                for ($opts["values"] as $optValueKey => $optValue) {
+                boolean $escape = ! ("true".equals( $opts.get("values_escaped")));
+                Map $valuesDisabled = !empty($opts.get("values_disabled"))
+                		? array_flip((Map)$opts.get("values_disabled")) : new HashMap();
+                for (Object $optValueKey: ((Map)$opts.get("values")).keySet() ) {
+                	Object $optValue = ((Map)$opts.get("values")).get($optValueKey);
                     // set names for boolean values
-                    if (is_bool($optValue)) {
-                        $optValue = mb_strtolower(
-                            $optValue ? __("Yes") : __("No")
-                        );
+                    if ($optValue instanceof Boolean) { // FIXME
+                        $optValue = (Boolean)$optValue ? __("Yes") : __("No") ;
                     }
                     // escape if necessary
+                    String $display, $displayValue;
                     if ($escape) {
-                        $display = htmlspecialchars((string) $optValue);
-                        $displayValue = htmlspecialchars((string) $optValueKey);
+                        $display = htmlspecialchars((String) $optValue);
+                        $displayValue = htmlspecialchars((String) $optValueKey);
                     } else {
-                        $display = $optValue;
-                        $displayValue = $optValueKey;
+                        $display = (String) $optValue;
+                        $displayValue = (String) $optValueKey;
                     }
                     // compare with selected value
                     // boolean values are cast to integers when used as array keys
-                    $selected = is_bool($value)
-                    ? (int) $value === $optValueKey
-                    : $optValueKey === $value;
+                    boolean $selected = $value instanceof Boolean // FIXME ...
+                    		? $value.equals( $optValueKey )
+                    		: $optValueKey == $value;
                     $htmlOutput += "<option value='" + $displayValue + "'";
                     if ($selected) {
                         $htmlOutput += " selected='selected'";
                     }
-                    if (isset($valuesDisabled[$optValueKey])) {
+                    if (!empty($valuesDisabled.get($optValueKey))) {
                         $htmlOutput += " disabled='disabled'";
                     }
                     $htmlOutput += ">" + $display + "</option>";
@@ -360,52 +365,51 @@ public class FormDisplayTemplate
                 $htmlOutput += "</select>";
                 break;
             case "list":
-                $val = $value;
-                if (isset($val["wrapper_params"])) {
-                    unset($val["wrapper_params"]);
+                Map $val = (Map) $value;
+                if ($val.containsKey("wrapper_params")) {
+                	$val.remove("wrapper_params");
                 }
                 $htmlOutput += "<textarea cols='35' rows='5' " + $nameId + $fieldClass
-                + ">" + htmlspecialchars(implode('\n', $val)) + "</textarea>";
+                + ">" + htmlspecialchars(String.join("\n", $val.values())) + "</textarea>";
                 break;
         }
         if ($isSetupScript
-            && isset($opts["userprefs_comment"])
-            && $opts["userprefs_comment"]
+            && "true".equals($opts.get("userprefs_comment"))
         ) {
             $htmlOutput += "<a class='userprefs-comment' title='"
-                + htmlspecialchars($opts["userprefs_comment"]) + "'>"
-                + $icons["tblops"] + "</a>";
+                + htmlspecialchars((String)$opts.get("userprefs_comment")) + "'>"
+                + $icons.get("tblops") + "</a>";
         }
-        if (isset($opts["setvalue"]) && $opts["setvalue"]) {
+        if ("true".equals($opts.get("setvalue"))) {
             $htmlOutput += "<a class='set-value hide' href='#"
-                + htmlspecialchars('$path={$opts["setvalue"]}') + "' title='"
-                + sprintf(__("Set value: %s"), htmlspecialchars($opts["setvalue"]))
-                + "'>" + $icons["edit"] + "</a>";
+                + htmlspecialchars($path + "="  + $opts.get("setvalue")) + "' title='"
+                + String.format(__("Set value: %s"), htmlspecialchars((String)$opts.get("setvalue")))
+                + "'>" + $icons.get("edit") + "</a>";
         }
-        if (isset($opts["show_restore_default"]) && $opts["show_restore_default"]) {
+        if ("true".equals($opts.get("show_restore_default"))) {
             $htmlOutput += "<a class='restore-default hide' href='#" + $path + "' title='"
-                + __("Restore default value") + "'>" + $icons["reload"] + "</a>";
+                + __("Restore default value") + "'>" + $icons.get("reload") + "</a>";
         }
         // this must match with displayErrors() in scripts/config.js
         if ($hasErrors) {
-            $htmlOutput += '\n        <dl class=\'inline_errors\'>';
-            for ($opts["errors"] as $error) {
+            $htmlOutput += "\n        <dl class='inline_errors'>";
+            for (String $error : (List<String>)$opts.get("errors")) {
                 $htmlOutput += "<dd>" + htmlspecialchars($error) + "</dd>";
             }
             $htmlOutput += "</dl>";
         }
         $htmlOutput += "</td>";
-        if ($isSetupScript && isset($opts["userprefs_allow"])) {
-            $htmlOutput += "<td class='userprefs-allow' title='" .
+        if ($isSetupScript && !empty($opts.get("userprefs_allow"))) {
+            $htmlOutput += "<td class='userprefs-allow' title='" +
                 __("Allow users to customize this value") + "'>";
             $htmlOutput += "<input type='checkbox' name='" + $path
                 + "-userprefs-allow' ";
-            if ($opts["userprefs_allow"]) {
+            if ("true".equals($opts.get("userprefs_allow"))) {
                 $htmlOutput += "checked='checked'";
             }
             $htmlOutput += ">";
             $htmlOutput += "</td>";
-        } elseif ($isSetupScript) {
+        } else if ($isSetupScript) {
             $htmlOutput += "<td>&nbsp;</td>";
         }
         $htmlOutput += "</tr>";
@@ -415,23 +419,23 @@ public class FormDisplayTemplate
     /**
      * Display group header
      *
-     * @param string $headerText Text of header
+     * @param String $headerText Text of header
      *
-     * @return string
+     * @return String
      */
-    public function displayGroupHeader(string $headerText): string
+    public String displayGroupHeader(String $headerText)
     {
         this.group++;
-        if ($headerText === "") {
+        if (empty($headerText)) {
             return "";
         }
-        $colspan = this.config.get("is_setup") ? 3 : 2;
+        int $colspan = "true".equals(this.config.get("is_setup")) ? 3 : 2;
 
-        return this.template.render("config/form_display/group_header", [
-            "group" => this.group,
-            "colspan" => $colspan,
-            "header_text" => $headerText,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("group", this.group);
+        model.put("colspan", $colspan);
+        model.put("header_text", $headerText);
+        return this.template.render("config/form_display/group_header", model);
     }
 
     /**
@@ -439,7 +443,7 @@ public class FormDisplayTemplate
      *
      * @return void
      */
-    public function displayGroupFooter(): void
+    public void displayGroupFooter()
     {
         this.group--;
     }
@@ -449,7 +453,7 @@ public class FormDisplayTemplate
      *
      * @param bool $showButtons Whether show submit and reset button
      *
-     * @return string
+     * @return String
      */
     public String displayFieldsetBottom(boolean $showButtons /*= true*/)
     {
@@ -462,7 +466,7 @@ public class FormDisplayTemplate
     /**
      * Closes form tabs
      *
-     * @return string
+     * @return String
      */
     public String displayTabsBottom()
     {
@@ -472,7 +476,7 @@ public class FormDisplayTemplate
     /**
      * Displays bottom part of the form
      *
-     * @return string
+     * @return String
      */
     public String displayFormBottom()
     {
@@ -482,23 +486,23 @@ public class FormDisplayTemplate
     /**
      * Appends JS validation code to $js_array
      *
-     * @param string       $fieldId    ID of field to validate
-     * @param string|array $validators validators callback
+     * @param String       $fieldId    ID of field to validate
+     * @param String|array $validators validators callback
      * @param array        $jsArray    will be updated with javascript code
      *
      * @return void
      */
-    public void addJsValidate($fieldId, $validators, array &$jsArray)
+    public void addJsValidate(String $fieldId, List<List<String>> $validators, List<String> $jsArray)
     {
-        for ((array) $validators as $validator) {
-            $validator = (array) $validator;
-            $vName = array_shift($validator);
-            $vArgs = [];
-            for ($validator as $arg) {
-                $vArgs[] = Sanitize.escapeJsString($arg);
+        for (List<String> $validator : $validators) {
+            // ?!? $validator = (array) $validator;
+            String $vName = array_shift($validator);
+            List<String> $vArgs = new ArrayList<>();
+            for (String $arg : $validator) {
+                $vArgs.add( Sanitize.escapeJsString($arg) );
             }
-            $vArgs = $vArgs ? ', ["' + implode('", "', $vArgs) + '"]' : "";
-            $jsArray[] = 'registerFieldValidator("$fieldId", "$vName", true$vArgs)';
+            String $vArgsStr = $vArgs.size() > 0 ? ", ['" + String.join("', '", $vArgs) + "']" : "";
+            $jsArray.add( "registerFieldValidator('" + $fieldId + "', '" + $vName + "', true" + $vArgsStr + ")");
         }
     }
 
@@ -507,32 +511,32 @@ public class FormDisplayTemplate
      *
      * @param array $jsArray lines of javascript code
      *
-     * @return string
+     * @return String
      */
-    public String displayJavascript(array $jsArray)
+    public String displayJavascript(List<String> $jsArray)
     {
         if (empty($jsArray)) {
             return "";
         }
 
-        return this.template.render("javascript/display", [
-            "js_array" => $jsArray,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("js_array", $jsArray);
+        return this.template.render("javascript/display", model);
     }
 
     /**
      * Displays error list
      *
-     * @param string $name      Name of item with errors
+     * @param String $name      Name of item with errors
      * @param array  $errorList List of errors to show
      *
-     * @return string HTML for errors
+     * @return String HTML for errors
      */
-    public String displayErrors($name, array $errorList)
+    public String displayErrors(String $name, List $errorList)
     {
-        return this.template.render("config/form_display/errors", [
-            "name" => $name,
-            "error_list" => $errorList,
-        ]);
+        Map<String, Object> model = new HashMap<>();
+        model.put("name", $name);
+        model.put("error_list", $errorList);
+        return this.template.render("config/form_display/errors", model);
     }
 }

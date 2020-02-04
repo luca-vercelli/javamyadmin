@@ -196,6 +196,16 @@ public class Php {
 	}
 
 	/**
+	 * Convert special HTML entities back to characters
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String htmlspecialchars_decode(String s) {
+		return StringEscapeUtils.unescapeHtml4(s);
+	}
+
+	/**
 	 * Generates a URL-encoded query string from the associative (or indexed) array
 	 * provided
 	 */
@@ -304,9 +314,9 @@ public class Php {
 	 * @param map
 	 * @return
 	 */
-	public static <U,V> Map<U,V> array_merge(@SuppressWarnings("unchecked") Map<U,V>... maps) {
-		Map<U,V> result = new HashMap<>();
-		for (Map<U,V> map : maps) {
+	public static <U, V> Map<U, V> array_merge(@SuppressWarnings("unchecked") Map<U, V>... maps) {
+		Map<U, V> result = new HashMap<>();
+		for (Map<U, V> map : maps) {
 			result.putAll(map);
 		}
 		return result;
