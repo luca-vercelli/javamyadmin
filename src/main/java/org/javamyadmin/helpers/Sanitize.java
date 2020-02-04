@@ -194,6 +194,10 @@ public class Sanitize {
 
         return message;
     }
+    
+    public static String sanitizeMessage(String message) {
+    	return sanitizeMessage(message, false, false);
+    }
 
 	/**
      * Removes all variables from request except whitelisted ones.
