@@ -629,9 +629,9 @@ public class FormDisplay {
     {
         boolean $result = true;
 
-        Map<String, Object> $values = new HashMap<>();
+        Map<String, String> $values = new HashMap<>();
         Map<String, String> $toSave = new HashMap<>();
-        boolean $isSetupScript = "true".equals($GLOBALS.getConfig().get("is_setup"));
+        boolean $isSetupScript = "true".equals(Globals.getConfig().get("is_setup"));
         if ($isSetupScript) {
             this._loadUserprefsInfo();
         }
@@ -750,7 +750,7 @@ public class FormDisplay {
         for (Entry<String, String> entry : $toSave.entrySet()) {
         	String $workPath = entry.getKey();
         	String $path = entry.getValue();
-            // TrustedProxies requires changes before saving
+            /* TODO TrustedProxies requires changes before saving
             if ($path.equals("TrustedProxies")) {
                 Map<String, String> $proxies = new HashMap<>();
                 int $i = 0;
@@ -766,9 +766,10 @@ public class FormDisplay {
                         $proxies.put("-$i", $value);
                         $i++;
                     }
-                }
+                  }
+                
                 $values.put($path, $proxies);
-            }
+            }*/
             this._configFile.set($workPath, $values.get($path), $path);
         }
         if ($isSetupScript) {
@@ -837,7 +838,8 @@ public class FormDisplay {
             return;
         }
 
-        this._userprefsKeys = array_flip(UserFormList.getFields());
+        // TODO this._userprefsKeys = array_flip(UserFormList.getFields());
+        
         // read real config for user preferences display
         Map $userPrefsDisallow = "true".equals($GLOBALS.getConfig().get("is_setup"))
             ? (Map)this._configFile.get("UserprefsDisallow", new HashMap<>())
