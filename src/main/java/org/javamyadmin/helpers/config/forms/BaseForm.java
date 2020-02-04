@@ -65,8 +65,9 @@ public abstract class BaseForm extends FormDisplay {
     {
         List<String> $names = new ArrayList<>();
         for (Map $form : getForms().values()) {
-            for ($form as $k => $v) {
-                $names[] = is_int($k) ? $v : $k;
+            for (Object $k : $form.keySet()) {
+            	Object $v = $form.get($k);
+                $names.add( $k instanceof Integer ? (String)$v : (String)$k );
             }
         }
         return $names;

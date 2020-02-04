@@ -135,7 +135,7 @@ public class FormDisplayTemplate
     public String displayFieldsetTop(
         String $title /*= ""*/,
         String $description /*= ""*/,
-        Map $errors /*= null*/,
+        List $errors /*= null*/,
         Map $attributes /*= []*/
     ) {
         this.group = 0;
