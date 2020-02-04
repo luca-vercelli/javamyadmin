@@ -2,8 +2,6 @@
 package org.javamyadmin.php;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -416,22 +414,14 @@ public class Php {
 	 * 
 	 * @param $array
 	 * @param $callback
-	 *            method that takes an argument of type V
+	 *            Callable that takes 2 arguments, the whole array and one of its
+	 *            elements
 	 * @return
 	 */
-	public static <U, V> void array_walk(Map<U, V> $array, Method $callback) {
+	public static <U, V> void array_walk(Map<U, V> $array, Callable $callback) {
 		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
 		for (V $value : arrayCopy.values()) {
-
-			try {
-				$callback.invoke($value);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException(e);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalStateException(e);
-			} catch (InvocationTargetException e) {
-				throw new IllegalStateException(e);
-			}
+			$callback.apply($array, $value);
 		}
 	}
 
@@ -444,23 +434,15 @@ public class Php {
 	 * 
 	 * @param $array
 	 * @param $callback
-	 *            method that takes an argument of type V and one of type X
+	 *            Callable that takes 3 arguments, the whole array, one of its
+	 *            elements, and $userdata
 	 * @param $userdata
 	 * @return
 	 */
-	public static <U, V, X> void array_walk(Map<U, V> $array, Method $callback, X $userdata) {
+	public static <U, V> void array_walk(Map<U, V> $array, Callable $callback, Object $userdata) {
 		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
 		for (V $value : arrayCopy.values()) {
-
-			try {
-				$callback.invoke($value, $userdata);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException(e);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalStateException(e);
-			} catch (InvocationTargetException e) {
-				throw new IllegalStateException(e);
-			}
+			$callback.apply($array, $value, $userdata);
 		}
 	}
 
