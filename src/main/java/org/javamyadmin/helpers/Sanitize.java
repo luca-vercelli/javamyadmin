@@ -407,4 +407,34 @@ public class Sanitize {
 	public static void printJsValueForFormValidation(String $key, String $value, boolean $addOn, HttpServletResponse response) throws IOException {
 		printJsValueForFormValidation($key, $value, $addOn, true, response); 
 	}
+	
+    /**
+     * Format a string so it can be a string inside JavaScript code inside an
+     * eventhandler (onclick, onchange, on..., ).
+     * This function is used to displays a javascript confirmation box for
+     * "DROP/DELETE/ALTER" queries.
+     *
+     * @param string  $a_string       the string to format
+     * @param boolean $add_backquotes whether to add backquotes to the string or not
+     *
+     * @return string   the formatted string
+     *
+     * @access  public
+     */
+    public static String jsFormat(String $a_string, boolean $add_backquotes /*= true*/)
+    {
+        $a_string = htmlspecialchars($a_string);
+        $a_string = escapeJsString($a_string);
+        // Needed for inline javascript to prevent some browsers
+        // treating it as a anchor
+        $a_string = $a_string.replace("#", "\\#");
+
+        return $add_backquotes
+            ? Util.backquote($a_string)
+            : $a_string;
+    } // end of the 'jsFormat' function
+
+    public static String jsFormat(String $a_string) {
+    	return jsFormat($a_string, true);
+    }
 }
