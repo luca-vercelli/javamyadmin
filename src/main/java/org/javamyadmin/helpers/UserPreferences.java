@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.helpers.config.ConfigFile;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,6 @@ public class UserPreferences {
     public UserPreferences()
     {
         //this.relation = new Relation($GLOBALS["dbi"]);
-        // this.template = new Template();
     }
 
     /**
@@ -47,7 +46,7 @@ public class UserPreferences {
      *
      * @return void
      */
-    public void pageInit(/*ConfigFile $cf*/)
+    public void pageInit(ConfigFile $cf)
     {
     	//TODO
     	/*
