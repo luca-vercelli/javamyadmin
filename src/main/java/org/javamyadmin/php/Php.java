@@ -447,6 +447,21 @@ public class Php {
 	}
 
 	/**
+	 * Searches the array for a given value and returns the first corresponding key
+	 * if successful
+	 * 
+	 * @return
+	 */
+	public static <U, V> U array_search(V $needle, Map<U, V> $haystack) {
+		for (Entry<U, V> entry : $haystack.entrySet()) {
+			if (entry.getValue() != null && entry.getValue().equals($needle)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * True if array contains object
 	 */
 	public static boolean in_array(Object x, Object[] array) {
