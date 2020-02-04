@@ -2,6 +2,8 @@
 package org.javamyadmin.php;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -415,18 +417,23 @@ public class Php {
 	 * 
 	 * @param $array
 	 * @param $callback
+	 *            method that takes an argument of type V
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <U, V, W> Map<U, W> array_walk(Map<U, V> $array, Function<V, W> $callback) {
+	public static <U, V> void array_walk(Map<U, V> $array, Method $callback) {
 		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
-		Map uncastedArray = (Map) $array;
-		for (U key : arrayCopy.keySet()) {
-			V oldItem = $array.get(key);
-			W newItem = $callback.apply(oldItem);
-			uncastedArray.put(key, newItem);
+		for (V $value : arrayCopy.values()) {
+
+			try {
+				$callback.invoke($value);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalStateException(e);
+			} catch (InvocationTargetException e) {
+				throw new IllegalStateException(e);
+			}
 		}
-		return uncastedArray;
 	}
 
 	/**
@@ -438,19 +445,25 @@ public class Php {
 	 * 
 	 * @param $array
 	 * @param $callback
+	 *            method that takes an argument of type V and one of type X
 	 * @param $userdata
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <U, V, W, X> Map<U, W> array_walk(Map<U, V> $array, BiFunction<V, X, W> $callback, X $userdata) {
+	public static <U, V, X> void array_walk(Map<U, V> $array, Method $callback, X $userdata) {
 		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
-		Map uncastedArray = (Map) $array;
-		for (U key : arrayCopy.keySet()) {
-			V oldItem = $array.get(key);
-			W newItem = $callback.apply(oldItem, $userdata);
-			uncastedArray.put(key, newItem);
+		for (V $value : arrayCopy.values()) {
+
+			try {
+				$callback.invoke($value, $userdata);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalStateException(e);
+			} catch (InvocationTargetException e) {
+				throw new IllegalStateException(e);
+			}
 		}
-		return uncastedArray;
 	}
 
 	/**
