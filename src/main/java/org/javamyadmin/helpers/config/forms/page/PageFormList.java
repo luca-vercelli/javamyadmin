@@ -1,5 +1,6 @@
 package org.javamyadmin.helpers.config.forms.page;
 
+import org.javamyadmin.helpers.config.ConfigFile;
 import org.javamyadmin.helpers.config.forms.BaseFormList;
 
 /**
@@ -8,7 +9,11 @@ import org.javamyadmin.helpers.config.forms.BaseFormList;
  */
 public class PageFormList extends BaseFormList {
 
-    /**
+    public PageFormList(ConfigFile $cf) {
+		super($cf);
+	}
+
+	/**
      * @var array
      */
     protected static String[] all = new String[] {
