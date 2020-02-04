@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -932,5 +933,12 @@ public class Php {
 	 */
 	public static String rtrim(String $str, String $character_mask) {
 		return $str.replaceAll("[" + $character_mask + "]+$", "");
+	}
+	
+	/**
+	 * Return current time
+	 */
+	public static long time() {
+		return new Date().getTime();		
 	}
 }
