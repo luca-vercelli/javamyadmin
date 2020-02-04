@@ -1,13 +1,22 @@
 package org.javamyadmin.helpers.config;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.javamyadmin.helpers.Core;
+import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.config.forms.page.PageFormList;
+import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Page-related settings
@@ -49,6 +58,12 @@ public class PageSettings {
 
     @Autowired
     HttpServletRequest httpRequest;
+    @Autowired
+    HttpServletResponse httpResponse;
+    @Autowired
+    Response $response;
+    @Autowired
+    Globals $GLOBALS;
     
     /**
      * Constructor
@@ -74,17 +89,36 @@ public class PageSettings {
         }
         this._groupName = $formGroupName;
 
-        $cf = new ConfigFile($GLOBALS["PMA_Config"].base_settings);
+        ConfigFile $cf = new ConfigFile(Globals.getConfig().base_settings);
         this.userPreferences.pageInit($cf);
 
-        $formDisplay = new $formClass($cf);
-
+        FormDisplay $formDisplay;
+	    try {
+	        Class<FormDisplay> clazz = (Class<FormDisplay>) Class.forName($formClass);
+	        Constructor<FormDisplay> constructor = clazz.getConstructor(ConfigFile.class);
+	        $formDisplay = constructor.newInstance($cf);
+        } catch(ClassNotFoundException e) {
+        	throw new IllegalStateException(e);
+        } catch (InstantiationException e) {
+        	throw new IllegalStateException(e);
+		} catch (IllegalAccessException e) {
+        	throw new IllegalStateException(e);
+		} catch (IllegalArgumentException e) {
+        	throw new IllegalStateException(e);
+		} catch (InvocationTargetException e) {
+        	throw new IllegalStateException(e);
+		} catch (NoSuchMethodException e) {
+        	throw new IllegalStateException(e);
+		} catch (SecurityException e) {
+        	throw new IllegalStateException(e);
+		}
+	    
         // Process form
-        $error = null;
-        if (isset($_POST["submit_save"])
-            && $_POST["submit_save"] == $formGroupName
+        Message $error = null;
+        if ((httpRequest.getParameter("submit_save")) != null
+            && httpRequest.getParameter("submit_save").equals($formGroupName)
         ) {
-            this._processPageSettings($formDisplay, $cf, $error);
+            this._processPageSettings($formDisplay, $cf, $error); //FIXME $error by reference...
         }
 
         // Display forms
@@ -104,18 +138,17 @@ public class PageSettings {
      *
      * @return void
      */
-    private void _processPageSettings(&$formDisplay, &$cf, &$error)
+    private void _processPageSettings(FormDisplay $formDisplay, ConfigFile $cf, Message $error)
     {
         if ($formDisplay.process(false) && ! $formDisplay.hasErrors()) {
             // save settings
-            $result = this.userPreferences.save($cf.getConfigArray());
-            if ($result == true) {
+            Message $result = this.userPreferences.save($cf.getConfigArray());
+            if ($result == null) {
                 // reload page
-                $response = Response.getInstance();
                 Core.sendHeaderLocation(
-                    $response.getFooter().getSelfUrl()
+                    $response.getFooter().getSelfUrl(), httpRequest, httpResponse
                 );
-                exit;
+                return; // FIXME exit()
             } else {
                 $error = $result;
             }
@@ -130,21 +163,21 @@ public class PageSettings {
      *
      * @return void
      */
-    private function _storeError(&$formDisplay, &$error)
+    private void _storeError(FormDisplay $formDisplay, Message $error)
     {
-        $retval = "";
-        if ($error) {
-            $retval .= $error.getDisplay();
+        String $retval = "";
+        if ($error != null) {
+            $retval += $error.getDisplay();
         }
         if ($formDisplay.hasErrors()) {
             // form has errors
-            $retval .= "<div class='alert alert-danger config-form' role='alert'>"
-                . "<b>" . __(
+            $retval += "<div class='alert alert-danger config-form' role='alert'>"
+                + "<b>" + __(
                     "Cannot save settings, submitted configuration form contains "
-                    . "errors!"
-                ) . "</b>"
-                . $formDisplay.displayErrors()
-                . "</div>";
+                    + "errors!"
+                ) + "</b>"
+                + $formDisplay.displayErrors()
+                + "</div>";
         }
         this._errorHTML = $retval;
     }
@@ -157,27 +190,25 @@ public class PageSettings {
      *
      * @return string
      */
-    private function _getPageSettingsDisplay(&$formDisplay, &$error)
+    private String _getPageSettingsDisplay(FormDisplay $formDisplay, Message $error)
     {
-        $response = Response.getInstance();
-
-        $retval = "";
+        String $retval = "";
 
         this._storeError($formDisplay, $error);
 
-        $retval .= "<div id='" . this._elemId . "'>";
-        $retval .= "<div class='page_settings'>";
-        $retval .= $formDisplay.getDisplay(
+        Map<String, String> params = new HashMap<>();
+        params.put("submit_save", this._groupName);
+        $retval += "<div id='" + this._elemId + "'>";
+        $retval += "<div class='page_settings'>";
+        $retval += $formDisplay.getDisplay(
             true,
             true,
             false,
             $response.getFooter().getSelfUrl(),
-            [
-                "submit_save" => this._groupName,
-            ]
+            params
         );
-        $retval .= "</div>";
-        $retval .= "</div>";
+        $retval += "</div>";
+        $retval += "</div>";
 
         return $retval;
     }
@@ -187,7 +218,7 @@ public class PageSettings {
      *
      * @return string
      */
-    public function getHTML()
+    public String getHTML()
     {
         return this._HTML;
     }
@@ -197,7 +228,7 @@ public class PageSettings {
      *
      * @return string
      */
-    public function getErrorHTML()
+    public String getErrorHTML()
     {
         return this._errorHTML;
     }
@@ -211,9 +242,8 @@ public class PageSettings {
     {
     	PageSettings $object = new PageSettings($formGroupName);
 
-        $response = Response.getInstance();
-        $response.addHTML($object.getErrorHTML());
-        $response.addHTML($object.getHTML());
+    	$object.$response.addHTML($object.getErrorHTML());
+    	$object.$response.addHTML($object.getHTML());
 
         return $object;
     }
@@ -226,8 +256,7 @@ public class PageSettings {
     {
     	PageSettings $object = new PageSettings("Navi", "pma_navigation_settings");
 
-        $response = Response.getInstance();
-        $response.addHTML($object.getErrorHTML());
+    	$object.$response.addHTML($object.getErrorHTML());
         return $object.getHTML();
     }
 }

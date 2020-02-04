@@ -439,6 +439,11 @@ public class Core {
         }
         response.addHeader("Location: ", $uri);
     }
+    
+    public static void sendHeaderLocation(String $uri, HttpServletRequest request, HttpServletResponse response) {
+    	sendHeaderLocation($uri, false, request, response);
+    }
+    
     /**
      * Outputs application/json headers. This includes no caching.
      *
