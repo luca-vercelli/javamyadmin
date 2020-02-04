@@ -449,7 +449,6 @@ public class Php {
 	 * @param $userdata
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <U, V, X> void array_walk(Map<U, V> $array, Method $callback, X $userdata) {
 		Map<U, V> arrayCopy = new LinkedHashMap<>($array);
 		for (V $value : arrayCopy.values()) {
