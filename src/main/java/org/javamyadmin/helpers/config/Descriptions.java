@@ -40,6 +40,10 @@ public class Descriptions {
 		return Sanitize.sanitizeMessage($value);
 	}
 
+	public static String get(String $path) {
+		return get($path, "name");
+	}
+	
 	private static Map<String, String> $descriptions = new HashMap<>();
 	static {
 		$descriptions.put("AllowArbitraryServer_desc",
