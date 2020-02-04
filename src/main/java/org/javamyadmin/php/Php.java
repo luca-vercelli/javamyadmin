@@ -315,13 +315,26 @@ public class Php {
 	 * @param map
 	 * @return
 	 */
-	public static <U, V> Map<U, V> array_merge(@SuppressWarnings("unchecked") Map<U, V>... maps) {
+	public static <U, V> Map<U, V> array_merge(@SuppressWarnings("unchecked") Map<U, V>... arrays) {
 		Map<U, V> result = new HashMap<>();
-		for (Map<U, V> map : maps) {
+		for (Map<U, V> map : arrays) {
 			result.putAll(map);
 		}
 		return result;
+	}
 
+	/**
+	 * Merge one or more arrays
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public static <U> List<U> array_merge(@SuppressWarnings("unchecked") List<U>... arrays) {
+		List<U> result = new ArrayList<>();
+		for (List<U> array : arrays) {
+			result.addAll(array);
+		}
+		return result;
 	}
 
 	/**
