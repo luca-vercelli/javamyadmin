@@ -2,9 +2,18 @@ package org.javamyadmin.helpers.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.javamyadmin.helpers.Sanitize;
+import org.javamyadmin.helpers.Util;
+import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
@@ -25,7 +34,7 @@ public class FormDisplay {
      * Form list
      * @var Form[]
      */
-    private List<Form> _forms = new ArrayList<>();
+    private Map<String, Form> _forms = new HashMap<>();
 
     /**
      * Stores validation errors, indexed by paths
@@ -33,20 +42,20 @@ public class FormDisplay {
      * [path] is a string storing error associated with single field
      * @var array
      */
-    private List _errors = new ArrayList<>();
+    private Map<String, List<String>> _errors = new HashMap<>();
 
     /**
      * Paths changed so that they can be used as HTML ids, indexed by paths
      * @var array
      */
-    private Map _translatedPaths = new HashMap<>();
+    private Map<String, String> _translatedPaths = new HashMap<>();
 
     /**
      * Server paths change indexes so we define maps from current server
      * path to the first one, indexed by work path
      * @var array
      */
-    private Map _systemPaths = new HashMap<>();
+    private Map<String, String> _systemPaths = new HashMap<>();
 
     /**
      * Language strings which will be sent to Messages JS variable
@@ -71,7 +80,7 @@ public class FormDisplay {
      * Dictionary with disallowed user preferences keys
      * @var array
      */
-    private Map _userprefsDisallow = new HashMap<>();
+    private Map<String, Boolean> _userprefsDisallow = new HashMap<>();
 
     /**
      * @var FormDisplayTemplate
@@ -80,6 +89,8 @@ public class FormDisplay {
     private FormDisplayTemplate formDisplayTemplate;
     @Autowired
     private Globals $GLOBALS;
+    @Autowired
+    private HttpServletRequest httpRequest;
     
     /**
      * Constructor
@@ -90,15 +101,13 @@ public class FormDisplay {
     {
         this.formDisplayTemplate = new FormDisplayTemplate($GLOBALS.getConfig());
         this._jsLangStrings = new HashMap<>();
-            "error_nan_p" => __("Not a positive number!"),
-            "error_nan_nneg" => __("Not a non-negative number!"),
-            "error_incorrect_port" => __("Not a valid port number!"),
-            "error_invalid_value" => __("Incorrect value!"),
-            "error_value_lte" => __("Value must be less than or equal to %s!"),
-        ];
-        this._configFile = $cf;
+        this._jsLangStrings.put("error_nan_p", __("Not a positive number!"));
+        this._jsLangStrings.put("error_nan_nneg", __("Not a non-negative number!"));
+        this._jsLangStrings.put("error_incorrect_port", __("Not a valid port number!"));
+        this._jsLangStrings.put("error_invalid_value", __("Incorrect value!"));
+        this._jsLangStrings.put("error_value_lte", __("Value must be less than or equal to %s!"));
         // initialize validators
-        Validator.getValidators(this._configFile);
+        // TODO Validator.getValidators(this._configFile);
     }
 
     /**
@@ -106,7 +115,7 @@ public class FormDisplay {
      *
      * @return ConfigFile
      */
-    public function getConfigFile()
+    public ConfigFile getConfigFile()
     {
         return this._configFile;
     }
@@ -120,24 +129,28 @@ public class FormDisplay {
      *
      * @return void
      */
-    public void registerForm(String $formName, Map $form, int $serverId /*= null*/)
+    public void registerForm(String $formName, Map $form, Integer $serverId /*= null*/)
     {
-        this._forms[$formName] = new Form(
+        this._forms.put($formName, new Form(
             $formName,
             $form,
             this._configFile,
             $serverId
-        );
+        ));
         this._isValidated = false;
-        for (this._forms[$formName].fields as $path) {
-            $workPath = $serverId === null
+        for (String $path : this._forms.get($formName).fields.values()) {
+            String $workPath = ($serverId == null)
                 ? $path
                 : $path.replace("Servers/1/", "Servers/$serverId/");
-            this._systemPaths[$workPath] = $path;
-            this._translatedPaths[$workPath] = $workPath.replace('/', '-');
+            this._systemPaths.put($workPath, $path);
+            this._translatedPaths.put($workPath, $workPath.replace('/', '-'));
         }
     }
 
+    public void registerForm(String $formName, Map $form) {
+    	registerForm($formName, $form, null);
+    }
+    
     /**
      * Processes forms, returns true on successful save
      *
@@ -147,19 +160,27 @@ public class FormDisplay {
      *
      * @return boolean whether processing was successful
      */
-    public boolean process($allowPartialSave /*= true*/, boolean $checkFormSubmit /*= true*/)
+    public boolean process(boolean $allowPartialSave /*= true*/, boolean $checkFormSubmit /*= true*/)
     {
-        if ($checkFormSubmit && ! isset($_POST['submit_save'])) {
+        if ($checkFormSubmit && empty(httpRequest.getParameter("submit_save"))) {
             return false;
         }
 
         // save forms
-        if (count(this._forms) > 0) {
-            return this.save(array_keys(this._forms), $allowPartialSave);
+        if (this._forms.size() > 0) {
+            return this.save(this._forms.keySet(), $allowPartialSave);
         }
         return false;
     }
 
+    public boolean process(boolean $allowPartialSave) {
+    	return process($allowPartialSave, true);
+    }
+
+    public boolean process() {
+    	return process(true, true);
+    }
+    
     /**
      * Runs validation for all registered forms
      *
@@ -170,17 +191,18 @@ public class FormDisplay {
         if (this._isValidated) {
             return;
         }
+    	/* TODO 
 
-        $paths = [];
-        $values = [];
-        for (this._forms as $form) {
-            /** @var Form $form */
-            $paths[] = $form.name;
+        List $paths = new ArrayList<>();
+        List $values = new ArrayList<>();
+        for (Form $form : this._forms.values()) {
+            // @var Form $form
+            $paths.add($form.name);
             // collect values and paths
-            for ($form.fields as $path) {
-                $workPath = array_search($path, this._systemPaths);
-                $values[$path] = this._configFile.getValue($workPath);
-                $paths[] = $path;
+            for (String $path : $form.fields.values()) {
+                int $workPath = $path.indexOf(this._systemPaths);
+                $values.put($path, this._configFile.getValue($workPath));
+                $paths.add($path);
             }
         }
 
@@ -193,7 +215,7 @@ public class FormDisplay {
         );
 
         // change error keys from canonical paths to work paths
-        if (is_array($errors) && count($errors) > 0) {
+        if ($errors != null && !$errors.isEmpty) {
             this._errors = [];
             for ($errors as $path => $errorList) {
                 $workPath = array_search($path, this._systemPaths);
@@ -204,7 +226,7 @@ public class FormDisplay {
                 }
                 this._errors[$workPath] = $errorList;
             }
-        }
+        }*/
         this._isValidated = true;
     }
 
@@ -222,31 +244,34 @@ public class FormDisplay {
      */
     private String _displayForms(
         boolean $showRestoreDefault,
-        array &$jsDefault,
-        array &$js,
+        List<String> $jsDefault,
+        List<String> $js,
         boolean $showButtons
     ) {
         String $htmlOutput = "";
-        $validators = Validator.getValidators(this._configFile);
+        // TODO $validators = Validator.getValidators(this._configFile);
 
-        for (this._forms as $form) {
+        for (Form $form : this._forms.values()) {
             /** @var Form $form */
-            $formErrors = isset(this._errors[$form.name])
-                ? this._errors[$form.name] : null;
+            List<String> $formErrors = this._errors.get($form.name);
+            
+            Map<String, String> params = new HashMap<>();
+            params.put("id", $form.name);
             $htmlOutput += this.formDisplayTemplate.displayFieldsetTop(
-                Descriptions.get("Form_{$form.name}"),
-                Descriptions.get("Form_{$form.name}", 'desc'),
+                Descriptions.get("Form_" + $form.name),
+                Descriptions.get("Form_" + $form.name, "desc"),
                 $formErrors,
-                ['id' => $form.name]
+                params
             );
 
-            for ($form.fields as $field => $path) {
-                $workPath = array_search($path, this._systemPaths);
-                $translatedPath = this._translatedPaths[$workPath];
+            for (String $field : $form.fields.keySet()) {
+            	String $path = $form.fields.get($field);
+                String $workPath = array_search($path, this._systemPaths);
+                String $translatedPath = this._translatedPaths.get($workPath);
                 // always true/false for user preferences display
                 // otherwise null
-                $userPrefsAllow = isset(this._userprefsKeys[$path])
-                    ? ! isset(this._userprefsDisallow[$path])
+                Boolean $userPrefsAllow = this._userprefsKeys.containsKey($path)
+                    ? ! this._userprefsDisallow.containsKey($path)
                     : null;
                 // display input
                 $htmlOutput += this._displayFieldInput(
@@ -260,15 +285,17 @@ public class FormDisplay {
                     $jsDefault
                 );
                 // register JS validators for this field
-                if (isset($validators[$path])) {
+                /* TODO if (isset($validators[$path])) {
                     this.formDisplayTemplate.addJsValidate($translatedPath, $validators[$path], $js);
-                }
+                }*/
             }
             $htmlOutput += this.formDisplayTemplate.displayFieldsetBottom($showButtons);
         }
         return $htmlOutput;
     }
 
+    static boolean $jsLangSent = false;
+    
     /**
      * Outputs HTML for forms
      *
@@ -283,34 +310,33 @@ public class FormDisplay {
      * @return string HTML for forms
      */
     public String getDisplay(
-        $tabbedForm /*= false*/,
-        $showRestoreDefault /*= false*/,
-        $showButtons /*= true*/,
-        $formAction /*= null*/,
-        $hiddenFields /*= null*/
+        boolean $tabbedForm /*= false*/,
+        boolean $showRestoreDefault /*= false*/,
+        boolean $showButtons /*= true*/,
+        String $formAction /*= null*/,
+        Map $hiddenFields /*= null*/
     ) {
-        static $jsLangSent = false;
 
-        $htmlOutput = '';
+        String $htmlOutput = "";
 
-        $js = [];
-        $jsDefault = [];
+        List<String> $js = new ArrayList<>();
+        List<String> $jsDefault = new ArrayList<>();
 
-        $htmlOutput += this.formDisplayTemplate.displayFormTop($formAction, 'post', $hiddenFields);
+        $htmlOutput += this.formDisplayTemplate.displayFormTop($formAction, "post", $hiddenFields);
 
         if ($tabbedForm) {
-            $tabs = [];
-            for (this._forms as $form) {
-                $tabs[$form.name] = Descriptions.get("Form_$form.name");
+            Map<String, String> $tabs = new HashMap<>();
+            for (Form $form : this._forms.values()) {
+                $tabs.put($form.name, Descriptions.get("Form_$form.name"));
             }
             $htmlOutput += this.formDisplayTemplate.displayTabsTop($tabs);
         }
 
         // validate only when we aren't displaying a "new server" form
-        $isNewServer = false;
-        for (this._forms as $form) {
+        boolean $isNewServer = false;
+        for (Form $form : this._forms.values()) {
             /** @var Form $form */
-            if ($form.index === 0) {
+            if ($form.index == 0) {
                 $isNewServer = true;
                 break;
             }
@@ -338,16 +364,18 @@ public class FormDisplay {
         // if not already done, send strings used for validation to JavaScript
         if (! $jsLangSent) {
             $jsLangSent = true;
-            $jsLang = [];
-            for (this._jsLangStrings as $strName => $strValue) {
-                $jsLang[] = "'$strName': '" . Sanitize.jsFormat($strValue, false) . '\'';
+            List<String> $jsLang = new ArrayList<>();
+            for (Entry<String, String> entry : this._jsLangStrings.entrySet()) {
+            	String $strName = entry.getKey();
+            	String $strValue = entry.getValue();
+                $jsLang.add( "'$strName': '" + Sanitize.jsFormat($strValue, false) + '\'');
             }
-            $js[] = "$.extend(Messages, {\n\t"
-                . implode(",\n\t", $jsLang) . '})';
+            $js.add( "$.extend(Messages, {\n\t"
+                + String.join(",\n\t", $jsLang) + "})");
         }
 
-        $js[] = "$.extend(defaultValues, {\n\t"
-            . implode(",\n\t", $jsDefault) . '})';
+        $js.add( "$.extend(defaultValues, {\n\t"
+            + String.join(",\n\t", $jsDefault) + "})" );
         $htmlOutput += this.formDisplayTemplate.displayJavascript($js);
 
         return $htmlOutput;
@@ -372,128 +400,127 @@ public class FormDisplay {
      *
      * @return string|null HTML for input field
      */
-    private function _displayFieldInput(
+    private String _displayFieldInput(
         Form $form,
-        $field,
-        $systemPath,
-        $workPath,
-        $translatedPath,
-        $showRestoreDefault,
-        $userPrefsAllow,
-        array &$jsDefault
+        String $field,
+        String $systemPath,
+        String $workPath,
+        String $translatedPath,
+        boolean $showRestoreDefault,
+        Boolean $userPrefsAllow,
+        List<String> $jsDefault
     ) {
-        $name = Descriptions.get($systemPath);
-        $description = Descriptions.get($systemPath, 'desc');
+        String $name = Descriptions.get($systemPath);
+        String $description = Descriptions.get($systemPath, "desc");
 
-        $value = this._configFile.get($workPath);
-        $valueDefault = this._configFile.getDefault($systemPath);
-        $valueIsDefault = false;
-        if ($value === null || $value === $valueDefault) {
+        Object $value = this._configFile.get($workPath);
+        Object $valueDefault = this._configFile.getDefault($systemPath);
+        boolean $valueIsDefault = false;
+        if ($value == null || $value == $valueDefault) {
             $value = $valueDefault;
             $valueIsDefault = true;
         }
 
-        $opts = [
-            'doc' => this.getDocLink($systemPath),
-            'show_restore_default' => $showRestoreDefault,
-            'userprefs_allow' => $userPrefsAllow,
-            'userprefs_comment' => Descriptions.get($systemPath, 'cmt'),
-        ];
-        if (isset($form.default[$systemPath])) {
-            $opts['setvalue'] = (string) $form.default[$systemPath];
+        Map $opts = new HashMap<>();
+        $opts.put("doc", this.getDocLink($systemPath));
+        $opts.put("show_restore_default", $showRestoreDefault);
+        $opts.put("userprefs_allow", $userPrefsAllow);
+        $opts.put("userprefs_comment", Descriptions.get($systemPath, "cmt"));
+        if ($form.vDefault.containsKey($systemPath)) {
+            $opts.put("setvalue", (String) $form.vDefault.get($systemPath));
         }
 
-        if (isset(this._errors[$workPath])) {
-            $opts['errors'] = this._errors[$workPath];
+        if (this._errors.containsKey($workPath)) {
+            $opts.put("errors", this._errors.get($workPath));
         }
 
-        $type = '';
+        String $type = "";
         switch ($form.getOptionType($field)) {
-            case 'string':
-                $type = 'text';
+            case "string":
+                $type = "text";
                 break;
-            case 'short_string':
-                $type = 'short_text';
+            case "short_string":
+                $type = "short_text";
                 break;
-            case 'double':
-            case 'integer':
-                $type = 'number_text';
+            case "double":
+            case "integer":
+                $type = "number_text";
                 break;
-            case 'boolean':
-                $type = 'checkbox';
+            case "boolean":
+                $type = "checkbox";
                 break;
-            case 'select':
-                $type = 'select';
-                $opts['values'] = $form.getOptionValueList($form.fields[$field]);
+            case "select":
+                $type = "select";
+                $opts.put("values", $form.getOptionValueList($form.fields.get($field)));
                 break;
-            case 'array':
-                $type = 'list';
-                $value = (array) $value;
-                $valueDefault = (array) $valueDefault;
+            case "array":
+                $type = "list";
                 break;
-            case 'group':
+            case "group":
                 // :group:end is changed to :group:end:{unique id} in Form class
-                $htmlOutput = '';
-                if (mb_substr($field, 7, 4) != 'end:') {
+                String $htmlOutput = "";
+                if (!$field.substring(7, 4).equals("end:")) {
                     $htmlOutput += this.formDisplayTemplate.displayGroupHeader(
-                        mb_substr($field, 7)
+                        $field.substring(7)
                     );
                 } else {
                     this.formDisplayTemplate.displayGroupFooter();
                 }
                 return $htmlOutput;
-            case 'NULL':
+            case "NULL":
                 trigger_error("Field $systemPath has no type", E_USER_WARNING);
                 return null;
         }
 
         // detect password fields
-        if ($type === 'text'
-            && (mb_substr($translatedPath, -9) === '-password'
-               || mb_substr($translatedPath, -4) === 'pass'
-               || mb_substr($translatedPath, -4) === 'Pass')
+        if ($type.equals("text")
+            && ($translatedPath.endsWith("-password")
+               || $translatedPath.endsWith("pass")
+               || $translatedPath.endsWith("Pass"))
         ) {
-            $type = 'password';
+            $type = "password";
         }
 
         // TrustedProxies requires changes before displaying
-        if ($systemPath == 'TrustedProxies') {
-            for ($value as $ip => &$v) {
-                if (! preg_match('/^-\d+$/', $ip)) {
-                    $v = $ip . ': ' . $v;
+        if ($systemPath == "TrustedProxies") {
+        	Map<String, String> $valueMap = (Map)$value;
+            for (Entry<String, String> entry: $valueMap.entrySet()) {
+            	String $ip = entry.getKey();
+            	String $v = entry.getValue();
+                if (! $ip.matches("/^-\\d+$/")) {
+                    $v = $ip + ": " + $v;
                 }
             }
         }
         this._setComments($systemPath, $opts);
 
-        // send default value to form's JS
-        $jsLine = '\'' . $translatedPath . '\': ';
+        // send default value to form"s JS
+        String $jsLine = "\"" + $translatedPath + "\": ";
         switch ($type) {
-            case 'text':
-            case 'short_text':
-            case 'number_text':
-            case 'password':
-                $jsLine += '\'' . Sanitize.escapeJsString($valueDefault) . '\'';
+            case "text":
+            case "short_text":
+            case "number_text":
+            case "password":
+                $jsLine += "\"" + Sanitize.escapeJsString((String) $valueDefault) + "\"";
                 break;
-            case 'checkbox':
-                $jsLine += $valueDefault ? 'true' : 'false';
+            case "checkbox":
+                $jsLine += !empty($valueDefault) ? "true" : "false";
                 break;
-            case 'select':
-                $valueDefaultJs = is_bool($valueDefault)
+            case "select":
+                /*$valueDefaultJs = is_bool($valueDefault)
                 ? (int) $valueDefault
-                : $valueDefault;
-                $jsLine += '[\'' . Sanitize.escapeJsString($valueDefaultJs) . '\']';
+                : $valueDefault;*/
+                String $valueDefaultJs = (String) $valueDefault; //FIXME
+                $jsLine += "[\"" + Sanitize.escapeJsString($valueDefaultJs) + "\"]";
                 break;
-            case 'list':
-                $val = $valueDefault;
-                if (isset($val['wrapper_params'])) {
-                    unset($val['wrapper_params']);
-                }
-                $jsLine += '\'' . Sanitize.escapeJsString(implode("\n", $val))
-                . '\'';
+            case "list":
+                Map $val = (Map) $valueDefault;
+                $val.remove("wrapper_params");
+                $jsLine += "\"" + Sanitize.escapeJsString(String.join("\n", $val.values()))
+                + "\"";
                 break;
         }
-        $jsDefault[] = $jsLine;
+        $jsDefault.add($jsLine);
 
         return this.formDisplayTemplate.displayInput(
             $translatedPath,
@@ -511,20 +538,23 @@ public class FormDisplay {
      *
      * @return string|null HTML for errors
      */
-    public function displayErrors()
+    public String displayErrors()
     {
         this._validate();
-        if (count(this._errors) === 0) {
+        if (this._errors.isEmpty()) {
             return null;
         }
 
-        $htmlOutput = '';
+        String $htmlOutput = "";
 
-        for (this._errors as $systemPath => $errorList) {
-            if (isset(this._systemPaths[$systemPath])) {
-                $name = Descriptions.get(this._systemPaths[$systemPath]);
+        for (Entry<String, List<String>> entry : this._errors.entrySet()) {
+        	String $systemPath = entry.getKey(); 
+        	List<String> $errorList = entry.getValue();
+        	String $name;
+            if (this._systemPaths.containsKey($systemPath)) {
+                $name = Descriptions.get(this._systemPaths.get($systemPath));
             } else {
-                $name = Descriptions.get('Form_' . $systemPath);
+                $name = Descriptions.get("Form_" + $systemPath);
             }
             $htmlOutput += this.formDisplayTemplate.displayErrors($name, $errorList);
         }
@@ -537,19 +567,19 @@ public class FormDisplay {
      *
      * @return void
      */
-    public function fixErrors()
+    public void fixErrors()
     {
         this._validate();
-        if (count(this._errors) === 0) {
+        if (this._errors.isEmpty()) {
             return;
         }
 
-        $cf = this._configFile;
-        for (array_keys(this._errors) as $workPath) {
-            if (! isset(this._systemPaths[$workPath])) {
+        ConfigFile $cf = this._configFile;
+        for (String $workPath : this._errors.keySet()) {
+            if (! (this._systemPaths.containsKey($workPath))) {
                 continue;
             }
-            $canonicalPath = this._systemPaths[$workPath];
+            String $canonicalPath = this._systemPaths.get($workPath);
             $cf.set($workPath, $cf.getDefault($canonicalPath));
         }
     }
@@ -562,14 +592,16 @@ public class FormDisplay {
      *
      * @return bool
      */
-    private function _validateSelect(&$value, array $allowed)
+    private boolean _validateSelect(String $value, List $allowed)
     {
+    	return true; //TODO ?
+    	/*
         $valueCmp = is_bool($value)
             ? (int) $value
             : $value;
         for ($allowed as $vk => $v) {
             // equality comparison only if both values are numeric or not numeric
-            // (allows to skip 0 == 'string' equalling to true)
+            // (allows to skip 0 == "string" equalling to true)
             // or identity (for string-string)
             if (($vk == $value && ! (is_numeric($valueCmp) xor is_numeric($vk)))
                 || $vk === $value
@@ -581,7 +613,7 @@ public class FormDisplay {
                 return true;
             }
         }
-        return false;
+        return false;*/
     }
 
     /**
@@ -593,51 +625,52 @@ public class FormDisplay {
      *
      * @return boolean true on success (no errors and all saved)
      */
-    public function save($forms, $allowPartialSave = true)
+    public boolean save(Collection<String> $forms, boolean $allowPartialSave /*= true*/)
     {
-        $result = true;
-        $forms = (array) $forms;
+        boolean $result = true;
 
-        $values = [];
-        $toSave = [];
-        $isSetupScript = $GLOBALS['PMA_Config'].get('is_setup');
+        Map<String, Object> $values = new HashMap<>();
+        Map<String, String> $toSave = new HashMap<>();
+        boolean $isSetupScript = "true".equals($GLOBALS.getConfig().get("is_setup"));
         if ($isSetupScript) {
             this._loadUserprefsInfo();
         }
 
-        this._errors = [];
-        for ($forms as $formName) {
-            /** @var Form $form */
-            if (isset(this._forms[$formName])) {
-                $form = this._forms[$formName];
+        this._errors = new HashMap<>();
+        for (String $formName : $forms) {
+            Form $form;
+            if (this._forms.containsKey($formName)) {
+                $form = this._forms.get($formName);
             } else {
                 continue;
             }
             // get current server id
-            $changeIndex = $form.index === 0
+            Integer $changeIndex = ($form.index == 0)
                 ? this._configFile.getServerCount() + 1
-                : false;
+                : null;
             // grab POST values
-            for ($form.fields as $field => $systemPath) {
-                $workPath = array_search($systemPath, this._systemPaths);
-                $key = this._translatedPaths[$workPath];
-                $type = $form.getOptionType($field);
+            for (Entry<String, String> entry : $form.fields.entrySet()) {
+            	String $field = entry.getKey();
+            	String $systemPath = entry.getValue();
+            	String $workPath = array_search($systemPath, this._systemPaths);
+            	String $key = this._translatedPaths.get($workPath);
+            	String $type = $form.getOptionType($field);
 
                 // skip groups
-                if ($type == 'group') {
+                if ($type == "group") {
                     continue;
                 }
 
                 // ensure the value is set
-                if (! isset($_POST[$key])) {
-                    // checkboxes aren't set by browsers if they're off
-                    if ($type == 'boolean') {
-                        $_POST[$key] = false;
+                if (empty(httpRequest.getParameter($key))) {
+                    // checkboxes aren"t set by browsers if they"re off
+                    if ($type == "boolean") {
+                        // TODO $_POST[$key] = false;
                     } else {
-                        this._errors[$form.name][] = sprintf(
-                            __('Missing data for %s'),
-                            '<i>' . Descriptions.get($systemPath) . '</i>'
-                        );
+                        this._errors.get($form.name).add(String.format(
+                            __("Missing data for %s"),
+                            "<i>" + Descriptions.get($systemPath) + "</i>"
+                        ));
                         $result = false;
                         continue;
                     }
@@ -645,46 +678,47 @@ public class FormDisplay {
 
                 // user preferences allow/disallow
                 if ($isSetupScript
-                    && isset(this._userprefsKeys[$systemPath])
+                    && (this._userprefsKeys.containsKey($systemPath))
                 ) {
-                    if (isset(this._userprefsDisallow[$systemPath], $_POST[$key . '-userprefs-allow'])
+                    if (!empty(httpRequest.getParameter($key + "-userprefs-allow"))
                     ) {
-                        unset(this._userprefsDisallow[$systemPath]);
-                    } elseif (! isset($_POST[$key . '-userprefs-allow'])) {
-                        this._userprefsDisallow[$systemPath] = true;
+                        this._userprefsDisallow.remove($systemPath);
+                    } else {
+                        this._userprefsDisallow.put($systemPath, true);
                     }
                 }
 
+                /* FIXME I cannot change POST request in Java !
                 // cast variables to correct type
                 switch ($type) {
-                    case 'double':
+                    case "double":
                         $_POST[$key] = Util.requestString($_POST[$key]);
-                        settype($_POST[$key], 'float');
+                        settype($_POST[$key], "float");
                         break;
-                    case 'boolean':
-                    case 'integer':
-                        if ($_POST[$key] !== '') {
-                            $_POST[$key] = Util.requestString($_POST[$key]);
+                    case "boolean":
+                    case "integer":
+                        if (!empty(httpRequest.getParameter($key))) {
+                            $_POST[$key] = Util.requestString(httpRequest.getParameter($key));
                             settype($_POST[$key], $type);
                         }
                         break;
-                    case 'select':
+                    case "select":
                         $successfullyValidated = this._validateSelect(
                             $_POST[$key],
                             $form.getOptionValueList($systemPath)
                         );
                         if (! $successfullyValidated) {
-                            this._errors[$workPath][] = __('Incorrect value!');
+                            this._errors[$workPath][] = __("Incorrect value!");
                             $result = false;
                             // "continue" for the $form.fields for-loop
                             continue 2;
                         }
                         break;
-                    case 'string':
-                    case 'short_string':
+                    case "string":
+                    case "short_string":
                         $_POST[$key] = Util.requestString($_POST[$key]);
                         break;
-                    case 'array':
+                    case "array":
                         // eliminate empty values and ensure we have an array
                         $postValues = is_array($_POST[$key])
                         ? $_POST[$key]
@@ -692,62 +726,59 @@ public class FormDisplay {
                         $_POST[$key] = [];
                         this._fillPostArrayParameters($postValues, $key);
                         break;
-                }
+                }*/
 
                 // now we have value with proper type
-                $values[$systemPath] = $_POST[$key];
-                if ($changeIndex !== false) {
-                    $workPath = str_replace(
+                $values.put($systemPath, httpRequest.getParameter($key));
+                if ($changeIndex > 0) {
+                    $workPath = $workPath.replace(
                         "Servers/$form.index/",
-                        "Servers/$changeIndex/",
-                        $workPath
+                        "Servers/$changeIndex/"
                     );
                 }
-                $toSave[$workPath] = $systemPath;
+                $toSave.put($workPath, $systemPath);
             }
         }
 
         // save forms
         if (! $allowPartialSave && ! empty(this._errors)) {
-            // don't look for non-critical errors
+            // don"t look for non-critical errors
             this._validate();
             return $result;
         }
 
-        for ($toSave as $workPath => $path) {
+        for (Entry<String, String> entry : $toSave.entrySet()) {
+        	String $workPath = entry.getKey();
+        	String $path = entry.getValue();
             // TrustedProxies requires changes before saving
-            if ($path == 'TrustedProxies') {
-                $proxies = [];
-                $i = 0;
-                for ($values[$path] as $value) {
-                    $matches = [];
-                    $match = preg_match(
-                        "/^(.+):(?:[ ]?)(\\w+)$/",
-                        $value,
-                        $matches
-                    );
-                    if ($match) {
-                        // correct 'IP: HTTP header' pair
-                        $ip = trim($matches[1]);
-                        $proxies[$ip] = trim($matches[2]);
+            if ($path.equals("TrustedProxies")) {
+                Map<String, String> $proxies = new HashMap<>();
+                int $i = 0;
+                for (String $value : $values.get($path).values()) {
+                	Pattern pattern = Pattern.compile("^(.+):(?:[ ]?)(\\w+)$");
+                	Matcher matcher = pattern.matcher($value); 
+                	 if (matcher.matches()) {
+                        // correct "IP: HTTP header" pair
+                        String $ip = matcher.group(1);
+                        $proxies.put($ip, matcher.group(2).trim());
                     } else {
                         // save also incorrect values
-                        $proxies["-$i"] = $value;
+                        $proxies.put("-$i", $value);
                         $i++;
                     }
                 }
-                $values[$path] = $proxies;
+                $values.put($path, $proxies);
             }
-            this._configFile.set($workPath, $values[$path], $path);
+            this._configFile.set($workPath, $values.get($path), $path);
         }
         if ($isSetupScript) {
             this._configFile.set(
-                'UserprefsDisallow',
-                array_keys(this._userprefsDisallow)
+                "UserprefsDisallow",
+                this._userprefsDisallow.keySet()
             );
         }
 
-        // don't look for non-critical errors
+        // don"t look for non-critical errors
         this._validate();
 
         return $result;
@@ -758,9 +789,9 @@ public class FormDisplay {
      *
      * @return boolean
      */
-    public function hasErrors()
+    public boolean hasErrors()
     {
-        return count(this._errors) > 0;
+        return this._errors.size() > 0;
     }
 
 
@@ -771,15 +802,15 @@ public class FormDisplay {
      *
      * @return string
      */
-    public function getDocLink($path)
+    public String getDocLink(String $path)
     {
-        $test = mb_substr($path, 0, 6);
-        if ($test == 'Import' || $test == 'Export') {
-            return '';
+        String $test = $path.substring(0, 6);
+        if ($test.equals("Import") || $test.equals("Export")) {
+            return "";
         }
         return Util.getDocuLink(
-            'config',
-            'cfg_' . this._getOptName($path)
+            "config",
+            "cfg_" + this._getOptName($path)
         );
     }
 
@@ -790,9 +821,9 @@ public class FormDisplay {
      *
      * @return string
      */
-    private function _getOptName($path)
+    private String _getOptName(String $path)
     {
-        return str_replace(['Servers/1/', '/'], ['Servers/', '_'], $path);
+    	return $path.replace("Servers/1/", "/").replace("Servers/", "_");
     }
 
     /**
@@ -800,17 +831,17 @@ public class FormDisplay {
      *
      * @return void
      */
-    private function _loadUserprefsInfo()
+    private void _loadUserprefsInfo()
     {
-        if (this._userprefsKeys !== null) {
+        if (this._userprefsKeys != null) {
             return;
         }
 
         this._userprefsKeys = array_flip(UserFormList.getFields());
         // read real config for user preferences display
-        $userPrefsDisallow = $GLOBALS['PMA_Config'].get('is_setup')
-            ? this._configFile.get('UserprefsDisallow', [])
-            : $GLOBALS['cfg']['UserprefsDisallow'];
+        Map $userPrefsDisallow = "true".equals($GLOBALS.getConfig().get("is_setup"))
+            ? (Map)this._configFile.get("UserprefsDisallow", new HashMap<>())
+            : (Map)$GLOBALS.getConfig().get("UserprefsDisallow");
         this._userprefsDisallow = array_flip($userPrefsDisallow);
     }
 
@@ -822,80 +853,81 @@ public class FormDisplay {
      *
      * @return void
      */
-    private function _setComments($systemPath, array &$opts)
+    private void _setComments(String $systemPath, Map $opts)
     {
+    	/* TODO
         // RecodingEngine - mark unavailable types
-        if ($systemPath == 'RecodingEngine') {
-            $comment = '';
-            if (! function_exists('iconv')) {
-                $opts['values']['iconv'] += ' (' . __('unavailable') . ')';
-                $comment = sprintf(
-                    __('"%s" requires %s extension'),
-                    'iconv',
-                    'iconv'
+        if ($systemPath == "RecodingEngine") {
+            $comment = "";
+            if (! function_exists("iconv")) {
+                $opts["values"]["iconv"] += " (" + __("unavailable") + ")";
+                $comment = String.format(
+                    __("'%s' requires %s extension"),
+                    "iconv",
+                    "iconv"
                 );
             }
-            if (! function_exists('recode_string')) {
-                $opts['values']['recode'] += ' (' . __('unavailable') . ')';
-                $comment += ($comment ? ", " : '') . sprintf(
-                    __('"%s" requires %s extension'),
-                    'recode',
-                    'recode'
+            if (! function_exists("recode_string")) {
+                $opts["values"]["recode"] += " (" + __("unavailable") + ")";
+                $comment += ($comment ? ", " : "") + String.format(
+                    __("'%s' requires %s extension"),
+                    "recode",
+                    "recode"
                 );
             }
-            /* mbstring is always there thanks to polyfill */
-            $opts['comment'] = $comment;
-            $opts['comment_warning'] = true;
+            // mbstring is always there thanks to polyfill
+            $opts["comment"] = $comment;
+            $opts["comment_warning"] = true;
         }
         // ZipDump, GZipDump, BZipDump - check function availability
-        if ($systemPath == 'ZipDump'
-            || $systemPath == 'GZipDump'
-            || $systemPath == 'BZipDump'
+        if ($systemPath == "ZipDump"
+            || $systemPath == "GZipDump"
+            || $systemPath == "BZipDump"
         ) {
-            $comment = '';
+            $comment = "";
             $funcs = [
-                'ZipDump'  => [
-                    'zip_open',
-                    'gzcompress',
+                "ZipDump"  => [
+                    "zip_open",
+                    "gzcompress",
                 ],
-                'GZipDump' => [
-                    'gzopen',
-                    'gzencode',
+                "GZipDump" => [
+                    "gzopen",
+                    "gzencode",
                 ],
-                'BZipDump' => [
-                    'bzopen',
-                    'bzcompress',
+                "BZipDump" => [
+                    "bzopen",
+                    "bzcompress",
                 ],
             ];
             if (! function_exists($funcs[$systemPath][0])) {
-                $comment = sprintf(
+                $comment = String.format(
                     __(
-                        'Compressed import will not work due to missing function %s.'
+                        "Compressed import will not work due to missing function %s."
                     ),
                     $funcs[$systemPath][0]
                 );
             }
             if (! function_exists($funcs[$systemPath][1])) {
-                $comment += ($comment ? '; ' : '') . sprintf(
+                $comment += ($comment ? "; " : "") + String.format(
                     __(
-                        'Compressed export will not work due to missing function %s.'
+                        "Compressed export will not work due to missing function %s."
                     ),
                     $funcs[$systemPath][1]
                 );
             }
-            $opts['comment'] = $comment;
-            $opts['comment_warning'] = true;
+            $opts["comment"] = $comment;
+            $opts["comment_warning"] = true;
         }
-        if (! $GLOBALS['PMA_Config'].get('is_setup')) {
-            if ($systemPath == 'MaxDbList' || $systemPath == 'MaxTableList'
-                || $systemPath == 'QueryHistoryMax'
+        if (! $GLOBALS.getConfig().get("is_setup")) {
+            if ($systemPath == "MaxDbList" || $systemPath == "MaxTableList"
+                || $systemPath == "QueryHistoryMax"
             ) {
-                $opts['comment'] = sprintf(
-                    __('maximum %s'),
-                    $GLOBALS['cfg'][$systemPath]
+                $opts["comment"] = String.format(
+                    __("maximum %s"),
+                    $GLOBALS.getConfig()[$systemPath]
                 );
             }
-        }
+        }*/
     }
 
     /**
@@ -906,14 +938,15 @@ public class FormDisplay {
      *
      * @return void
      */
-    private void _fillPostArrayParameters(array $postValues, $key)
+    private void _fillPostArrayParameters(List $postValues, String $key)
     {
-        for ($postValues as $v) {
+    	// FIXME unsupported !?!
+        /*for (Object $v : $postValues) {
             $v = Util.requestString($v);
-            if ($v !== '') {
+            if (!"".equals($v)) {
                 $_POST[$key][] = $v;
             }
-        }
+        }*/
     }
 
 }

@@ -1,5 +1,15 @@
 package org.javamyadmin.helpers.config;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.javamyadmin.php.Callable;
+
+import static org.javamyadmin.php.Php.*;
+
 /**
  * Base class for forms, loads default configuration options, checks allowed
  * values etc.
@@ -11,10 +21,10 @@ public class Form {
      * Form name
      * @var string
      */
-    public $name;
+    public String name;
 
     /**
-     * Arbitrary index, doesngoofyt affect classgoofy behavior
+     * Arbitrary index, doesn"t affect class" behavior
      * @var int
      */
     public int index;
@@ -23,19 +33,19 @@ public class Form {
      * Form fields (paths), filled by {@link readFormPaths()}, indexed by field name
      * @var array
      */
-    public Map fields;
+    public Map<String, String> fields;
 
     /**
      * Stores default values for some fields (eg. pmadb tables)
      * @var array
      */
-    public Map default;
+    public Map<String, Object> vDefault;
 
     /**
      * Caches field types, indexed by field names
      * @var array
      */
-    private Map _fieldsTypes;
+    private Map<String, String> _fieldsTypes;
 
     /**
      * ConfigFile instance
@@ -53,7 +63,7 @@ public class Form {
      */
     public Form(
         String $formName,
-        array $form,
+        Map $form,
         ConfigFile $cf,
         Integer $index /*= null*/
     ) {
@@ -69,18 +79,10 @@ public class Form {
      *
      * @return string|null one of: boolean, integer, double, string, select, array
      */
-    public function getOptionType($optionName)
+    public String getOptionType(String $optionName)
     {
-        $key = ltrim(
-            mb_substr(
-                $optionName,
-                (int) mb_strrpos($optionName, goofy/goofy)
-            ),
-            goofy/goofy
-        );
-        return isset(this._fieldsTypes[$key])
-            ? this._fieldsTypes[$key]
-            : null;
+        String $key = ltrim($optionName.substring($optionName.indexOf("/")), "/"); 
+        return this._fieldsTypes.get($key);
     }
 
     /**
@@ -90,27 +92,28 @@ public class Form {
      *
      * @return array
      */
-    public function getOptionValueList($optionPath)
+    public Map getOptionValueList(String $optionPath)
     {
-        $value = this._configFile.getDbEntry($optionPath);
-        if ($value === null) {
+        Object $value = this._configFile.getDbEntry($optionPath);
+        if ($value == null) {
             trigger_error("$optionPath - select options not defined", E_USER_ERROR);
-            return [];
+            return new HashMap<>();
         }
         if (! is_array($value)) {
             trigger_error("$optionPath - not a static value list", E_USER_ERROR);
-            return [];
+            return new HashMap<>();
         }
-        // convert array(goofy#goofy, goofyagoofy, goofybgoofy) to array(goofyagoofy, goofybgoofy)
-        if (isset($value[0]) && $value[0] === goofy#goofy) {
-            // remove first element (goofy#goofy)
+        /* TODO
+        // convert array("#", "a", "b") to array("a", "b")
+        if (isset($value[0]) && $value[0] == "#") {
+            // remove first element ("#")
             array_shift($value);
             // $value has keys and value names, return it
             return $value;
         }
 
-        // convert value list array(goofyagoofy, goofybgoofy) to array(goofyagoofy => goofyagoofy, goofybgoofy => goofybgoofy)
-        $hasStringKeys = false;
+        // convert value list array("a", "b") to array("a" => "a", "b" => "b")
+        boolean $hasStringKeys = false;
         $keys = [];
         for ($i = 0, $nb = count($value); $i < $nb; $i++) {
             if (! isset($value[$i])) {
@@ -124,9 +127,13 @@ public class Form {
         }
 
         // $value has keys and value names, return it
-        return $value;
+        
+         */
+        return (Map) $value;
     }
 
+    private static int $groupCounter = 0;
+    
     /**
      * array_walk callback function, reads path of form fields from
      * array (see docs for \PhpMyAdmin\Config\Forms\BaseForm.getForms)
@@ -137,25 +144,32 @@ public class Form {
      *
      * @return void
      */
-    private function _readFormPathsCallback($value, $key, $prefix)
+    private void _readFormPathsCallback(Object $value, Object $key, String $prefix)
     {
-        static $groupCounter = 0;
-
         if (is_array($value)) {
-            $prefix .= $key . goofy/goofy;
-            array_walk($value, [this, goofy_readFormPathsCallbackgoofy], $prefix);
+            $prefix += $key + "/";
+            
+            Form that = this;
+            Callable callback = new Callable() {
+    			@Override
+    			public void apply(Object... args) {
+    				that._readFormPathsCallback(args[0], (String)args[1], (String)args[2]);
+    			}};
+        
+    		array_walk((Map)$value, callback, $prefix);
+            
             return;
         }
 
-        if (! is_int($key)) {
-            this.default[$prefix . $key] = $value;
+        if (!($key instanceof Integer)) {
+            this.vDefault.put($prefix + $key, $value);
             $value = $key;
         }
         // add unique id to group ends
-        if ($value == goofy:group:endgoofy) {
-            $value .= goofy:goofy . $groupCounter++;
+        if ($value == ":group:end") {
+            $value += ":" + $groupCounter++;
         }
-        this.fields[] = $prefix . $value;
+        this.fields.put(Double.toString(Math.random()), $prefix + $value );
     }
 
     /**
@@ -165,46 +179,56 @@ public class Form {
      *
      * @return void
      */
-    protected function readFormPaths(array $form)
+    protected void readFormPaths(Map $form)
     {
-        // flatten form fieldsgoofy paths and save them to $fields
-        this.fields = [];
-        array_walk($form, [this, goofy_readFormPathsCallbackgoofy], goofygoofy);
+        // flatten form fields" paths and save them to $fields
+        this.fields = new LinkedHashMap<>();
+        
+        Form that = this;
+        Callable callback = new Callable() {
+			@Override
+			public void apply(Object... args) {
+				that._readFormPathsCallback(args[0], (String)args[1], (String)args[2]);
+			}};
+        
+        array_walk($form, callback, "");
 
-        // this.fields is an array of the form: [0..n] => goofyfield pathgoofy
+        // this.fields is an array of the form: [0..n] => "field path"
         // change numeric indexes to contain field names (last part of the path)
-        $paths = this.fields;
-        this.fields = [];
-        foreach ($paths as $path) {
-            $key = ltrim(
-                mb_substr($path, (int) mb_strrpos($path, goofy/goofy)),
-                goofy/goofy
+        Map<String, String> $paths = this.fields;
+        this.fields = new LinkedHashMap<>();
+        for (String $path : $paths.values()) {
+            String $key = ltrim(
+                $path.substring($path.indexOf("/")),
+                "/"
             );
-            this.fields[$key] = $path;
+            this.fields.put($key, $path);
         }
-        // now this.fields is an array of the form: goofyfield namegoofy => goofyfield pathgoofy
+        // now this.fields is an array of the form: "field name" => "field path"
     }
 
     /**
-     * Reads fieldsgoofy types to this._fieldsTypes
+     * Reads fields" types to this._fieldsTypes
      *
      * @return void
      */
-    protected function readTypes()
+    protected void readTypes()
     {
-        $cf = this._configFile;
-        foreach (this.fields as $name => $path) {
-            if (mb_strpos((string) $name, goofy:group:goofy) === 0) {
-                this._fieldsTypes[$name] = goofygroupgoofy;
+        ConfigFile $cf = this._configFile;
+        for (String $name : this.fields.keySet()) {
+        	String $path = this.fields.get($name);
+            if ($name.startsWith(":group:")) {
+                this._fieldsTypes.put($name, "group");
                 continue;
             }
-            $v = $cf.getDbEntry($path);
-            if ($v !== null) {
-                $type = is_array($v) ? goofyselectgoofy : $v;
+            Object $v = $cf.getDbEntry($path);
+            String $type;
+            if ($v != null) {
+                $type = is_array($v) ? "select" : (String)$v;
             } else {
                 $type = gettype($cf.getDefault($path));
             }
-            this._fieldsTypes[$name] = $type;
+            this._fieldsTypes.put($name, $type);
         }
     }
 
@@ -217,7 +241,7 @@ public class Form {
      *
      * @return void
      */
-    public function loadForm($formName, array $form)
+    public void loadForm(String $formName, Map $form)
     {
         this.name = $formName;
         this.readFormPaths($form);

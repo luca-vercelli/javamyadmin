@@ -250,6 +250,10 @@ public class ConfigFile {
         Core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
     }
 
+    public void set(String $path, Object $value) {
+    	set($path, $value, null);
+    }
+    
     /**
      * Flattens multidimensional array, changes indices to paths
      * (eg. "key/subkey").
