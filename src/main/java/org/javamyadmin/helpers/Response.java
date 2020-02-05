@@ -228,6 +228,10 @@ public class Response {
             }
         }
     }
+    
+    public void addJSON(Object $json) {
+    	addJSON($json, null);
+    }
 
     /**
      * Renders the HTML response text
