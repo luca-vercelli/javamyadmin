@@ -566,8 +566,8 @@ public class Config {
     public Message setUserValue(
         String cookie_name,
         String cfg_path,
-        String new_cfg_value,
-        String default_value /* = null */
+        Object new_cfg_value,
+        Object default_value /* = null */
     ) {
     	UserPreferences userPreferences = new UserPreferences();
     	Message result = null;
@@ -584,7 +584,10 @@ public class Config {
             if (default_value == null) {
                 default_value = (String) Core.arrayRead(cfg_path, this.settings);
             }
-            this.setCookie(cookie_name, new_cfg_value, default_value, null, false, null, null);
+            this.setCookie(cookie_name,
+            		new_cfg_value == null ? null : new_cfg_value.toString(),
+            		default_value == null ? null : default_value.toString(),
+            		null, false, null, null);
         }
         Core.arrayWrite(cfg_path, this.settings, new_cfg_value);
         return result;
@@ -593,7 +596,7 @@ public class Config {
     public Message setUserValue(
             String cookie_name,
             String cfg_path,
-            String new_cfg_value) {
+            Object new_cfg_value) {
     	return setUserValue(cookie_name, cfg_path, new_cfg_value, null);
     }
     
