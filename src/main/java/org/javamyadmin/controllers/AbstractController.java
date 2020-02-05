@@ -119,7 +119,7 @@ public abstract class AbstractController {
 		if (httpRequest.getMethod().equals("POST")) {
 		    if (Core.isValid(httpRequest.getParameter("token"))) {
 		        $token_provided = true;
-		        $token_mismatch = ! httpRequest.getParameter("token").equals(httpRequest.getSession().getAttribute("PMA_token"));
+		        $token_mismatch = ! httpRequest.getParameter("token").equals(httpRequest.getSession().getAttribute(" PMA_token "));
 		    }
 		    if ($token_mismatch) {
 		        /* Warn in case the mismatch is result of failed setting of session cookie */
