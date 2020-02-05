@@ -60,7 +60,7 @@ AJAX.registerOnload('server/databases.js', function () {
         var argsep = CommonParams.get('arg_separator');
         $(this).confirm(
             question,
-            '/server/databases/destroy&' + $(this).serialize() +
+            'index.php?route=/server/databases/destroy&' + $(this).serialize() +
                 argsep + 'drop_selected_dbs=1',
             function (url) {
                 Functions.ajaxShowMessage(Messages.strProcessingRequest, false);

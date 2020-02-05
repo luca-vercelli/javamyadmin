@@ -296,7 +296,7 @@ AJAX.registerOnload('table/select.js', function () {
         if ((operator === 'BETWEEN' || operator === 'NOT BETWEEN') && dataType) {
             var $msgbox = Functions.ajaxShowMessage();
             $.ajax({
-                url: '/table/search',
+                url: 'index.php?route=/table/search',
                 type: 'POST',
                 data: {
                     'server': CommonParams.get('server'),

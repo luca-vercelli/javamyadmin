@@ -841,7 +841,7 @@ RTE.ROUTINE = {
                         $msg = Functions.ajaxShowMessage(
                             Messages.strProcessingRequest
                         );
-                        $.post('/database/routines', data, function (data) {
+                        $.post('index.php?route=/database/routines', data, function (data) {
                             if (data.success === true) {
                                 // Routine executed successfully
                                 Functions.ajaxRemoveMessage($msg);

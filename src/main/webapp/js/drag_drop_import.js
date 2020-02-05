@@ -88,7 +88,7 @@ var DragDropImport = {
                 }
                 return xhrobj;
             },
-            url: '/import',
+            url: 'index.php?route=/import',
             type: 'POST',
             contentType:false,
             processData: false,

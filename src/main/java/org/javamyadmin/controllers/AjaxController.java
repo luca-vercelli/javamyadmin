@@ -148,7 +148,7 @@ public class AjaxController extends AbstractController {
 	        Message $result = this.config.setUserValue(
 	            null,
 	            key,
-	            (String)json_decode(value)
+	            json_decode(value)
 	        );
 	        Map<String, Object> $json = new HashMap<>();
 	        if ($result != null) {

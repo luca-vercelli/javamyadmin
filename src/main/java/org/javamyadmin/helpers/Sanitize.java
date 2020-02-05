@@ -37,7 +37,7 @@ public class Sanitize {
             "https://",
             "./url.php?url=https%3a%2f%2f",
             "./doc/html/",
-            "./Home?",
+            "./index.php?",
         }));
         boolean $is_setup = Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"));
         // Adjust path to setup script location

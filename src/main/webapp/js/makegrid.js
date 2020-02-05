@@ -393,7 +393,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                 if (g.colVisib.length > 0) {
                     $.extend(postParams, { 'col_visib': g.colVisib.toString() });
                 }
-                $.post('/sql', postParams, function (data) {
+                $.post('index.php?route=/sql', postParams, function (data) {
                     if (data.success !== true) {
                         var $tempDiv = $(document.createElement('div'));
                         $tempDiv.html(data.error);
@@ -890,7 +890,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                         'relation_key_or_display_column' : relationKeyOrDisplayColumn
                     };
 
-                    g.lastXHR = $.post('/sql', postParams, function (data) {
+                    g.lastXHR = $.post('index.php?route=/sql', postParams, function (data) {
                         g.lastXHR = null;
                         $editArea.removeClass('edit_area_loading');
                         if ($(data.dropdown).is('select')) {
@@ -934,7 +934,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                         'column' : fieldName,
                         'curr_value' : currValue
                     };
-                    g.lastXHR = $.post('/sql', postParams, function (data) {
+                    g.lastXHR = $.post('index.php?route=/sql', postParams, function (data) {
                         g.lastXHR = null;
                         $editArea.removeClass('edit_area_loading');
                         $editArea.append(data.dropdown);
@@ -974,7 +974,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                         };
                     }
 
-                    g.lastXHR = $.post('/sql', postParams, function (data) {
+                    g.lastXHR = $.post('index.php?route=/sql', postParams, function (data) {
                         g.lastXHR = null;
                         $editArea.removeClass('edit_area_loading');
                         $editArea.append(data.select);
@@ -1013,7 +1013,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                         var sqlQuery = 'SELECT `' + fieldName + '` FROM `' + g.table + '` WHERE ' + whereClause;
 
                         // Make the Ajax call and get the data, wrap it and insert it
-                        g.lastXHR = $.post('/sql', {
+                        g.lastXHR = $.post('index.php?route=/sql', {
                             'server' : g.server,
                             'db' : g.db,
                             'ajax_request' : true,
@@ -1312,7 +1312,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
                 'do_transformations' : transformationFields,
                 'transform_fields_list' : transformFieldsList,
                 'relational_display' : relationalDisplay,
-                'goto' : encodeURIComponent('/sql'),
+                'goto' : encodeURIComponent('index.php?route=/sql'),
                 'submit_type' : 'save'
             };
 
@@ -1326,7 +1326,7 @@ var makeGrid = function (t, enableResize, enableReorder, enableVisib, enableGrid
 
             $.ajax({
                 type: 'POST',
-                url: '/table/replace',
+                url: 'index.php?route=/table/replace',
                 data: postParams,
                 success:
                     function (data) {

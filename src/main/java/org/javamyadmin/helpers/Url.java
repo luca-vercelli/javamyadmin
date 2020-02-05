@@ -313,7 +313,7 @@ public class Url {
      */
     public static String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */, HttpServletRequest req, Globals GLOBALS)
     {
-        return route + getCommon(additionalParameters, "&", req, GLOBALS);
+        return "index.php?route=" + route + getCommon(additionalParameters, "&", req, GLOBALS);
     }
     
     public static String getFromRoute(String route, HttpServletRequest req, Globals GLOBALS)

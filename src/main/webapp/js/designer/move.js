@@ -586,7 +586,7 @@ DesignerMove.addOtherDbTables = function () {
             return;
         }
 
-        $.post('/database/designer', {
+        $.post('index.php?route=/database/designer', {
             'ajax_request' : true,
             'dialog' : 'add_table',
             'db' : db,
@@ -615,7 +615,7 @@ DesignerMove.addOtherDbTables = function () {
     var $selectTable = $('<select id="add_table"></select>');
     $selectTable.append('<option value="">' + Messages.strNone + '</option>');
 
-    $.post('/sql', {
+    $.post('index.php?route=/sql', {
         'ajax_request' : true,
         'sql_query' : 'SHOW databases;',
         'server': CommonParams.get('server')
@@ -645,7 +645,7 @@ DesignerMove.addOtherDbTables = function () {
         if ($(this).val()) {
             var dbName = $(this).val();
             var sqlQuery = 'SHOW tables;';
-            $.post('/sql', {
+            $.post('index.php?route=/sql', {
                 'ajax_request' : true,
                 'sql_query': sqlQuery,
                 'db' : dbName,
@@ -726,7 +726,7 @@ DesignerMove.save2 = function (callback) {
         poststr += DesignerMove.getUrlPos();
 
         var $msgbox = Functions.ajaxShowMessage(Messages.strProcessingRequest);
-        $.post('/database/designer', poststr, function (data) {
+        $.post('index.php?route=/database/designer', poststr, function (data) {
             if (data.success === false) {
                 Functions.ajaxShowMessage(data.error, false);
             } else {
@@ -803,7 +803,7 @@ DesignerMove.save3 = function (callback) {
             $(this).dialog('close');
         };
 
-        var $form = $('<form action="/database/designer" method="post" name="save_page" id="save_page" class="ajax"></form>')
+        var $form = $('<form action="index.php?route=/database/designer" method="post" name="save_page" id="save_page" class="ajax"></form>')
             .append('<input type="hidden" name="server" value="' + server + '">')
             .append($('<input type="hidden" name="db" />').val(db))
             .append('<input type="hidden" name="operation" value="savePage">')
@@ -848,7 +848,7 @@ DesignerMove.editPages = function () {
         };
 
         var $msgbox = Functions.ajaxShowMessage();
-        $.post('/database/designer', {
+        $.post('index.php?route=/database/designer', {
             'ajax_request': true,
             'server': server,
             'db': db,
@@ -931,7 +931,7 @@ DesignerMove.deletePages = function () {
     };
 
     var $msgbox = Functions.ajaxShowMessage();
-    $.post('/database/designer', {
+    $.post('index.php?route=/database/designer', {
         'ajax_request': true,
         'server': server,
         'db': db,
@@ -1033,7 +1033,7 @@ DesignerMove.saveAs = function () {
     };
 
     var $msgbox = Functions.ajaxShowMessage();
-    $.post('/database/designer', {
+    $.post('index.php?route=/database/designer', {
         'ajax_request': true,
         'server': server,
         'db': db,
@@ -1114,7 +1114,7 @@ DesignerMove.exportPages = function () {
     var $msgbox = Functions.ajaxShowMessage();
     var argsep = CommonParams.get('arg_separator');
 
-    $.post('/database/designer', {
+    $.post('index.php?route=/database/designer', {
         'ajax_request': true,
         'server': server,
         'db': db,
@@ -1167,7 +1167,7 @@ DesignerMove.loadPage = function (page) {
         if (page !== null) {
             paramPage = argsep + 'page=' + page;
         }
-        $('<a href="/database/designer&server=' + server + argsep + 'db=' + encodeURIComponent(db) + paramPage + '"></a>')
+        $('<a href="index.php?route=/database/designer&server=' + server + argsep + 'db=' + encodeURIComponent(db) + paramPage + '"></a>')
             .appendTo($('#page_content'))
             .trigger('click');
     } else {
@@ -1212,7 +1212,7 @@ DesignerMove.angularDirect = function () {
 };
 
 DesignerMove.saveValueInConfig = function (indexSent, valueSent) {
-    $.post('/database/designer',
+    $.post('index.php?route=/database/designer',
         {
             'operation': 'save_setting_value',
             'index': indexSent,
@@ -1296,7 +1296,7 @@ DesignerMove.clickField = function (db, T, f, pk) {
         document.getElementById('display_field_button').className = 'M_butt';
 
         var $msgbox = Functions.ajaxShowMessage(Messages.strProcessingRequest);
-        $.post('/database/designer',
+        $.post('index.php?route=/database/designer',
             {
                 'operation': 'setDisplayField',
                 'ajax_request': true,
@@ -1324,7 +1324,7 @@ DesignerMove.newRelation = function () {
     linkRelation += argsep + 'operation=addNewRelation' + argsep + 'ajax_request=true';
 
     var $msgbox = Functions.ajaxShowMessage(Messages.strProcessingRequest);
-    $.post('/database/designer', linkRelation, function (data) {
+    $.post('index.php?route=/database/designer', linkRelation, function (data) {
         if (data.success === false) {
             Functions.ajaxShowMessage(data.error, false);
         } else {
@@ -1337,13 +1337,13 @@ DesignerMove.newRelation = function () {
 // -------------------------- create tables -------------------------------------
 DesignerMove.startTableNew = function () {
     CommonParams.set('table', '');
-    CommonActions.refreshMain('/table/create');
+    CommonActions.refreshMain('index.php?route=/table/create');
 };
 
 DesignerMove.startTabUpd = function (db, table) {
     CommonParams.set('db', db);
     CommonParams.set('table', table);
-    CommonActions.refreshMain('/table/structure');
+    CommonActions.refreshMain('index.php?route=/table/structure');
 };
 
 // --------------------------- hide tables --------------------------------------
@@ -1553,7 +1553,7 @@ DesignerMove.updRelation = function () {
     linkRelation += argsep + 'operation=removeRelation' + argsep + 'ajax_request=true';
 
     var $msgbox = Functions.ajaxShowMessage(Messages.strProcessingRequest);
-    $.post('/database/designer', linkRelation, function (data) {
+    $.post('index.php?route=/database/designer', linkRelation, function (data) {
         if (data.success === false) {
             Functions.ajaxShowMessage(data.error, false);
         } else {

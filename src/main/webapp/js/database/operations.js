@@ -152,7 +152,7 @@ AJAX.registerOnload('database/operations.js', function () {
                     Navigation.reload();
                     CommonParams.set('db', '');
                     CommonActions.refreshMain(
-                        '/server/databases',
+                        'index.php?route=/server/databases',
                         function () {
                             Functions.ajaxShowMessage(data.message);
                         }

@@ -89,7 +89,7 @@ TableRelation.getDropdownValues = function ($dropdown) {
     }
     $.ajax({
         type: 'POST',
-        url: '/table/relation',
+        url: 'index.php?route=/table/relation',
         data: params,
         dataType: 'json',
         success: function (data) {

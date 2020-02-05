@@ -244,7 +244,7 @@ AJAX.registerOnload('server/privileges.js', function () {
                         var $message = Functions.ajaxShowMessage();
                         var argsep = CommonParams.get('arg_separator');
                         $.post(
-                            '/server/privileges',
+                            'index.php?route=/server/privileges',
                             $('#changeUserGroupDialog').find('form').serialize() + argsep + 'ajax_request=1',
                             function (data) {
                                 Functions.ajaxRemoveMessage($message);
