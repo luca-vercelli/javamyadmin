@@ -14,6 +14,7 @@ import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Template;
+import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.UserPreferences;
 import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.navigation.Navigation;
@@ -135,14 +136,14 @@ public class SpringConfig implements WebMvcConfigurer {
 		return new Scripts();
 	}
 
-	/* TODO @Bean
-	@RequestScope
-	public ThemeManager getThemeManager(HttpServletRequest req) {
-		return new ThemeManager(req);
-	}*/
-
 	@Bean
 	@RequestScope
+	public ThemeManager getThemeManager(HttpServletRequest req, Globals GLOBALS, SessionMap sessionMap) {
+		return new ThemeManager(req, GLOBALS, sessionMap);
+	}
+
+	@Bean
+	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public PageSettings getPageSettings(String $formGroupName, String $elemId) {
 		return new PageSettings($formGroupName, $elemId);
 	}
