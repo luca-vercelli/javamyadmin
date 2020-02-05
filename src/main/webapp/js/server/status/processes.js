@@ -27,7 +27,7 @@ var processList = {
     init: function () {
         processList.setRefreshLabel();
         if (processList.refreshUrl === null) {
-            processList.refreshUrl = 'index.php?route=/server/status/processes/refresh';
+            processList.refreshUrl = 'server/status/processes/refresh';
         }
         if (processList.refreshInterval === null) {
             processList.refreshInterval = $('#id_refreshRate').val();

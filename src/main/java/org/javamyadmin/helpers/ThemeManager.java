@@ -299,7 +299,7 @@ public class ThemeManager {
 
 		if (form) {
 			select_box += "<form name='setTheme' method='post'";
-			select_box += " action='index.php?route=/set-theme' class='disableAjax'>";
+			select_box += " action='set-theme' class='disableAjax'>";
 			select_box += Url.getHiddenInputs(request, GLOBALS, $_SESSION);
 		}
 

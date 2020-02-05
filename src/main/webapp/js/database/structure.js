@@ -244,7 +244,7 @@ AJAX.registerOnload('database/structure.js', function () {
             }
             $.ajax({
                 type: 'POST',
-                url: 'index.php?route=/database/structure',
+                url: 'database/structure',
                 dataType: 'html',
                 data: formData
 
