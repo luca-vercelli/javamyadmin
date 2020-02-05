@@ -1332,7 +1332,7 @@ public class NavigationTree {
             this.tree.getPresence("databases", "", GLOBALS),
             this.pos,
             args0,
-            Url.getFromRoute("/navigation", httpRequest, GLOBALS),
+            Url.getFromRoute("/navigation"),
             "frame_navigation",
             new Integer((String)Globals.getConfig().get("FirstLevelNavigationItems")),
             "pos",
@@ -1464,7 +1464,7 @@ public class NavigationTree {
             $urlParams.put("pos2_value", 0);
             $retval += "<li class='fast_filter'>";
             $retval += "<form class='ajax fast_filter'>";
-            $retval += Url.getHiddenFields($urlParams, sessionMap);
+            $retval += Url.getHiddenFields($urlParams, (String)sessionMap.get(" PMA_token "));
             $retval += "<input class='searchClause' type='text'";
             $retval += " name='searchClause2'";
             $retval += " placeholder='"
@@ -1541,7 +1541,7 @@ public class NavigationTree {
                 this.tree.getPresence("databases", this.searchClause, GLOBALS),
                 this.pos,
                 params1,
-                Url.getFromRoute("/navigation", httpRequest, GLOBALS),
+                Url.getFromRoute("/navigation"),
                 "frame_navigation",
                 new Integer((String)Globals.getConfig().get("FirstLevelNavigationItems")),
                 "pos",
@@ -1575,7 +1575,7 @@ public class NavigationTree {
                     $num,
                     $pos,
                     $urlParams,
-                    Url.getFromRoute("/navigation", httpRequest, GLOBALS),
+                    Url.getFromRoute("/navigation"),
                     "frame_navigation",
                     new Integer((String)Globals.getConfig().get("MaxNavigationItems")),
                     "pos" + $level + "_value"

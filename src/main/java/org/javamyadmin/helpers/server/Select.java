@@ -45,7 +45,7 @@ public class Select {
             $retval += "<form method='post' action='"
                 + Util.getScriptNameForOption(
                 	(String) Globals.getConfig().get("DefaultTabServer"),
-                    "server", request, GLOBALS
+                    "server"
                 )
                 + "' class='disableAjax'>";
 
@@ -53,7 +53,7 @@ public class Select {
                 $retval += "<fieldset>";
             }
 
-            $retval += Url.getHiddenFields(null, $_SESSION);
+            $retval += Url.getHiddenFields(null, (String)$_SESSION.get(" PMA_token "));
             $retval += "<label for='select_server'>"
                 + __("Current server:") + "</label> ";
 
@@ -106,14 +106,14 @@ public class Select {
                 } else {
                     String $scriptName = Util.getScriptNameForOption(
                     	(String)Globals.getConfig().get("DefaultTabServer"),
-                        "server", request, GLOBALS
+                        "server"
                     );
                     Map<String, String> serverMap = new HashMap<>();
                     serverMap.put("server", $key);
                     
                     $retval += "<a class='disableAjax item' href='"
                         + $scriptName
-                        + Url.getCommon(serverMap, $scriptName.contains("?") ? "&" : "?", request, GLOBALS)
+                        + Url.getCommon(serverMap, $scriptName.contains("?") ? "&" : "?")
                         + "' >" + htmlspecialchars($label) + "</a>";
                 }
                 $retval += "</li>";

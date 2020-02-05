@@ -36,14 +36,14 @@ public class NodeTable extends NodeDatabaseChild {
         this.addIcon(
             Util.getScriptNameForOption(
             	(String)Globals.getConfig().get("NavigationTreeDefaultTabTable"),
-                "table", request, GLOBALS
-            ), request, GLOBALS
+                "table"
+            )
         );
         this.addIcon(
             Util.getScriptNameForOption(
                 (String)Globals.getConfig().get("NavigationTreeDefaultTabTable2"),
-                "table", request, GLOBALS
-            ), request, GLOBALS
+                "table"
+            )
         );
         String $title = Util.getTitleForTarget(
         	(String)Globals.getConfig().get("DefaultTabTable")
@@ -52,15 +52,15 @@ public class NodeTable extends NodeDatabaseChild {
 
         String $scriptName = Util.getScriptNameForOption(
         	(String)Globals.getConfig().get("DefaultTabTable"),
-            "table", request, GLOBALS
+            "table"
         );
         String $firstIconLink = Util.getScriptNameForOption(
         	(String)Globals.getConfig().get("NavigationTreeDefaultTabTable"),
-            "table", request, GLOBALS
+            "table"
         );
         String $secondIconLink = Util.getScriptNameForOption(
             (String)Globals.getConfig().get("NavigationTreeDefaultTabTable2"),
-            "table", request, GLOBALS
+            "table"
         );
         this.links = new HashMap<>();
         this.links.put(
@@ -176,21 +176,21 @@ public class NodeTable extends NodeDatabaseChild {
      *
      * @return void
      */
-    private void addIcon(String $page, HttpServletRequest req, Globals GLOBALS)
+    private void addIcon(String $page)
     {
         if (empty($page)) {
             return;
         }
 
-        if ($page.equals(Url.getFromRoute("/table/structure", req, GLOBALS))) {
+        if ($page.equals(Url.getFromRoute("/table/structure"))) {
         	this.icon.add(Util.getImage("b_props", __("Structure")));
-        } else if ($page.equals(Url.getFromRoute("/table/search", req, GLOBALS))) {
+        } else if ($page.equals(Url.getFromRoute("/table/search"))) {
             this.icon.add(Util.getImage("b_search", __("Search")));
-        } else if ($page.equals(Url.getFromRoute("/table/change", req, GLOBALS))) {
+        } else if ($page.equals(Url.getFromRoute("/table/change"))) {
             this.icon.add(Util.getImage("b_insrow", __("Insert")));
-        } else if ($page.equals(Url.getFromRoute("/table/sql", req, GLOBALS))) {
+        } else if ($page.equals(Url.getFromRoute("/table/sql"))) {
             this.icon.add( Util.getImage("b_sql", __("SQL")));
-        } else if ($page.equals(Url.getFromRoute("/sql", req, GLOBALS))) {
+        } else if ($page.equals(Url.getFromRoute("/sql"))) {
             this.icon.add(Util.getImage("b_browse", __("Browse")));
         }
     }

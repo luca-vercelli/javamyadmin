@@ -1627,9 +1627,9 @@ public class Util {
                 $url_params = array_merge($url_params, (Map)$tab.getArgs());
             }
             if (!(($tab.getLink().contains( "?") ))) {
-            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, request, GLOBALS));
+            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params));
             } else {
-            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, "&", request, GLOBALS));
+            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, "&"));
             }
         }
 
@@ -2518,13 +2518,13 @@ public class Util {
 
         String $scriptName = getScriptNameForOption(
             (String)Globals.getConfig().get("DefaultTabDatabase"),
-            "database", request, GLOBALS
+            "database"
         );
-        Map params = new HashMap();
+        Map<String, String> params = new HashMap<>();
         params.put("db", $database);
         return "<a href='"
             + $scriptName
-            + Url.getCommon(params, ($scriptName.contains( "?") ? "&" : "?"), request, GLOBALS)
+            + Url.getCommon(params, ($scriptName.contains( "?") ? "&" : "?"))
             + "' title='"
             + htmlspecialchars(
                 String.format(
@@ -3204,7 +3204,7 @@ public class Util {
      *
      * @return String script name corresponding to the config word
      */
-    public static String getScriptNameForOption(String $target, String $location, HttpServletRequest req, Globals GLOBALS)
+    public static String getScriptNameForOption(String $target, String $location)
     {
     	if ($target == null) {
     		return "";
@@ -3213,27 +3213,27 @@ public class Util {
             // Values for $cfg["DefaultTabServer"]
             switch ($target) {
                 case "welcome":
-                    return Url.getFromRoute("/", req, GLOBALS);
+                    return Url.getFromRoute("/");
                 case "databases":
-                    return Url.getFromRoute("/server/databases", req, GLOBALS);
+                    return Url.getFromRoute("/server/databases");
                 case "status":
-                    return Url.getFromRoute("/server/status", req, GLOBALS);
+                    return Url.getFromRoute("/server/status");
                 case "variables":
-                    return Url.getFromRoute("/server/variables", req, GLOBALS);
+                    return Url.getFromRoute("/server/variables");
                 case "privileges":
-                    return Url.getFromRoute("/server/privileges", req, GLOBALS);
+                    return Url.getFromRoute("/server/privileges");
             }
         } else if ("database".equals($location)) {
             // Values for $cfg["DefaultTabDatabase"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/database/structure", req, GLOBALS);
+                    return Url.getFromRoute("/database/structure");
                 case "sql":
-                    return Url.getFromRoute("/database/sql", req, GLOBALS);
+                    return Url.getFromRoute("/database/sql");
                 case "search":
-                    return Url.getFromRoute("/database/search", req, GLOBALS);
+                    return Url.getFromRoute("/database/search");
                 case "operations":
-                    return Url.getFromRoute("/database/operations", req, GLOBALS);
+                    return Url.getFromRoute("/database/operations");
             }
         } else if ("table".equals($location)) {
             // Values for $cfg["DefaultTabTable"],
@@ -3241,15 +3241,15 @@ public class Util {
             // $cfg["NavigationTreeDefaultTabTable2"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/table/structure", req, GLOBALS);
+                    return Url.getFromRoute("/table/structure");
                 case "sql":
-                    return Url.getFromRoute("/table/sql", req, GLOBALS);
+                    return Url.getFromRoute("/table/sql");
                 case "search":
-                    return Url.getFromRoute("/table/search", req, GLOBALS);
+                    return Url.getFromRoute("/table/search");
                 case "insert":
-                    return Url.getFromRoute("/table/change", req, GLOBALS);
+                    return Url.getFromRoute("/table/change");
                 case "browse":
-                    return Url.getFromRoute("/sql", req, GLOBALS);
+                    return Url.getFromRoute("/sql");
             }
         }
 

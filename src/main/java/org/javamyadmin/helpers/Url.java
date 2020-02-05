@@ -76,7 +76,7 @@ public class Url {
 	        }
         }
 
-        return Url.getHiddenFields(params, "", false, $_SESSION);
+        return Url.getHiddenFields(params, "", false, (String)$_SESSION.get(" PMA_token "));
     }
 
     /**
@@ -110,7 +110,10 @@ public class Url {
      *
      * @return string form fields of type hidden
      */
-    public static String getHiddenFields(Map<String,Object> values, String pre /*= ""*/, boolean is_token /*= false*/, SessionMap $_SESSION)
+    public static String getHiddenFields(Map<String,Object> values,
+    		String pre /*= ""*/,
+    		boolean is_token /*= false*/,
+    		String pmaToken  /*i.e. $_SESSION.get(" PMA_token ") */ )
     {
         String fields = "";
         
@@ -120,7 +123,7 @@ public class Url {
 
         /* Always include token in plain forms */
         if (!is_token) {
-            values.put("token", $_SESSION.get(" PMA_token "));
+            values.put("token", pmaToken);
         }
 
         for (String name : values.keySet()) {
@@ -134,7 +137,7 @@ public class Url {
             }
             
             if (value instanceof Map) {
-                fields += Url.getHiddenFields((Map)value, name, true, $_SESSION);
+                fields += Url.getHiddenFields((Map)value, name, true, pmaToken);
             } else {
                 // do not generate an ending "\n" because
                 // Url.getHiddenInputs() is sometimes called
@@ -147,12 +150,12 @@ public class Url {
         return fields;
     }
 
-    public static String getHiddenFields(Map<String,Object> values, String pre, SessionMap $_SESSION) {
-    	return getHiddenFields(values, pre, false, $_SESSION);
+    public static String getHiddenFields(Map<String,Object> values, String pre, String pmaToken) {
+    	return getHiddenFields(values, pre, false, pmaToken);
     }
     
-    public static String getHiddenFields(Map<String,Object> values, SessionMap $_SESSION) {
-    	return getHiddenFields(values, "", false, $_SESSION);
+    public static String getHiddenFields(Map<String,Object> values, String pmaToken) {
+    	return getHiddenFields(values, "", false, pmaToken);
     }
     
     /**
@@ -177,7 +180,6 @@ public class Url {
      * // with cookies disabled:
      * // script.php?server=1&amp;lang=en
      * </code>
-     * @param req 
      *
      * @param mixed  params  optional, Contains an associative array with url params
      * @param string divider optional character to use instead of "?"
@@ -185,18 +187,18 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommon(Map<String, String> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
+    public static String getCommon(Map<String, String> params /*= []*/, String divider /*= "?"*/)
     {
         return htmlspecialchars(
-            Url.getCommonRaw(params, divider, req, GLOBALS)
+            Url.getCommonRaw(params, divider)
         );
     }
     
     /**
      * Generates text with URL parameters.
      */
-    public static String getCommon(Map<String, String> params, HttpServletRequest req, Globals GLOBALS) {
-    	return getCommon(params, "?", req, GLOBALS);
+    public static String getCommon(Map<String, String> params) {
+    	return getCommon(params, "?");
     }
 
     /**
@@ -221,7 +223,6 @@ public class Url {
      * // with cookies disabled:
      * // script.php?server=1&amp;lang=en
      * </code>
-     * @param req 
      *
      * @param mixed  params  optional, Contains an associative array with url params
      * @param string divider optional character to use instead of "?"
@@ -229,7 +230,7 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommonRaw(Map<String, String> params /*= []*/, String divider /*= "?"*/, HttpServletRequest req, Globals GLOBALS)
+    public static String getCommonRaw(Map<String, String> params /*= []*/, String divider /*= "?"*/)
     {
     	if (params == null) {
     		params = new HashMap<>();
@@ -238,6 +239,10 @@ public class Url {
         /** @var Config PMA_Config */
         String separator = getArgSeparator("none");
 
+        /*
+         FIXME
+         This xxx piece of code requires  HttpServletRequest and $GLOBALS
+         
         // avoid overwriting when creating navi panel links to servers
         if (GLOBALS.getServer() != null
             && GLOBALS.getServer() != Globals.getConfig().get("ServerDefault")
@@ -247,9 +252,9 @@ public class Url {
             params.put("server", Integer.toString(GLOBALS.getServer()));
         }
 
-        if (empty(Globals.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
+         if (empty(Globals.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
             params.put("lang", GLOBALS.getLang());
-        }
+        }*/
 
         String query = http_build_query(params, separator);
 
@@ -260,12 +265,12 @@ public class Url {
         return "";
     }
     
-    public static String getCommonRaw(Map<String, String> params, HttpServletRequest req, Globals GLOBALS) {
-    	return getCommonRaw(params, "?", req, GLOBALS);
+    public static String getCommonRaw(Map<String, String> params) {
+    	return getCommonRaw(params, "?");
     }
     
-    public static String getCommonRaw(HttpServletRequest req, Globals GLOBALS) {
-    	return getCommonRaw(null, "?", req, GLOBALS);
+    public static String getCommonRaw() {
+    	return getCommonRaw(null, "?");
     }
     
     private static String $separator = null;
@@ -311,13 +316,19 @@ public class Url {
      * @param array  additionalParameters Additional URL parameters
      * @return string
      */
-    public static String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */, HttpServletRequest req, Globals GLOBALS)
+    public static String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */)
     {
-        return "index.php?route=" + route + getCommon(additionalParameters, "&", req, GLOBALS);
+    	if (route == null) {
+    		return "";
+    	}
+    	if (route.startsWith("/")) {
+    		route = route.substring(1);
+    	}
+        return /*"index.php?route=" + */ route + getCommon(additionalParameters, "&");
     }
     
-    public static String getFromRoute(String route, HttpServletRequest req, Globals GLOBALS)
+    public static String getFromRoute(String route)
     {
-        return getFromRoute(route, null, req, GLOBALS);
+        return getFromRoute(route, null);
     }
 }

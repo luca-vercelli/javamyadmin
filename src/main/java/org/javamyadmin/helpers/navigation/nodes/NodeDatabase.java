@@ -49,7 +49,7 @@ public class NodeDatabase extends Node {
 
         String $scriptName = Util.getScriptNameForOption(
             (String)Globals.getConfig().get("DefaultTabDatabase"),
-            "database", req, GLOBALS
+            "database"
         );
         boolean $hasRoute = $scriptName.contains("?");
         this.links = new HashMap<>();
@@ -58,7 +58,7 @@ public class NodeDatabase extends Node {
                 + "server=" + GLOBALS.getServer()
                 + "&amp;db=%1$s");
         this.links.put(
-            "icon", Url.getFromRoute("/database/operations", req, GLOBALS) + "&amp;server=" + GLOBALS.getServer()
+            "icon", Url.getFromRoute("/database/operations") + "&amp;server=" + GLOBALS.getServer()
                 + "&amp;db=%1$s&amp;");
         this.links.put("title", __("Structure"));
         this.classes = "database";
@@ -522,8 +522,8 @@ public class NodeDatabase extends Node {
                 $params.put("showUnhideDialog", "true");
                 $params.put("dbName", this.realName);
                 $ret = "<span class='dbItemControls'>"
-                    + "<a href='" + Url.getFromRoute("/navigation", httpRequest, GLOBALS) + "' data-post='"
-                    + Url.getCommon($params, "", httpRequest, GLOBALS) + "'"
+                    + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
+                    + Url.getCommon($params, "") + "'"
                     + " class='showUnhide ajax'>"
                     + Util.getImage(
                         "show",

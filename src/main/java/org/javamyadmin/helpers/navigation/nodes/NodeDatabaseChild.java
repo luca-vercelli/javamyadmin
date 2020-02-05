@@ -57,8 +57,8 @@ public abstract class NodeDatabaseChild extends Node {
             $params.put("dbName", $db);
 
             $ret = "<span class='navItemControls'>"
-                + "<a href='" + Url.getFromRoute("/navigation", httpRequest, GLOBALS) + "' data-post='"
-                + Url.getCommon($params, "", httpRequest, GLOBALS) + "'"
+                + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
+                + Url.getCommon($params, "") + "'"
                 + " class='hideNavItem ajax'>"
                 + Util.getImage("hide", __("Hide"))
                 + "</a></span>";

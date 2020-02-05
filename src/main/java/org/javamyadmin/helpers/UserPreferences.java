@@ -270,7 +270,7 @@ public class UserPreferences {
             $hash = "#" + urlencode($hash);
         }
         Core.sendHeaderLocation("./" + $file_name
-            + Url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash, request, GLOBALS),
+            + Url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash),
             false, request, response);
     }
     

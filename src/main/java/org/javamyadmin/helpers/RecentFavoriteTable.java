@@ -196,7 +196,7 @@ public class RecentFavoriteTable
                     Map<String, String> map = new HashMap<>();
                     map.put("db", $table.get("db"));
                     map.put("table", $table.get("table"));
-                    String $recent_url = Url.getFromRoute("/table/recent-favorite", map, req, GLOBALS);
+                    String $recent_url = Url.getFromRoute("/table/recent-favorite", map);
                     $html += "<a href='" + $recent_url + "'>`"
                           + htmlspecialchars($table.get("db")) + "`.`"
                           + htmlspecialchars($table.get("table")) + "`</a>";
@@ -212,7 +212,7 @@ public class RecentFavoriteTable
                     map.put("ajax_request", "true");
                     map.put("favorite_table", $table.get("table"));
                     map.put("remove_favorite", "true");
-                    String $fav_rm_url = Url.getFromRoute("/database/structure/favorite-table", map, req, GLOBALS);
+                    String $fav_rm_url = Url.getFromRoute("/database/structure/favorite-table", map);
                     $html += "href='" + $fav_rm_url
                         + "' title='" + __("Remove from Favorites")
                         + "' data-favtargetn='"
@@ -224,7 +224,7 @@ public class RecentFavoriteTable
                     Map<String, String> map2 = new HashMap<>();
                     map2.put("db", $table.get("db"));
                     map2.put("table", $table.get("table"));
-                    String $table_url = Url.getFromRoute("/table/recent-favorite", map2, req, GLOBALS);
+                    String $table_url = Url.getFromRoute("/table/recent-favorite", map2);
                     $html += "<a href='" + $table_url + "'>"
                         + htmlspecialchars($table.get("db")) + "."
                         + htmlspecialchars($table.get("table")) + "</a>";
@@ -358,7 +358,7 @@ public class RecentFavoriteTable
             map.put("ajax_request", "true");
             map.put("favorite_table", "true");
             map.put("sync_favorite_tables", "true");
-            String $url = Url.getFromRoute("/database/structure/favorite-table", map, req, GLOBALS);
+            String $url = Url.getFromRoute("/database/structure/favorite-table", map);
             $retval  = "<a class='hide' id='sync_favorite_tables'";
             $retval += " href='" + $url + "'></a>";
         }
@@ -370,13 +370,13 @@ public class RecentFavoriteTable
      *
      * @return String html
      */
-    public static String getHtmlUpdateRecentTables(HttpServletRequest httpRequest, Globals GLOBALS)
+    public static String getHtmlUpdateRecentTables()
     {
         String $retval = "<a class='hide' id='update_recent_tables' href='";
         Map<String, String> map = new HashMap<>();
         map.put("ajax_request", "true");
         map.put("recent_table", "true");
-        $retval += Url.getFromRoute("/recent-table", map, httpRequest, GLOBALS);
+        $retval += Url.getFromRoute("/recent-table", map);
         $retval += "'></a>";
         return $retval;
     }

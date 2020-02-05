@@ -362,12 +362,12 @@ public class Menu {
         }
         String $scriptName = Util.getScriptNameForOption(
             (String) cfg.get("DefaultTabServer"),
-            "server", request, GLOBALS
+            "server"
         );
         $retval += String.format(
             $item,
             $scriptName,
-            Url.getCommon(null, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
+            Url.getCommon(null, $scriptName.contains( "?") ? "&" : "?"),
             htmlspecialchars($server_info),
             __("Server")
         );
@@ -383,14 +383,14 @@ public class Menu {
             }
             $scriptName = Util.getScriptNameForOption(
                 (String) cfg.get("DefaultTabDatabase"),
-                "database", request, GLOBALS
+                "database"
             );
             Map<String, String> paramsDb = new HashMap<>();
             paramsDb.put("db", this._db);
             $retval += String.format(
                 $item,
                 $scriptName,
-                Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
+                Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
                 htmlspecialchars(this._db),
                 __("Database")
             );
@@ -422,13 +422,13 @@ public class Menu {
                 }
                 $scriptName = Util.getScriptNameForOption(
                     (String) cfg.get("DefaultTabTable"),
-                    "table", request, GLOBALS
+                    "table"
                 );
                 paramsDb.put("table", this._table);
                 $retval += String.format(
                     $item,
                     $scriptName,
-                    Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?", request, GLOBALS),
+                    Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
                     htmlspecialchars(this._table).replace(" ", "&nbsp;"),
                     $tbl_is_view ? __("View") : __("Table")
                 );

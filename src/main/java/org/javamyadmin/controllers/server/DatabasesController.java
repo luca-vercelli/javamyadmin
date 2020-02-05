@@ -197,7 +197,7 @@ public class DatabasesController extends AbstractController {
 
             String $scriptName = Util.getScriptNameForOption(
                 (String)$cfg.get("DefaultTabDatabase"),
-                "database", httpRequest, GLOBALS
+                "database"
             );
 
             $json.put("message", $message);
@@ -205,7 +205,7 @@ public class DatabasesController extends AbstractController {
             
             Map<String, String> $queryParam = new HashMap<>();
             $queryParam.put("db", new_db);
-            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?", httpRequest, GLOBALS));
+            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?"));
             
         }
 
@@ -242,7 +242,7 @@ public class DatabasesController extends AbstractController {
             $message = Message.error(__("No databases selected."));
         } else {
             // for mult_submits.inc.php
-            String $action = Url.getFromRoute("/server/databases", httpRequest, GLOBALS);
+            String $action = Url.getFromRoute("/server/databases");
             GLOBALS.setErrUrl($action);
 
             GLOBALS.setSubmitMult("drop_db");

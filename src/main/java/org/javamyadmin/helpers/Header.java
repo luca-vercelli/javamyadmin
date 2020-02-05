@@ -249,10 +249,10 @@ public class Header {
     	String $table = !empty(GLOBALS.getTable()) ? GLOBALS.getTable() : "";
         String $pftext = (String) multiget(session, "tmpval", "pftext");
 
-        $params.put("common_query", Url.getCommonRaw(request, GLOBALS));
+        $params.put("common_query", Url.getCommonRaw());
         $params.put("opendb_url", Util.getScriptNameForOption(
                 (String) cfg.get("DefaultTabDatabase"),
-                "database", request, GLOBALS
+                "database"
             ));
         $params.put("lang", GLOBALS.getLang());
         $params.put("table", $table);

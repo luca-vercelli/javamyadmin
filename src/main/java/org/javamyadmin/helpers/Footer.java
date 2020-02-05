@@ -241,7 +241,7 @@ public class Footer {
         ) {
             $params.put("single_table", httpRequest.getParameter("single_table"));
         }
-        return /* TODO basename(Core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params, httpRequest, GLOBALS);
+        return /* TODO basename(Core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params);
     }
 
     /**

@@ -60,8 +60,8 @@ public class HomeController extends AbstractController {
 
 		if (GLOBALS.getServer() > 0) {
 			// @see libraries/server_common.inc.php
-			GLOBALS.setUrlQuery(Url.getCommon(null, httpRequest, GLOBALS));
-			GLOBALS.setErrUrl(Url.getFromRoute("/", httpRequest, GLOBALS));
+			GLOBALS.setUrlQuery(Url.getCommon(null));
+			GLOBALS.setErrUrl(Url.getFromRoute("/"));
 			GLOBALS.setIsGrantuser(GLOBALS.getDbi().isUserType("grant"));
 			GLOBALS.setIsCreateuser(GLOBALS.getDbi().isUserType("create"));
 		}
@@ -150,7 +150,7 @@ public class HomeController extends AbstractController {
             	model0.put("id", "li_user_preferences");
             	model0.put("class", "no_bullets");
 	            Map<String,Object> modelUrl = new HashMap<>();
-            	modelUrl.put("href", Url.getFromRoute("/preferences/manage", httpRequest, GLOBALS));
+            	modelUrl.put("href", Url.getFromRoute("/preferences/manage"));
             	model0.put("url", modelUrl);
                 $userPreferences = template.render("list/item", model0);
             }

@@ -303,7 +303,7 @@ public class ThemeManager {
 			select_box += Url.getHiddenInputs(request, GLOBALS, $_SESSION);
 		}
 
-		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null, request, GLOBALS)
+		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null)
 				+ "' target='themes' class='themeselect'>";
 		select_box += theme_preview_href + __("Theme:") + "</a>" + "\n";
 

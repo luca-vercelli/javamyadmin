@@ -108,7 +108,7 @@ public class Navigation {
 					if (empty(components.host)) {
 						boolean $hasStartChar = ((String) $logo.get("link")).contains("?");
 						$logo.put("link", $logo.get("link") + Url.getCommon(new HashMap<>(),
-								$hasStartChar ? "?" : Url.getArgSeparator(), httpRequest, GLOBALS));
+								$hasStartChar ? "?" : Url.getArgSeparator()));
 					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();

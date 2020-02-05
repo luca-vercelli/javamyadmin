@@ -46,8 +46,8 @@ public class NodeDatabaseContainer extends Node {
             
             Map<String, String> serverMap = new HashMap<>();
             serverMap.put("server", Integer.toString(GLOBALS.getServer()));
-            $new.links.put("text", Url.getFromRoute("/server/databases", serverMap, req, GLOBALS));
-            $new.links.put("icon", Url.getFromRoute("/server/databases", serverMap, req, GLOBALS));
+            $new.links.put("text", Url.getFromRoute("/server/databases", serverMap));
+            $new.links.put("icon", Url.getFromRoute("/server/databases", serverMap));
             $new.classes = "new_database italics";
             this.addChild($new);
         }
