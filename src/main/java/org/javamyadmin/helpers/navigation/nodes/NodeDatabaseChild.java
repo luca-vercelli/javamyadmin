@@ -37,12 +37,12 @@ public abstract class NodeDatabaseChild extends Node {
 
     /**
      * Returns HTML for control buttons displayed infront of a node
-     * @param req 
+     * @param httpRequest 
      * @param GLOBALS 
      *
      * @return String HTML for control buttons
      */
-    public String getHtmlForControlButtons(HttpServletRequest req, Globals GLOBALS)
+    public String getHtmlForControlButtons(HttpServletRequest httpRequest, Globals GLOBALS)
     {
         String $ret = "";
         //$cfgRelation = this.relation.getRelationsParam();
@@ -57,8 +57,8 @@ public abstract class NodeDatabaseChild extends Node {
             $params.put("dbName", $db);
 
             $ret = "<span class='navItemControls'>"
-                + "<a href='" + Url.getFromRoute("/navigation", req, GLOBALS) + "' data-post='"
-                + Url.getCommon($params, "", req, GLOBALS) + "'"
+                + "<a href='" + Url.getFromRoute("/navigation", httpRequest, GLOBALS) + "' data-post='"
+                + Url.getCommon($params, "", httpRequest, GLOBALS) + "'"
                 + " class='hideNavItem ajax'>"
                 + Util.getImage("hide", __("Hide"))
                 + "</a></span>";
