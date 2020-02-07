@@ -1,17 +1,8 @@
 package org.javamyadmin.helpers;
 
-import static org.javamyadmin.php.Php.E_USER_ERROR;
-import static org.javamyadmin.php.Php.__;
-import static org.javamyadmin.php.Php.empty;
-import static org.javamyadmin.php.Php.preg_grep;
-import static org.javamyadmin.php.Php.trigger_error;
-import static org.javamyadmin.php.Php.ucfirst;
+import static org.javamyadmin.php.Php.*;
 
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
