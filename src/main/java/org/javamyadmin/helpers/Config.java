@@ -447,12 +447,13 @@ public class Config {
     /**
      * Loads user preferences and merges them with current config
      * must be called after control connection has been established
-     * @param request 
-     * @param response 
+     * @param httpRequest 
+     * @param httpResponse 
      *
      * @return void
      */
-    public void loadUserPreferences(Globals GLOBALS, SessionMap _SESSION, HttpServletRequest request, HttpServletResponse response)
+    public void loadUserPreferences(Globals GLOBALS, SessionMap _SESSION, HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+    		/*should be @Autowired*/ LanguageManager $languageManager)
     {
     	UserPreferences userPreferences = new UserPreferences();
         // index.php should load these settings, so that phpmyadmin.css.php
@@ -500,7 +501,7 @@ public class Config {
         // save theme
         // @var ThemeManager tmanager
         ThemeManager tmanager = GLOBALS.getThemeManager();
-        if (!empty(tmanager.getThemeCookie(request)) || !empty(request.getParameter("set_theme"))) {
+        if (!empty(tmanager.getThemeCookie(httpRequest)) || !empty(httpRequest.getParameter("set_theme"))) {
             if ((!config_data.containsKey("ThemeDefault")
                 && !tmanager.theme.getId().equals("original"))
                 || config_data.containsKey("ThemeDefault")
@@ -520,12 +521,12 @@ public class Config {
                 && tmanager.checkTheme((String) this.settings.get("ThemeDefault"))
             ) {
                 tmanager.setActiveTheme((String) this.settings.get("ThemeDefault"));
-                tmanager.setThemeCookie(request, response);
+                tmanager.setThemeCookie(httpRequest, httpResponse);
             }
         }
 
         // save language
-        if (this.issetCookie("pma_lang", request) || !empty(request.getParameter("lang"))) {
+        if (this.issetCookie("pma_lang", httpRequest) || !empty(httpRequest.getParameter("lang"))) {
             if ((! config_data.containsKey("lang")
                 && !GLOBALS.getLang().equals("en"))
                 || config_data.containsKey("lang")
@@ -536,12 +537,12 @@ public class Config {
         } else {
             // read language from settings
             if (config_data.containsKey("lang")) {
-                Language language = LanguageManager.getInstance().getLanguage(
-                    (String)config_data.get("lang"), request
+                Language language = $languageManager.getLanguage(
+                    (String)config_data.get("lang"), httpRequest
                 );
                 if (language != null) {
                     language.activate(GLOBALS);
-                    this.setCookie("pma_lang", language.getCode(), request, response);
+                    this.setCookie("pma_lang", language.getCode(), httpRequest, httpResponse);
                 }
             }
         }

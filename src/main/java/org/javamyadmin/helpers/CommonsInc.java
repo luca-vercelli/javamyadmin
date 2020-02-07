@@ -34,6 +34,8 @@ public class CommonsInc {
 	private Response response;
     @Autowired
     private Session session;
+	@Autowired
+	LanguageManager languageManager;
 
     
     /**
@@ -133,7 +135,7 @@ public class CommonsInc {
 		}
 		
 		// lang detection is done here
-		Language $language = LanguageManager.getInstance().selectLanguage(httpRequest, httpResponse);
+		Language $language = languageManager.selectLanguage(httpRequest, httpResponse);
 		$language.activate(GLOBALS);
 		
 		// check for errors occurred while loading configuration
@@ -290,7 +292,7 @@ public class CommonsInc {
 		    }
 		}
 		// load user preferences
-		Globals.getConfig().loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse);
+		Globals.getConfig().loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse, languageManager);
 		return true;
 	}
 }

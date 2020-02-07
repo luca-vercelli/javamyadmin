@@ -19,6 +19,7 @@ import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class HomeController extends AbstractController {
+	
+	@Autowired
+	LanguageManager $languageManager;
 	
 	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})
 	public void root() throws IOException {
@@ -155,8 +159,7 @@ public class HomeController extends AbstractController {
                 $userPreferences = template.render("list/item", model0);
             }
         }
-		
-		LanguageManager $languageManager = LanguageManager.getInstance();
+
 		String $languageSelector = "";
         
 		if (empty(Globals.getConfig().get("Lang")) && $languageManager.hasChoice()) {

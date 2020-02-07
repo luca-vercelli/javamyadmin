@@ -16,12 +16,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.reflections.Reflections;
+import org.springframework.stereotype.Service;
 
 /**
  * Language selection manager
  *
  * @package PhpMyAdmin
  */
+@Service
 public class LanguageManager {
 	/**
 	 * @var array Definition data for languages
@@ -156,23 +158,6 @@ public class LanguageManager {
 	private boolean _lang_failed_cfg;
 	private boolean _lang_failed_cookie;
 	private boolean _lang_failed_request;
-
-	/**
-	 * @var LanguageManager
-	 */
-	private static LanguageManager $instance;
-
-	/**
-	 * Returns LanguageManager singleton
-	 *
-	 * @return LanguageManager
-	 */
-	public static LanguageManager getInstance() {
-		if ($instance == null) {
-			$instance = new LanguageManager();
-		}
-		return $instance;
-	}
 
 	/**
 	 * Returns list of available locales. Search classes in Globals.LOCALES_BUNDLE.
