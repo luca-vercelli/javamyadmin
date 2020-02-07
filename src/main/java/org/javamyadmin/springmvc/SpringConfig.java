@@ -1,6 +1,9 @@
 package org.javamyadmin.springmvc;
 
+import static org.javamyadmin.php.Php.$_REQUEST;
 import static org.javamyadmin.php.Php.$_SESSION;
+
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -75,6 +78,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@RequestScope
 	public SessionMap getSessionMap(HttpServletRequest request) {
 		return $_SESSION(request.getSession());
+	}
+
+	@Bean(name = "$_REQUEST")
+	@RequestScope
+	public Map<String, String> getRequestMap(HttpServletRequest request) {
+		return $_REQUEST(request);
 	}
 
 	@Bean

@@ -1,5 +1,7 @@
 package org.javamyadmin.controllers;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +12,7 @@ import org.javamyadmin.helpers.Template;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Inject common stuff in all Controllers.
@@ -27,6 +30,9 @@ public abstract class AbstractController {
 	protected SessionMap $_SESSION;
 	@Autowired
 	protected HttpServletRequest httpRequest; // TODO : use $_REQUEST map instead
+	@Autowired
+	@Qualifier("$_REQUEST")
+	protected Map<String, String> $_REQUEST;
 	@Autowired
 	protected HttpServletResponse httpResponse;
 
