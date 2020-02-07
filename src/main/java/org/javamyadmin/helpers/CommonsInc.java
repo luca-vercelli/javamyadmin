@@ -22,22 +22,18 @@ import java.util.Map;
 public class CommonsInc {
 
 	@Autowired
-	protected Globals GLOBALS;
+	private Globals GLOBALS;
 	@Autowired
-	protected SessionMap $_SESSION;
+	private SessionMap $_SESSION;
 	@Autowired
-	protected HttpServletRequest httpRequest; // TODO : use $_REQUEST map instead
+	private HttpServletRequest httpRequest; // TODO : use $_REQUEST map instead
 	@Autowired
-	protected HttpServletResponse httpResponse;
+	private HttpServletResponse httpResponse;
 	
 	@Autowired
-	protected Response response;
-	@Autowired
-	protected DatabaseInterface dbi;
+	private Response response;
     @Autowired
-    protected Template template;
-    @Autowired
-    protected Session session;
+    private Session session;
 
     
     /**
