@@ -42,7 +42,7 @@ public class NodeDatabaseContainer extends Node {
             );
             $new.isNew = true;
             $new.icon = new ArrayList<>();
-            $new.icon.add(Util.getImage("b_newdb", ""));
+            $new.icon.add(util.getImage("b_newdb", ""));
             
             Map<String, String> serverMap = new HashMap<>();
             serverMap.put("server", Integer.toString(GLOBALS.getServer()));

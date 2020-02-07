@@ -34,31 +34,31 @@ public class NodeTable extends NodeDatabaseChild {
         super($name, $type, $isGroup, request, GLOBALS);
         this.icon = new ArrayList<>();
         this.addIcon(
-            Util.getScriptNameForOption(
+            util.getScriptNameForOption(
             	(String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable"),
                 "table"
             )
         );
         this.addIcon(
-            Util.getScriptNameForOption(
+            util.getScriptNameForOption(
                 (String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable2"),
                 "table"
             )
         );
-        String $title = Util.getTitleForTarget(
+        String $title = util.getTitleForTarget(
         	(String)GLOBALS.getConfig().get("DefaultTabTable")
         );
         this.title = $title;
 
-        String $scriptName = Util.getScriptNameForOption(
+        String $scriptName = util.getScriptNameForOption(
         	(String)GLOBALS.getConfig().get("DefaultTabTable"),
             "table"
         );
-        String $firstIconLink = Util.getScriptNameForOption(
+        String $firstIconLink = util.getScriptNameForOption(
         	(String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable"),
             "table"
         );
-        String $secondIconLink = Util.getScriptNameForOption(
+        String $secondIconLink = util.getScriptNameForOption(
             (String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable2"),
             "table"
         );
@@ -183,15 +183,15 @@ public class NodeTable extends NodeDatabaseChild {
         }
 
         if ($page.equals(Url.getFromRoute("/table/structure"))) {
-        	this.icon.add(Util.getImage("b_props", __("Structure")));
+        	this.icon.add(util.getImage("b_props", __("Structure")));
         } else if ($page.equals(Url.getFromRoute("/table/search"))) {
-            this.icon.add(Util.getImage("b_search", __("Search")));
+            this.icon.add(util.getImage("b_search", __("Search")));
         } else if ($page.equals(Url.getFromRoute("/table/change"))) {
-            this.icon.add(Util.getImage("b_insrow", __("Insert")));
+            this.icon.add(util.getImage("b_insrow", __("Insert")));
         } else if ($page.equals(Url.getFromRoute("/table/sql"))) {
-            this.icon.add( Util.getImage("b_sql", __("SQL")));
+            this.icon.add( util.getImage("b_sql", __("SQL")));
         } else if ($page.equals(Url.getFromRoute("/sql"))) {
-            this.icon.add(Util.getImage("b_browse", __("Browse")));
+            this.icon.add(util.getImage("b_browse", __("Browse")));
         }
     }
 }

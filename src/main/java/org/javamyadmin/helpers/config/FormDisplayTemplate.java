@@ -31,6 +31,7 @@ public class FormDisplayTemplate
     /**
      * @var Config
      */
+    @Autowired
     protected Config config;
 
     /**
@@ -40,17 +41,19 @@ public class FormDisplayTemplate
     public Template template;
 
     @Autowired
-    HttpServletRequest httpRequest;
+    protected HttpServletRequest httpRequest;
+    @Autowired
+    protected Util util;
+    @Autowired
+    protected Sanitize sanitize;
     
     /**
      * FormDisplayTemplate constructor.
      *
      * @param Config $config Config instance
      */
-    public FormDisplayTemplate(Config $config)
+    public FormDisplayTemplate()
     {
-        this.config = $config;
-        this.template = new Template();
     }
 
     static boolean $hasCheckPageRefresh = false;
@@ -499,7 +502,7 @@ public class FormDisplayTemplate
             String $vName = array_shift($validator);
             List<String> $vArgs = new ArrayList<>();
             for (String $arg : $validator) {
-                $vArgs.add( Sanitize.escapeJsString($arg) );
+                $vArgs.add( sanitize.escapeJsString($arg) );
             }
             String $vArgsStr = $vArgs.size() > 0 ? ", ['" + String.join("', '", $vArgs) + "']" : "";
             $jsArray.add( "registerFieldValidator('" + $fieldId + "', '" + $vName + "', true" + $vArgsStr + ")");

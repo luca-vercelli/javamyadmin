@@ -60,7 +60,7 @@ public abstract class NodeDatabaseChild extends Node {
                 + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
                 + Url.getCommon($params, "") + "'"
                 + " class='hideNavItem ajax'>"
-                + Util.getImage("hide", __("Hide"))
+                + util.getImage("hide", __("Hide"))
                 + "</a></span>";
         // }
 

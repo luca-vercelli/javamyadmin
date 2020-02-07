@@ -46,6 +46,8 @@ public class CommonsInc {
     private Sanitize sanitize;
     @Autowired
     private Core core;
+    @Autowired
+    private Util util;
 
     
     /**
@@ -271,7 +273,7 @@ public class CommonsInc {
 		    // check if profiling was requested and remember it
 		    // (note: when GLOBALS.cfg["ServerDefault"] = 0, constant is not defined)
 		    if (! empty(httpRequest.getParameter("profiling"))
-		        && Util.profilingSupported(GLOBALS, $_SESSION)
+		        && util.profilingSupported(GLOBALS, $_SESSION)
 		    ) {
 		    	httpRequest.getSession().setAttribute("profiling", true);
 		    } else if (! empty(httpRequest.getParameter("profiling_form"))) {

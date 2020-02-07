@@ -7,6 +7,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Core;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WhitelistJs extends AbstractController {
 
+
+	@Autowired
+	private Core core;
+	
 	@RequestMapping(value = "/js/whitelist.php")
 	public void whitelist() throws ServletException, IOException, SQLException, NamingException {
 
@@ -29,7 +34,7 @@ public class WhitelistJs extends AbstractController {
 		
 		httpResponse.getWriter().write("var GotoWhitelist = [];\n");
 		int $i = 0;
-		for(String $one_whitelist : Core.$goto_whitelist) {
+		for(String $one_whitelist : core.$goto_whitelist) {
 			httpResponse.getWriter().write("GotoWhitelist[" + $i + "] = '" + $one_whitelist + "';\n");
 		}
 	}

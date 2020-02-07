@@ -24,6 +24,7 @@ import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,6 +56,9 @@ public class DatabasesController extends AbstractController {
      * @var int position in list navigation
      */
     private int position;
+
+	@Autowired
+	private Util util;
     
 	@RequestMapping(value = "/databases")
 	public void index(@RequestParam(required=false) String sort_by,
@@ -177,7 +181,7 @@ public class DatabasesController extends AbstractController {
         /**
          * Builds and executes the db creation sql query
          */
-        String $sqlQuery = "CREATE DATABASE " + Util.backquote(new_db);
+        String $sqlQuery = "CREATE DATABASE " + util.backquote(new_db);
         ResultSet $result = this.getDbi().tryQuery($sqlQuery);
 
         if ($result == null) {
@@ -194,13 +198,13 @@ public class DatabasesController extends AbstractController {
             Message $message = Message.success(__("Database %1$s has been created."));
             $message.addParam(new_db);
 
-            String $scriptName = Util.getScriptNameForOption(
+            String $scriptName = util.getScriptNameForOption(
                 (String)$cfg.get("DefaultTabDatabase"),
                 "database"
             );
 
             $json.put("message", $message);
-            $json.put("sql_query", Util.getMessage(null, $sqlQuery, "success"));
+            $json.put("sql_query", util.getMessage(null, $sqlQuery, "success"));
             
             Map<String, String> $queryParam = new HashMap<>();
             $queryParam.put("db", new_db);

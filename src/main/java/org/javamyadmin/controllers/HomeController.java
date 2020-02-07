@@ -36,9 +36,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeController extends AbstractController {
 	
 	@Autowired
-	LanguageManager $languageManager;
+	private LanguageManager $languageManager;
 	@Autowired
-	ThemeManager themeManager;
+	private ThemeManager themeManager;
+	@Autowired
+	private Select select;
+	@Autowired
+	private Util util;
 	
 	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})
 	public void root() throws IOException {
@@ -104,7 +108,7 @@ public class HomeController extends AbstractController {
                 		&& ((Map)config.get("Servers")).size() > 1
                 		|| (GLOBALS.getServer() == 0 && ((Map)config.get("Servers")).size() == 1));
             if ($hasServerSelection) {
-                $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, httpRequest);
+                $serverSelection = select.render(true, true, GLOBALS, $_SESSION, httpRequest);
             }
 
             if (GLOBALS.getServer() > 0) {
@@ -152,7 +156,7 @@ public class HomeController extends AbstractController {
 				*/
             
 	            Map<String,Object> model0 = new HashMap<>();
-	        	model0.put("content", Util.getImage("b_tblops") + " " + __(
+	        	model0.put("content", util.getImage("b_tblops") + " " + __(
                         "More settings"
                     ));
             	model0.put("id", "li_user_preferences");

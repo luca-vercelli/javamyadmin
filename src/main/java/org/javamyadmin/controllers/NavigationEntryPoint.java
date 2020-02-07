@@ -30,6 +30,8 @@ public class NavigationEntryPoint {
 	@Autowired
 	HttpServletRequest httpRequest;
 	@Autowired
+	BeanFactory beanFactory;
+	@Autowired
 	SessionMap $_SESSION;
 	@Autowired
 	Globals $GLOBALS;
@@ -40,7 +42,7 @@ public class NavigationEntryPoint {
 	@Autowired
 	Navigation $navigation;
 	@Autowired
-	BeanFactory beanFactory;
+	private Util util;
 
 	@RequestMapping(value="/navigation", produces=MediaType.APPLICATION_JSON_VALUE)
 	public void navigation() throws SQLException {
@@ -60,7 +62,7 @@ public class NavigationEntryPoint {
 		}
 		
 		if (!empty(httpRequest.getParameter("reload"))) {
-		    Util.cacheSet("dbs_to_test", false, $GLOBALS, $_SESSION); // Empty database list cache, see #14252
+		    util.cacheSet("dbs_to_test", false, $GLOBALS, $_SESSION); // Empty database list cache, see #14252
 		}
 		
 		// @var Relation $relation

@@ -9,7 +9,9 @@ import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
+import org.javamyadmin.springmvc.ApplicationContextProvider;
 import org.jtwig.functions.JtwigFunction;
+import org.springframework.context.ApplicationContext;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -29,6 +31,10 @@ public class Functions {
 	 * @return
 	 */
 	public static List<JtwigFunction> getFunctions() {
+		ApplicationContext context = ApplicationContextProvider.getApplicationContext();
+		Util util = context.getBean(Util.class);
+		Sanitize sanitize = context.getBean(Sanitize.class);
+
 		if (functions == null) {
 			functions = new ArrayList<>();
 			// Message extension ==========================
@@ -46,9 +52,9 @@ public class Functions {
 					null, "", "FIXME_pma_token"));
 			// Sanitize extension ==========================
 			functions.add(new JtwigFunction1Ary("sanitize", x -> x)); // TODO
-			functions.add(new JtwigFunction1Ary("escape_js_string", x -> Sanitize.escapeJsString((String) x)));
-			functions.add(new JtwigFunction1Ary("js_format", x -> Sanitize.jsFormat((String) x)));
-			functions.add(new JtwigFunction2Ary("get_js_value", (x, y) -> Sanitize.getJsValue((String) x, y), "", ""));
+			functions.add(new JtwigFunction1Ary("escape_js_string", x -> sanitize.escapeJsString((String) x)));
+			functions.add(new JtwigFunction1Ary("js_format", x -> sanitize.jsFormat((String) x)));
+			functions.add(new JtwigFunction2Ary("get_js_value", (x, y) -> sanitize.getJsValue((String) x, y), "", ""));
 			// Translate Extension ==========================
 			functions.add(new JtwigFunction1Ary("trans", x -> __((String)x)));
 			// Util Extension ==========================
@@ -57,10 +63,10 @@ public class Functions {
 			functions.add(new JtwigFunction1Ary("get_mysql_docu_url", x -> "")); // DON'T !
 			functions.add(new JtwigFunction1Ary("show_hint", x -> "")); // TODO
 			functions.add(
-					new JtwigFunction2Ary("get_docu_link", (x, y) -> Util.getDocuLink((String) x, (String) y), "", ""));
+					new JtwigFunction2Ary("get_docu_link", (x, y) -> util.getDocuLink((String) x, (String) y), "", ""));
 			functions.add(
 					new JtwigFunction2Ary("sortable_table_header", ($title, $sort) -> 
-					Util.sortableTableHeader((String)$title, (String)$sort), "", ""));
+					util.sortableTableHeader((String)$title, (String)$sort), "", ""));
 			functions.add(new JtwigFunctionVarargs("link_or_button",
 					getMethod(Util.class, "linkOrButton",
 							new Class[] { String.class, String.class, Map.class, String.class, String.class }),

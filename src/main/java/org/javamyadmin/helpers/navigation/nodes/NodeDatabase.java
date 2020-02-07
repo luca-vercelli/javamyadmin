@@ -42,12 +42,12 @@ public class NodeDatabase extends Node {
     public NodeDatabase(String $name, int $type /*= Node.OBJECT*/, boolean $isGroup /*= false*/, HttpServletRequest req, Globals GLOBALS)
     {
         super($name, $type, $isGroup, req, GLOBALS);
-        this.icon.add(Util.getImage(
+        this.icon.add(util.getImage(
             "s_db",
             __("Database operations")
         ));
 
-        String $scriptName = Util.getScriptNameForOption(
+        String $scriptName = util.getScriptNameForOption(
             (String)GLOBALS.getConfig().get("DefaultTabDatabase"),
             "database"
         );
@@ -345,8 +345,8 @@ public class NodeDatabase extends Node {
         if (! $cfgRelation["navwork"]) {
             return [];
         }
-        $navTable = Util.backquote($cfgRelation["db"])
-            + '.' + Util.backquote($cfgRelation["navigationhiding"]);
+        $navTable = util.backquote($cfgRelation["db"])
+            + '.' + util.backquote($cfgRelation["navigationhiding"]);
         $sqlQuery = 'SELECT `item_name` FROM ' + $navTable
             + ' WHERE `username`="' + $cfgRelation["user"] + '"'
             + ' AND `item_type`="' + $type
@@ -525,7 +525,7 @@ public class NodeDatabase extends Node {
                     + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
                     + Url.getCommon($params, "") + "'"
                     + " class='showUnhide ajax'>"
-                    + Util.getImage(
+                    + util.getImage(
                         "show",
                         __("Show hidden items")
                     )

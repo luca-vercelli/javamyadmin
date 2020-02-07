@@ -52,6 +52,8 @@ public class Console {
     private Config config;
 	@Autowired
 	private Util util;
+	@Autowired
+	private BookmarkService bookmarks;
     
     /**
      * Creates a new class instance
@@ -95,9 +97,9 @@ public class Console {
     public String getBookmarkContent(Globals GLOBALS) throws SQLException
     {
         Template $template = new Template();
-        Map<String, Object> $cfgBookmark = Bookmark.getParams((String) multiget(config.settings, "Server", "user"));
+        Map<String, Object> $cfgBookmark = bookmarks.getParams((String) multiget(config.settings, "Server", "user"));
         if (!empty($cfgBookmark)) {
-            List<Bookmark> $bookmarks = Bookmark.getList(
+            List<Bookmark> $bookmarks = bookmarks.getList(
                 GLOBALS.getDbi(),
                 (String)multiget(config.settings, "Server", "user")
             );
@@ -149,7 +151,7 @@ public class Console {
     public String getDisplay() throws SQLException
     {
         if ((! this._isAjax) && this._isEnabled) {
-            Map<String, Object> $cfgBookmark = Bookmark.getParams(
+            Map<String, Object> $cfgBookmark = bookmarks.getParams(
             	(String) multiget(config.settings, "Server", "user")
             );
 

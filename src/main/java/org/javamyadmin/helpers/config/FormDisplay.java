@@ -86,11 +86,17 @@ public class FormDisplay {
      * @var FormDisplayTemplate
      */
     @Autowired
-    private FormDisplayTemplate formDisplayTemplate;
+    protected FormDisplayTemplate formDisplayTemplate;
     @Autowired
-    private Globals $GLOBALS;
+    protected Globals $GLOBALS;
     @Autowired
-    private HttpServletRequest httpRequest;
+    protected HttpServletRequest httpRequest;
+    @Autowired
+    protected Descriptions descriptions;
+    @Autowired
+    protected Sanitize sanitize;
+    @Autowired
+    protected Util util;
     
     /**
      * Constructor
@@ -99,8 +105,7 @@ public class FormDisplay {
      */
     public FormDisplay(ConfigFile $cf)
     {
-        this.formDisplayTemplate = new FormDisplayTemplate($GLOBALS.getConfig());
-        this._jsLangStrings = new HashMap<>();
+    	this._jsLangStrings = new HashMap<>();
         this._jsLangStrings.put("error_nan_p", __("Not a positive number!"));
         this._jsLangStrings.put("error_nan_nneg", __("Not a non-negative number!"));
         this._jsLangStrings.put("error_incorrect_port", __("Not a valid port number!"));
@@ -258,8 +263,8 @@ public class FormDisplay {
             Map<String, String> params = new HashMap<>();
             params.put("id", $form.name);
             $htmlOutput += this.formDisplayTemplate.displayFieldsetTop(
-                Descriptions.get("Form_" + $form.name),
-                Descriptions.get("Form_" + $form.name, "desc"),
+                descriptions.get("Form_" + $form.name),
+                descriptions.get("Form_" + $form.name, "desc"),
                 $formErrors,
                 params
             );
@@ -327,7 +332,7 @@ public class FormDisplay {
         if ($tabbedForm) {
             Map<String, String> $tabs = new HashMap<>();
             for (Form $form : this._forms.values()) {
-                $tabs.put($form.name, Descriptions.get("Form_$form.name"));
+                $tabs.put($form.name, descriptions.get("Form_$form.name"));
             }
             $htmlOutput += this.formDisplayTemplate.displayTabsTop($tabs);
         }
@@ -368,7 +373,7 @@ public class FormDisplay {
             for (Entry<String, String> entry : this._jsLangStrings.entrySet()) {
             	String $strName = entry.getKey();
             	String $strValue = entry.getValue();
-                $jsLang.add( "'$strName': '" + Sanitize.jsFormat($strValue, false) + '\'');
+                $jsLang.add( "'$strName': '" + sanitize.jsFormat($strValue, false) + '\'');
             }
             $js.add( "$.extend(Messages, {\n\t"
                 + String.join(",\n\t", $jsLang) + "})");
@@ -410,8 +415,8 @@ public class FormDisplay {
         Boolean $userPrefsAllow,
         List<String> $jsDefault
     ) {
-        String $name = Descriptions.get($systemPath);
-        String $description = Descriptions.get($systemPath, "desc");
+        String $name = descriptions.get($systemPath);
+        String $description = descriptions.get($systemPath, "desc");
 
         Object $value = this._configFile.get($workPath);
         Object $valueDefault = this._configFile.getDefault($systemPath);
@@ -421,11 +426,11 @@ public class FormDisplay {
             $valueIsDefault = true;
         }
 
-        Map $opts = new HashMap<>();
+        Map<String, Object> $opts = new HashMap<>();
         $opts.put("doc", this.getDocLink($systemPath));
         $opts.put("show_restore_default", $showRestoreDefault);
         $opts.put("userprefs_allow", $userPrefsAllow);
-        $opts.put("userprefs_comment", Descriptions.get($systemPath, "cmt"));
+        $opts.put("userprefs_comment", descriptions.get($systemPath, "cmt"));
         if ($form.vDefault.containsKey($systemPath)) {
             $opts.put("setvalue", (String) $form.vDefault.get($systemPath));
         }
@@ -501,7 +506,7 @@ public class FormDisplay {
             case "short_text":
             case "number_text":
             case "password":
-                $jsLine += "\"" + Sanitize.escapeJsString((String) $valueDefault) + "\"";
+                $jsLine += "\"" + sanitize.escapeJsString((String) $valueDefault) + "\"";
                 break;
             case "checkbox":
                 $jsLine += !empty($valueDefault) ? "true" : "false";
@@ -511,12 +516,12 @@ public class FormDisplay {
                 ? (int) $valueDefault
                 : $valueDefault;*/
                 String $valueDefaultJs = (String) $valueDefault; //FIXME
-                $jsLine += "[\"" + Sanitize.escapeJsString($valueDefaultJs) + "\"]";
+                $jsLine += "[\"" + sanitize.escapeJsString($valueDefaultJs) + "\"]";
                 break;
             case "list":
                 Map $val = (Map) $valueDefault;
                 $val.remove("wrapper_params");
-                $jsLine += "\"" + Sanitize.escapeJsString(String.join("\n", $val.values()))
+                $jsLine += "\"" + sanitize.escapeJsString(String.join("\n", $val.values()))
                 + "\"";
                 break;
         }
@@ -552,9 +557,9 @@ public class FormDisplay {
         	List<String> $errorList = entry.getValue();
         	String $name;
             if (this._systemPaths.containsKey($systemPath)) {
-                $name = Descriptions.get(this._systemPaths.get($systemPath));
+                $name = descriptions.get(this._systemPaths.get($systemPath));
             } else {
-                $name = Descriptions.get("Form_" + $systemPath);
+                $name = descriptions.get("Form_" + $systemPath);
             }
             $htmlOutput += this.formDisplayTemplate.displayErrors($name, $errorList);
         }
@@ -669,7 +674,7 @@ public class FormDisplay {
                     } else {
                         this._errors.get($form.name).add(String.format(
                             __("Missing data for %s"),
-                            "<i>" + Descriptions.get($systemPath) + "</i>"
+                            "<i>" + descriptions.get($systemPath) + "</i>"
                         ));
                         $result = false;
                         continue;
@@ -809,7 +814,7 @@ public class FormDisplay {
         if ($test.equals("Import") || $test.equals("Export")) {
             return "";
         }
-        return Util.getDocuLink(
+        return util.getDocuLink(
             "config",
             "cfg_" + this._getOptName($path)
         );

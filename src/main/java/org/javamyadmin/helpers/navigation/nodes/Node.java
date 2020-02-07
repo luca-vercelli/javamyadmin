@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
+import org.javamyadmin.springmvc.ApplicationContextProvider;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -114,6 +115,8 @@ public class Node
      */
     public String displayName;
 
+    protected Util util; //not really @Autowired
+    
     /**
      * Initialises the class by setting the mandatory variables
      *
@@ -133,6 +136,9 @@ public class Node
         }
         this.isGroup = $isGroup;
         //this.relation = new Relation(GLOBALS.getDbi());
+
+    	this.util = ApplicationContextProvider.getApplicationContext().getBean(Util.class);
+    	
     }
 
     public Node(String $name, HttpServletRequest req, Globals GLOBALS) {
@@ -847,17 +853,17 @@ public class Node
      * @return String with image name
      */
     public String getIcon(boolean $match, Globals GLOBALS)
-    {
+    {	
         if ("false".equals(GLOBALS.getConfig().get("NavigationTreeEnableExpansion"))
         ) {
             return "";
         } else if ($match) {
             this.visible = true;
 
-            return Util.getImage("b_minus");
+            return util.getImage("b_minus");
         }
 
-        return Util.getImage("b_plus", __("Expand/Collapse"));
+        return util.getImage("b_plus", __("Expand/Collapse"));
     }
 
     /**

@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.javamyadmin.springmvc.ApplicationContextProvider;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -661,7 +662,8 @@ public class Message {
      */
     public static String decodeBB(String message)
     {
-        return Sanitize.sanitizeMessage(message, false, true);
+        Sanitize sanitize = ApplicationContextProvider.getApplicationContext().getBean(Sanitize.class);
+        return sanitize.sanitizeMessage(message, false, true);
     }
 
     /**
@@ -832,7 +834,8 @@ public class Message {
         } else {
             image = "s_notice";
         }
-        message = Message.notice(Util.getImage(image, null, null)) + " " + message;
+        Util util = ApplicationContextProvider.getApplicationContext().getBean(Util.class);
+        message = Message.notice(util.getImage(image, null, null)) + " " + message;
         return message;
     }
 
