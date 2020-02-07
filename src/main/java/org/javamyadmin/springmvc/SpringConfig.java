@@ -31,6 +31,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.context.annotation.RequestScope;
+import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -56,11 +57,11 @@ public class SpringConfig implements WebMvcConfigurer {
 		return new Config(null);
 	}
 
-	@Bean
+	/*@Bean
 	@RequestScope
 	public CommonsInc getCommonsInc() {
 		return new CommonsInc();
-	}
+	}*/
 
 	@Bean
 	@RequestScope
@@ -104,11 +105,11 @@ public class SpringConfig implements WebMvcConfigurer {
 		return new Footer();
 	}
 
-	@Bean
+	/*@Bean
 	@RequestScope
 	public Menu getMenu() {
 		return new Menu();
-	}
+	}*/
 
 	@Bean
 	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -116,17 +117,17 @@ public class SpringConfig implements WebMvcConfigurer {
 		return new Table($db, $table);
 	}
 
-	@Bean
+	/*@Bean
 	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public Template getTemplate() {
 		return new Template();
-	}
+	}*/
 
-	@Bean
+	/*@Bean
 	@RequestScope
 	public Navigation getNavigation() {
 		return new Navigation();
-	}
+	}*/
 
 	@Bean
 	@RequestScope
@@ -134,11 +135,11 @@ public class SpringConfig implements WebMvcConfigurer {
 		return new NavigationTree(req, GLOBALS);
 	}
 
-	@Bean
+	/*@Bean
 	@RequestScope
 	public UserPreferences getUserPreferences() {
 		return new UserPreferences();
-	}
+	}*/
 
 	@Bean
 	@RequestScope
@@ -153,9 +154,9 @@ public class SpringConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-	@RequestScope
-	public ThemeManager getThemeManager(HttpServletRequest req, Globals GLOBALS, SessionMap sessionMap) {
-		return new ThemeManager(req, GLOBALS, sessionMap);
+	@SessionScope
+	public ThemeManager getThemeManager() {
+		return new ThemeManager();
 	}
 
 	@Bean

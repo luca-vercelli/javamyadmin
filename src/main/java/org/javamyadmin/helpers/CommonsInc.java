@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -19,6 +20,7 @@ import java.util.Map;
  * @see commons.inc.php
  *
  */
+@Service
 public class CommonsInc {
 
 	@Autowired
@@ -35,7 +37,9 @@ public class CommonsInc {
     @Autowired
     private Session session;
 	@Autowired
-	LanguageManager languageManager;
+	private LanguageManager languageManager;
+	@Autowired
+	private ThemeManager themeManager;
 
     
     /**
@@ -167,7 +171,7 @@ public class CommonsInc {
 		/******************************************************************************/
 		/* setup themes                                          LABEL_theme_setup    */
 
-		ThemeManager.initializeTheme(httpRequest, GLOBALS, $_SESSION);
+		themeManager.initializeTheme();
 		
 		if (!(GLOBALS.get_PMA_MINIMUM_COMMON())) {
 		    /**

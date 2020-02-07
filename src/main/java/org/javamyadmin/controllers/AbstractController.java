@@ -27,14 +27,14 @@ public abstract class AbstractController {
 	@Autowired
 	protected Globals GLOBALS;
 	@Autowired
-	protected SessionMap $_SESSION;
+	protected HttpServletRequest httpRequest;
 	@Autowired
-	protected HttpServletRequest httpRequest; // TODO : use $_REQUEST map instead
+	protected HttpServletResponse httpResponse;
 	@Autowired
 	@Qualifier("$_REQUEST")
 	protected Map<String, String> $_REQUEST;
 	@Autowired
-	protected HttpServletResponse httpResponse;
+	protected SessionMap $_SESSION;
 
 	@Autowired
 	protected Response response;

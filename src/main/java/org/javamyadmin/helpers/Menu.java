@@ -16,6 +16,7 @@ import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Generates and renders the top menu
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @package PhpMyAdmin
  */
+@Service
 public class Menu {
 
     /**

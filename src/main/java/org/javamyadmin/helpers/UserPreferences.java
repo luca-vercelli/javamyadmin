@@ -10,6 +10,7 @@ import org.javamyadmin.helpers.config.ConfigFile;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -19,6 +20,7 @@ import static org.javamyadmin.php.Php.*;
  *
  * @package PhpMyAdmin
  */
+@Service
 public class UserPreferences {
     /**
      * @var Relation

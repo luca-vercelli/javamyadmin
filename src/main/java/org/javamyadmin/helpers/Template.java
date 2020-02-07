@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.javamyadmin.jtwig.JtwigFactory;
+import org.springframework.stereotype.Service;
 
 /**
  * Class Template
@@ -12,6 +13,7 @@ import org.javamyadmin.jtwig.JtwigFactory;
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Template {
 
 	/**

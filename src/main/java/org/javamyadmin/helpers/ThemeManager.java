@@ -4,10 +4,13 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpRequest;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -70,9 +73,13 @@ public class ThemeManager {
 	 */
 	public final static String FALLBACK_THEME = "pmahomme";
 
-	private HttpServletRequest request;
+	@Autowired
+	private HttpServletRequest httpRequest;
+	@Autowired
 	private Globals GLOBALS;
+	@Autowired
 	private SessionMap $_SESSION;
+	@Autowired
 	private Config cfg;
 
 	/**
@@ -83,11 +90,12 @@ public class ThemeManager {
 	 *
 	 * @access public
 	 */
-	public ThemeManager(HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION) {
-		this.request = req;
-		this.GLOBALS = GLOBALS;
-		this.$_SESSION = $_SESSION;
-		this.cfg = Globals.getConfig();
+	public ThemeManager() {
+		
+	}
+	
+	@PostConstruct
+	protected void init() {
 
 		this.theme_default = FALLBACK_THEME;
 		this.active_theme = "";
@@ -109,7 +117,7 @@ public class ThemeManager {
 		}
 
 		// check if user have a theme cookie
-		String cookie_theme = this.getThemeCookie(req);
+		String cookie_theme = this.getThemeCookie(httpRequest);
 		if (cookie_theme == null || !this.setActiveTheme(cookie_theme)) {
 			if (config_theme_exists) {
 				// otherwise use default theme
@@ -300,7 +308,7 @@ public class ThemeManager {
 		if (form) {
 			select_box += "<form name='setTheme' method='post'";
 			select_box += " action='set-theme' class='disableAjax'>";
-			select_box += Url.getHiddenInputs(request, GLOBALS, $_SESSION);
+			select_box += Url.getHiddenInputs(httpRequest, GLOBALS, $_SESSION);
 		}
 
 		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null)
@@ -350,17 +358,16 @@ public class ThemeManager {
 	 * @return void
 	 * @access public
 	 */
-	public static void initializeTheme(HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) {
-		ThemeManager tmanager = new ThemeManager(request, GLOBALS, $_SESSION);
+	public void initializeTheme() {
 
-		GLOBALS.setThemeManager(tmanager);
+		GLOBALS.setThemeManager(this);
 
 		/**
 		 * the theme object
 		 *
 		 * @global Theme GLOBALS["PMA_Theme"]
 		 */
-		GLOBALS.setTheme(tmanager.theme);
+		GLOBALS.setTheme(this.theme);
 
 		// BC
 		/**
@@ -368,14 +375,14 @@ public class ThemeManager {
 		 * 
 		 * @global String GLOBALS["pmaThemePath"]
 		 */
-		GLOBALS.setPmaThemePath("themes/" + tmanager.theme.getPath());
+		GLOBALS.setPmaThemePath("themes/" + this.theme.getPath());
 		
 		/**
 		 * the theme image path
 		 * 
 		 * @global String GLOBALS["pmaThemeImage"]
 		 */
-		GLOBALS.setPmaThemeImage(tmanager.theme.getImgPath(null, null));
+		GLOBALS.setPmaThemeImage(this.theme.getImgPath(null, null));
 	}
 
 }

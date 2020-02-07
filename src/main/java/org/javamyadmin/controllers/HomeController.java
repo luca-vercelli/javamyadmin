@@ -13,8 +13,10 @@ import java.util.Map;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
+import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.server.Select;
@@ -35,6 +37,10 @@ public class HomeController extends AbstractController {
 	
 	@Autowired
 	LanguageManager $languageManager;
+	@Autowired
+	ThemeManager themeManager;
+	@Autowired
+	Config config;
 	
 	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})
 	public void root() throws IOException {
@@ -66,8 +72,8 @@ public class HomeController extends AbstractController {
 			// @see libraries/server_common.inc.php
 			GLOBALS.setUrlQuery(Url.getCommon(null));
 			GLOBALS.setErrUrl(Url.getFromRoute("/"));
-			GLOBALS.setIsGrantuser(GLOBALS.getDbi().isUserType("grant"));
-			GLOBALS.setIsCreateuser(GLOBALS.getDbi().isUserType("create"));
+			GLOBALS.setIsGrantuser(dbi.isUserType("grant"));
+			GLOBALS.setIsCreateuser(dbi.isUserType("create"));
 		}
 
 		String $displayMessage = "";
@@ -93,12 +99,12 @@ public class HomeController extends AbstractController {
 		List<String> $charsetsList = new ArrayList<>();
 		String $userPreferences = "";
 		
-		boolean $hasServer = GLOBALS.getServer() > 0 || !empty(Globals.getConfig().get("Servers")) && ((Map)Globals.getConfig().get("Servers")).size() > 1;
+		boolean $hasServer = GLOBALS.getServer() > 0 || !empty(config.get("Servers")) && ((Map)config.get("Servers")).size() > 1;
         if ($hasServer) {
-            $hasServerSelection = "0".equals(Globals.getConfig().get("ServerDefault"))
-                || ("false".equals(Globals.getConfig().get("NavigationDisplayServers"))
-                		&& ((Map)Globals.getConfig().get("Servers")).size() > 1
-                		|| (GLOBALS.getServer() == 0 && ((Map)Globals.getConfig().get("Servers")).size() == 1));
+            $hasServerSelection = "0".equals(config.get("ServerDefault"))
+                || ("false".equals(config.get("NavigationDisplayServers"))
+                		&& ((Map)config.get("Servers")).size() > 1
+                		|| (GLOBALS.getServer() == 0 && ((Map)config.get("Servers")).size() == 1));
             if ($hasServerSelection) {
                 $serverSelection = Select.render(true, true, GLOBALS, $_SESSION, httpRequest);
             }
@@ -108,7 +114,7 @@ public class HomeController extends AbstractController {
                 $checkUserPrivileges = new CheckUserPrivileges(this.dbi);
                 $checkUserPrivileges.getPrivileges();
 
-                if ((Globals.getConfig().get("Server"]["auth_type"] != "config") && Globals.getConfig().get("ShowChgPassword"]) {
+                if ((config.get("Server"]["auth_type"] != "config") && config.get("ShowChgPassword"]) {
                     $changePassword = this.template.render("list/item", [
                         "content" => Util.getImage("s_passwd") . " " . __(
                             "Change password"
@@ -125,8 +131,8 @@ public class HomeController extends AbstractController {
                     ]);
                 }
 
-                $charsets = Charsets.getCharsets(this.dbi, Globals.getConfig().get("Server"]["DisableIS"]);
-                $collations = Charsets.getCollations(this.dbi, Globals.getConfig().get("Server"]["DisableIS"]);
+                $charsets = Charsets.getCharsets(this.dbi, config.get("Server"]["DisableIS"]);
+                $collations = Charsets.getCollations(this.dbi, config.get("Server"]["DisableIS"]);
                 $charsetsList = [];
                 // @var Charset $charset
                 foreach ($charsets as $charset) {
@@ -162,33 +168,33 @@ public class HomeController extends AbstractController {
 
 		String $languageSelector = "";
         
-		if (empty(Globals.getConfig().get("Lang")) && $languageManager.hasChoice()) {
+		if (empty(config.get("Lang")) && $languageManager.hasChoice()) {
             $languageSelector = $languageManager.getSelectorDisplay(GLOBALS);
         }
 
         String $themeSelection = "";
-        if (!empty(Globals.getConfig().get("ThemeManager"))) {
-            $themeSelection = GLOBALS.getThemeManager().getHtmlSelectBox();
+        if (!empty(config.get("ThemeManager"))) {
+            $themeSelection = themeManager.getHtmlSelectBox();
         }
 
         Map<String, Object> $databaseServer = new HashMap<>();
-        if (GLOBALS.getServer() > 0 && "true".equals(Globals.getConfig().get("ShowServerInfo"))) {
+        if (GLOBALS.getServer() > 0 && "true".equals(config.get("ShowServerInfo"))) {
             String $hostInfo = "";
-            if (! empty(((Map) Globals.getConfig().get("Server")).get("verbose"))) {
-                $hostInfo += ((Map) Globals.getConfig().get("Server")).get("verbose");
-                if ("true".equals(Globals.getConfig().get("ShowServerInfo"))) {
+            if (! empty(((Map) config.get("Server")).get("verbose"))) {
+                $hostInfo += ((Map) config.get("Server")).get("verbose");
+                if ("true".equals(config.get("ShowServerInfo"))) {
                     $hostInfo += " (";
                 }
             }
-            if ("true".equals(Globals.getConfig().get("ShowServerInfo")) || empty(((Map) Globals.getConfig().get("Server")).get("verbose"))) {
+            if ("true".equals(config.get("ShowServerInfo")) || empty(((Map) config.get("Server")).get("verbose"))) {
                 // TODO $hostInfo += this.dbi.getHostInfo();
             }
-            if (! empty(((Map) Globals.getConfig().get("Server")).get("verbose")) && "true".equals(Globals.getConfig().get("ShowServerInfo"))) {
+            if (! empty(((Map) config.get("Server")).get("verbose")) && "true".equals(config.get("ShowServerInfo"))) {
                 $hostInfo += ")";
             }
 
             /*
-            String $serverCharset = Charsets.getServerCharset($this.dbi, Globals.getConfig().get("Server").get("DisableIS"));
+            String $serverCharset = Charsets.getServerCharset($this.dbi, config.get("Server").get("DisableIS"));
             */
             $databaseServer.put("host", $hostInfo);
             // More properties not supported
@@ -201,7 +207,7 @@ public class HomeController extends AbstractController {
         }
 
 		WebServer $webServer = new WebServer();
-        if ("true".equals(Globals.getConfig().get("ShowServerInfo"))) {
+        if ("true".equals(config.get("ShowServerInfo"))) {
             $webServer.setSoftware(InetAddress.getLocalHost().getHostName());
             // More properties not supported
         }
@@ -213,7 +219,7 @@ public class HomeController extends AbstractController {
 		model.put("server", GLOBALS.getServer());
 		model.put("sync_favorite_tables", $syncFavoriteTables);
 		model.put("has_server", $hasServer);
-		model.put("is_demo", Globals.getConfig().get("DBG.demo"));
+		model.put("is_demo", config.get("DBG.demo"));
 		model.put("has_server_selection", $hasServerSelection);
 		model.put("server_selection", $serverSelection != null ? $serverSelection : "");
 		model.put("change_password", $changePassword);
@@ -224,7 +230,7 @@ public class HomeController extends AbstractController {
 		model.put("database_server", $databaseServer);
 		model.put("web_server", $webServer);
 		model.put("php_info", null);
-		model.put("is_version_checked", Globals.getConfig().get("VersionCheck"));
+		model.put("is_version_checked", config.get("VersionCheck"));
 		model.put("phpmyadmin_version", Globals.getPmaVersion());
 		model.put("config_storage_message", null);
 

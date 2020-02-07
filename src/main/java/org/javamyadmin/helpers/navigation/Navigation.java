@@ -23,6 +23,7 @@ import org.javamyadmin.php.Php.SessionMap;
 import org.javamyadmin.php.Php.UrlComponents;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -31,6 +32,7 @@ import static org.javamyadmin.php.Php.*;
  *
  * @package PhpMyAdmin-Navigation
  */
+@Service
 public class Navigation {
 	/**
 	 * @var Template
