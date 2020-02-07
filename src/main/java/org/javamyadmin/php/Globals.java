@@ -53,6 +53,7 @@ public class Globals {
 	private String lang;
 	private String db;
 	private String table;
+	private String _goto, back;
 	
 	@Autowired
 	private DatabaseInterface dbi;
@@ -100,7 +101,7 @@ public class Globals {
 	private List<String> db_to_test;
 	private boolean is_create_db_priv;
 	private String db_to_create;
-	private Map url_parameters = new HashMap();
+	private Map<String, String> url_parameters = new HashMap<>();
 	private boolean PMA_DISABLE_NAVI_SETTINGS = false;
 
 	@Autowired
@@ -464,11 +465,11 @@ public class Globals {
 		this.selected = selected;
 	}
 
-	public Map getUrlParameters() {
+	public Map<String, String> getUrlParameters() {
 		return url_parameters;
 	}
 
-	public void setUrlParameters(Map url_parameters) {
+	public void setUrlParameters(Map<String, String> url_parameters) {
 		this.url_parameters = url_parameters;
 	}
 
@@ -478,5 +479,21 @@ public class Globals {
 
 	public void setPMA_DISABLE_NAVI_SETTINGS(boolean PMA_DISABLE_NAVI_SETTINGS) {
 		this.PMA_DISABLE_NAVI_SETTINGS = PMA_DISABLE_NAVI_SETTINGS;
+	}
+
+	public String getGoto() {
+		return _goto;
+	}
+
+	public void setGoto(String _goto) {
+		this._goto = _goto;
+	}
+
+	public String getBack() {
+		return back;
+	}
+
+	public void setBack(String back) {
+		this.back = back;
 	}
 }

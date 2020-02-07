@@ -2,6 +2,7 @@ package org.javamyadmin.helpers;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -405,6 +406,11 @@ public class Core {
         //... TODO
         return false;
     }
+    
+    public static boolean checkPageValidity(String $page) {
+    	return checkPageValidity($page, new ArrayList<>(), false);
+    }
+    
     /**
      * tries to find the value for the given environment variable name
      *

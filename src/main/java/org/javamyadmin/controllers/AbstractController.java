@@ -39,7 +39,7 @@ public abstract class AbstractController {
 	protected SessionMap $_SESSION;
 	
 	@Autowired
-	protected HttpServletRequest httpRequest;
+	protected HttpServletRequest httpRequest; // TODO : use $_REQUEST map instead
 	
 	@Autowired
 	protected HttpServletResponse httpResponse;
@@ -64,40 +64,29 @@ public abstract class AbstractController {
 	 */
 	public void prepareResponse() throws ServletException, IOException, SQLException, NamingException {
 		
-		// GLOBALS.setDbi(dbi);
-		
 		// cfr. commons.inc.php
-		
-		// force reading of config file, because we removed sensitive values
-		// in the previous iteration
-		// TODO $GLOBALS['PMA_Config'] = $containerBuilder->get('config');
 
-		/**
-		 * init some variables LABEL_variables_init
-		 */
+		// init some variables LABEL_variables_init
 
-		/*// holds parameters to be passed to next page
-		//$diMigration->setGlobal('url_params', []);
-		
-		// holds page that should be displayed
-		$diMigration->setGlobal('goto', '');
 		// Security fix: disallow accessing serious server files via "?goto="
-		if (isset($_REQUEST['goto']) && Core::checkPageValidity($_REQUEST['goto'])) {
-		    $diMigration->setGlobal('goto', $_REQUEST['goto']);
-		    $diMigration->setGlobal('url_params', ['goto' => $_REQUEST['goto']]);
+		if (!empty(httpRequest.getParameter("goto")) && Core.checkPageValidity(httpRequest.getParameter("goto"))) {
+			GLOBALS.setGoto(httpRequest.getParameter("goto"));
+			GLOBALS.getUrlParameters().put("goto", httpRequest.getParameter("goto"));
 		} else {
-		    $GLOBALS['PMA_Config']->removeCookie('goto');
-		    unset($_REQUEST['goto'], $_GET['goto'], $_POST['goto']);
+			GLOBALS.setGoto(httpRequest.getParameter(""));
+			Globals.getConfig().removeCookie("goto", httpRequest, httpResponse);
+			// TODO unset($_REQUEST['goto'], $_GET['goto'], $_POST['goto']);
 		}
 
 		// returning page
-		if (isset($_REQUEST['back']) && Core::checkPageValidity($_REQUEST['back'])) {
-		    $diMigration->setGlobal('back', $_REQUEST['back']);
+		if (!empty(httpRequest.getParameter("back")) && Core.checkPageValidity(httpRequest.getParameter("back"))) {
+			GLOBALS.setBack(httpRequest.getParameter("back"));
 		} else {
-		    $GLOBALS['PMA_Config']->removeCookie('back');
-		    unset($_REQUEST['back'], $_GET['back'], $_POST['back']);
-		}*/
+			Globals.getConfig().removeCookie("back", httpRequest, httpResponse);
+		    // TODO unset($_REQUEST['back'], $_GET['back'], $_POST['back']);
+		}
 
+		
 		/**
 		 * Check whether user supplied token is valid, if not remove any possibly
 		 * dangerous stuff from request.
@@ -122,7 +111,7 @@ public abstract class AbstractController {
 		        $token_mismatch = ! httpRequest.getParameter("token").equals(httpRequest.getSession().getAttribute(" PMA_token "));
 		    }
 		    if ($token_mismatch) {
-		        /* Warn in case the mismatch is result of failed setting of session cookie */
+		        // Warn in case the mismatch is result of failed setting of session cookie
 		        if (httpRequest.getParameter("set_session") != null &&  !httpRequest.getParameter("set_session").equals(httpRequest.getSession().getId())) {
 		            trigger_error(
 		                __(
@@ -132,10 +121,8 @@ public abstract class AbstractController {
 		                E_USER_ERROR
 		            );
 		        }
-		        /*
-		         * We don"t allow any POST operation parameters if the token is mismatched
-		         * or is not provided
-		         */
+		        // We don"t allow any POST operation parameters if the token is mismatched
+		        // or is not provided
 		        String[] $whitelist = new String[] {"ajax_request"};
 		        Sanitize.removeRequestVars($whitelist);
 		    }
@@ -147,30 +134,20 @@ public abstract class AbstractController {
 		// current selected table
 		Core.setGlobalDbOrTable("table");
 		
-		/*
-		 * Store currently selected recent table.
-		 * Affect GLOBALS.db"] and GLOBALS.table"]
-		 *
-		 * TODO, maybe
-		if (!empty(request.getParameter("selected_recent_table")) && Core.isValid(request.getParameter("selected_recent_table"))) {
-		    String $recent_table = json_decode(request.getParameter("selected_recent_table"));
-		    $diMigration.setGlobal(
-		        "db",
-		        (array_key_exists("db", $recent_table) && is_string($recent_table["db"])) ? $recent_table["db"] : ""
+		// Store currently selected recent table.
+		// Affect GLOBALS.db"] and GLOBALS.table"]
+		if (!empty(httpRequest.getParameter("selected_recent_table")) && Core.isValid(httpRequest.getParameter("selected_recent_table"))) {
+		    Map $recent_table = (Map)json_decode(httpRequest.getParameter("selected_recent_table"));
+		    GLOBALS.setDb($recent_table.containsKey("db") && ($recent_table.get("db") instanceof String) ? (String) $recent_table.get("db") : "");
+		    GLOBALS.setDb($recent_table.containsKey("table") && ($recent_table.get("table") instanceof String) ? (String) $recent_table.get("table") : "");
+		    /* TODO ?!? 
+		    GLOBALS.getUrlParameters().put(
+		        "db", $containerBuilder.getParameter("db")
 		    );
-		    $diMigration.setGlobal(
-		        "url_params",
-		        ["db" => $containerBuilder.getParameter("db")] + $containerBuilder.getParameter("url_params")
-		    );
-		    $diMigration.setGlobal(
-		        "table",
-		        (array_key_exists("table", $recent_table) && is_string($recent_table["table"])) ? $recent_table["table"] : ""
-		    );
-		    $diMigration.setGlobal(
-		        "url_params",
-		        ["table" => $containerBuilder.getParameter("table")] + $containerBuilder.getParameter("url_params")
-		    );
-		}*/
+		    GLOBALS.getUrlParameters().put(
+		        "table", $containerBuilder.getParameter("table")
+		    );*/
+		}
 		
 		// SQL query to be executed
 		if (Core.isValid(httpRequest.getParameter("sql_query"))) {
@@ -201,8 +178,6 @@ public abstract class AbstractController {
 		GLOBALS.setServer(Globals.getConfig().selectServer(httpRequest));
 		// ?!? TODO $diMigration->setGlobal('url_params', ['server' => $containerBuilder->getParameter('server')] + $containerBuilder->getParameter('url_params'));
 		
-		//$diMigration->setGlobal('url_params', ['server' => $containerBuilder->getParameter('server')] + $containerBuilder->getParameter('url_params'));
-
 		// BC - enable backward compatibility
 		// exports all configuration settings into $GLOBALS ($GLOBALS['cfg'])
 		//$GLOBALS['PMA_Config']->enableBc();
