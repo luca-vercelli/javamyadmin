@@ -58,6 +58,9 @@ public class PageSettings {
     private UserPreferences userPreferences;
 
     @Autowired
+    private Core core;
+
+    @Autowired
     HttpServletRequest httpRequest;
     @Autowired
     HttpServletResponse httpResponse;
@@ -90,7 +93,7 @@ public class PageSettings {
         }
         this._groupName = $formGroupName;
 
-        ConfigFile $cf = new ConfigFile(Globals.getConfig().base_settings);
+        ConfigFile $cf = new ConfigFile($GLOBALS.getConfig().base_settings);
         this.userPreferences.pageInit($cf);
 
         FormDisplay $formDisplay;
@@ -146,7 +149,7 @@ public class PageSettings {
             Message $result = this.userPreferences.save($cf.getConfigArray());
             if ($result == null) {
                 // reload page
-                Core.sendHeaderLocation(
+                core.sendHeaderLocation(
                     $response.getFooter().getSelfUrl(), httpRequest, httpResponse
                 );
                 return; // FIXME exit()

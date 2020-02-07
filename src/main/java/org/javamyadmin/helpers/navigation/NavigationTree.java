@@ -1,6 +1,7 @@
 package org.javamyadmin.helpers.navigation;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.RecentFavoriteTable;
 import org.javamyadmin.helpers.Response;
@@ -106,13 +108,23 @@ public class NavigationTree {
     private DatabaseInterface dbi;
 
     @Autowired
+    private HttpServletRequest httpRequest;
+    @Autowired
     private Globals GLOBALS;
     @Autowired
-    private HttpServletRequest httpRequest;
+    private Config config;
+    @Autowired
+    private Util util;
     @Autowired
     private SessionMap sessionMap;
     @Autowired
     private Response response;
+    @Autowired
+    @Qualifier("recent")
+    private RecentFavoriteTable recentTables;
+    @Autowired
+    @Qualifier("favorite")
+    private RecentFavoriteTable favoriteTables;
 
     /**
      * NavigationTree constructor.
@@ -182,10 +194,10 @@ public class NavigationTree {
         // Initialise the tree by creating a root node
         Node $node = NodeFactory.getInstance("NodeDatabaseContainer", "root", httpRequest, GLOBALS);
         this.tree = $node;
-        if ("true".equals(Globals.getConfig().get("NavigationTreeEnableGrouping"))
-            && "true".equals(Globals.getConfig().get("ShowDatabasesNavigationAsTree"))
+        if ("true".equals(config.get("NavigationTreeEnableGrouping"))
+            && "true".equals(config.get("ShowDatabasesNavigationAsTree"))
         ) {
-            this.tree.separator = Globals.getConfig().get("NavigationTreeDbSeparator");
+            this.tree.separator = config.get("NavigationTreeDbSeparator");
             this.tree.separatorDepth = 10000;
         }
     }
@@ -205,9 +217,9 @@ public class NavigationTree {
         }
 
         // @todo describe a scenario where this code is executed
-        if (! Globals.getConfig().get("Server"]["DisableIS"]) {
+        if (! config.get("Server"]["DisableIS"]) {
             $dbSeparator = this.dbi.escapeString(
-                Globals.getConfig().get("NavigationTreeDbSeparator"]
+                config.get("NavigationTreeDbSeparator"]
             );
             $query = 'SELECT (COUNT(DB_first_level) DIV %d) * %d ';
             $query += 'from ( ';
@@ -221,8 +233,8 @@ public class NavigationTree {
             $retval = this.dbi.fetchValue(
                 sprintf(
                     $query,
-                    (int) Globals.getConfig().get("FirstLevelNavigationItems"],
-                    (int) Globals.getConfig().get("FirstLevelNavigationItems"],
+                    (int) config.get("FirstLevelNavigationItems"],
+                    (int) config.get("FirstLevelNavigationItems"],
                     $dbSeparator,
                     this.dbi.escapeString(GLOBALS["db"])
                 )
@@ -242,7 +254,7 @@ public class NavigationTree {
 
                     $prefix = strstr(
                         $arr[0],
-                        Globals.getConfig().get("NavigationTreeDbSeparator"],
+                        config.get("NavigationTreeDbSeparator"],
                         true
                     );
                     if ($prefix === false) {
@@ -271,7 +283,7 @@ public class NavigationTree {
 
                 $prefix = strstr(
                     $database,
-                    Globals.getConfig().get("NavigationTreeDbSeparator"],
+                    config.get("NavigationTreeDbSeparator"],
                     true
                 );
                 if ($prefix === false) {
@@ -281,7 +293,7 @@ public class NavigationTree {
             }
         }
 
-        $navItems = (int) Globals.getConfig().get("FirstLevelNavigationItems"];
+        $navItems = (int) config.get("FirstLevelNavigationItems"];
         $retval = (int) floor(count($prefixMap) / $navItems) * $navItems;
 
         return $retval;*/
@@ -631,27 +643,27 @@ public class NavigationTree {
     {
         // Get items to hide
     	List<String> $hidden = $db.getHiddenItems("group");
-        if ("false".equals(Globals.getConfig().get("NavigationTreeShowTables"))
+        if ("false".equals(config.get("NavigationTreeShowTables"))
             && ! $hidden.contains("tables")
         ) {
             $hidden.add("tables");
         }
-        if ("false".equals(Globals.getConfig().get("NavigationTreeShowViews"))
+        if ("false".equals(config.get("NavigationTreeShowViews"))
             && ! $hidden.contains("views")
         ) {
             $hidden.add("views");
         }
-        if ("false".equals(Globals.getConfig().get("NavigationTreeShowFunctions"))
+        if ("false".equals(config.get("NavigationTreeShowFunctions"))
             && ! $hidden.contains("functions")
         ) {
             $hidden.add("functions");
         }
-        if ("false".equals(Globals.getConfig().get("NavigationTreeShowProcedures"))
+        if ("false".equals(config.get("NavigationTreeShowProcedures"))
             && ! $hidden.contains("procedures")
         ) {
             $hidden.add("procedures");
         }
-        if ("false".equals(Globals.getConfig().get("NavigationTreeShowEvents"))
+        if ("false".equals(config.get("NavigationTreeShowEvents"))
             && ! $hidden.contains("events")
         ) {
             $hidden.add("events");
@@ -739,7 +751,7 @@ public class NavigationTree {
     {
     	/* TODO
         if ($node.type != Node.CONTAINER
-            || ! Globals.getConfig().get("NavigationTreeEnableExpansion"]
+            || ! config.get("NavigationTreeEnableExpansion"]
         ) {
             return;
         }
@@ -826,7 +838,7 @@ public class NavigationTree {
                 );
                 $groups[$key].separator = $node.separator;
                 $groups[$key].separatorDepth = $node.separatorDepth - 1;
-                $groups[$key].icon = Util.getImage(
+                $groups[$key].icon = util.getImage(
                     "b_group",
                     __("Groups")
                 );
@@ -909,7 +921,7 @@ public class NavigationTree {
         String $quickWarp = this.quickWarp();
         String $fastFilter = this.fastFilterHtml(this.tree);
         String $controls = "";
-        if ("true".equals(Globals.getConfig().get("NavigationTreeEnableExpansion"))) {
+        if ("true".equals(config.get("NavigationTreeEnableExpansion"))) {
             $controls = this.controls();
         }
         String $pageSelector = this.getPageSelector(this.tree);
@@ -973,7 +985,7 @@ public class NavigationTree {
                 }
             }
 
-            if ("false".equals(Globals.getConfig().get("ShowDatabasesNavigationAsTree"))) {
+            if ("false".equals(config.get("ShowDatabasesNavigationAsTree"))) {
                 List<Node> $parents = $node.parents(true);
                 $parentName = $parents.get(0).realName;
             }
@@ -1016,7 +1028,7 @@ public class NavigationTree {
         	Map<String, Object> model = new HashMap<>();
             model.put("has_search_results", ! empty(this.searchClause) || ! empty(this.searchClause2));
             model.put("list_content", $listContent);
-            model.put("is_tree", Globals.getConfig().get("ShowDatabasesNavigationAsTree"));
+            model.put("is_tree", config.get("ShowDatabasesNavigationAsTree"));
             model.put("parent_name", $parentName);
         	
             return this.template.render("navigation/tree/path", model);
@@ -1143,7 +1155,7 @@ public class NavigationTree {
                     $paths.vPathClean
                 );
 
-                $retval += "<a class='" + $node.getCssClasses($match) + "'";
+                $retval += "<a class='" + $node.getCssClasses($match, GLOBALS) + "'";
                 $retval += " href='#'>";
                 $retval += "<span class='hide aPath'>";
                 $retval += $paths.aPath;
@@ -1155,10 +1167,10 @@ public class NavigationTree {
                 $retval += this.pos;
                 $retval += "</span>";
                 $retval += this.getPaginationParamsHtml($node);
-                if ("true".equals(Globals.getConfig().get("ShowDatabasesNavigationAsTree"))
+                if ("true".equals(config.get("ShowDatabasesNavigationAsTree"))
                     || !"root".equals($parentName) 
                 ) {
-                    $retval += $node.getIcon($match);
+                    $retval += $node.getIcon($match, GLOBALS);
                 }
 
                 $retval += "</a>";
@@ -1328,13 +1340,13 @@ public class NavigationTree {
         // Provide for pagination in database select
         Map<String, String> args0 = new HashMap<>();
         args0.put("server", Integer.toString(GLOBALS.getServer()));
-        String $listNavigator = Util.getListNavigator(
+        String $listNavigator = util.getListNavigator(
             this.tree.getPresence("databases", "", GLOBALS),
             this.pos,
             args0,
             Url.getFromRoute("/navigation"),
             "frame_navigation",
-            new Integer((String)Globals.getConfig().get("FirstLevelNavigationItems")),
+            new Integer((String)config.get("FirstLevelNavigationItems")),
             "pos",
             new String[] {"dbselector"}
         );
@@ -1423,9 +1435,9 @@ public class NavigationTree {
     {
         String $retval = "";
         int $filterDbMin
-            = new Integer((String)Globals.getConfig().get("NavigationTreeDisplayDbFilterMinimum"));
+            = new Integer((String)config.get("NavigationTreeDisplayDbFilterMinimum"));
         int $filterItemMin
-            = new Integer((String)Globals.getConfig().get("NavigationTreeDisplayItemFilterMinimum"));
+            = new Integer((String)config.get("NavigationTreeDisplayItemFilterMinimum"));
         if ($node == this.tree
             && this.tree.getPresence(GLOBALS) >= $filterDbMin
         ) {
@@ -1492,7 +1504,7 @@ public class NavigationTree {
         String $retval = "<!-- CONTROLS START -->";
         $retval += "<li id='navigation_controls_outer'>";
         $retval += "<div id='navigation_controls'>";
-        $retval += Util.getNavigationLink(
+        $retval += util.getNavigationLink(
             "#",
             $showText,
             __("Collapse all"),
@@ -1502,11 +1514,11 @@ public class NavigationTree {
         );
         String $syncImage = "s_unlink";
         String $title = __("Link with main panel");
-        if ("true".equals(Globals.getConfig().get("NavigationLinkWithMainPanel"))) {
+        if ("true".equals(config.get("NavigationLinkWithMainPanel"))) {
             $syncImage = "s_link";
             $title = __("Unlink from main panel");
         }
-        $retval += Util.getNavigationLink(
+        $retval += util.getNavigationLink(
             "#",
             $showText,
             $title,
@@ -1537,13 +1549,13 @@ public class NavigationTree {
         	Map params1 = new HashMap();
         	params1.put("server", GLOBALS.getServer());
         	String[] params2 = new String[] { "dbselector" };
-            $retval += Util.getListNavigator(
+            $retval += util.getListNavigator(
                 this.tree.getPresence("databases", this.searchClause, GLOBALS),
                 this.pos,
                 params1,
                 Url.getFromRoute("/navigation"),
                 "frame_navigation",
-                new Integer((String)Globals.getConfig().get("FirstLevelNavigationItems")),
+                new Integer((String)config.get("FirstLevelNavigationItems")),
                 "pos",
                 params2
             );
@@ -1571,13 +1583,13 @@ public class NavigationTree {
                         $node.realName,
                         this.searchClause2, GLOBALS
                     );
-                $retval += Util.getListNavigator(
+                $retval += util.getListNavigator(
                     $num,
                     $pos,
                     $urlParams,
                     Url.getFromRoute("/navigation"),
                     "frame_navigation",
-                    new Integer((String)Globals.getConfig().get("MaxNavigationItems")),
+                    new Integer((String)config.get("MaxNavigationItems")),
                     "pos" + $level + "_value"
                 );
             }
@@ -1604,7 +1616,7 @@ public class NavigationTree {
             return 1;
         }
 
-        if (Globals.getConfig().get("NaturalOrder")) {
+        if (config.get("NaturalOrder")) {
             return strnatcasecmp($a.name, $b.name);
         }
 
@@ -1621,13 +1633,11 @@ public class NavigationTree {
         String $retval = "<div class='pma_quick_warp'>";
         
         
-        if (!empty(Globals.getConfig().get("NumRecentTables")) && !"0".equals(Globals.getConfig().get("NumRecentTables"))) {
-            $retval += RecentFavoriteTable.getInstance("recent", sessionMap, GLOBALS)
-                .getHtml(httpRequest, sessionMap, GLOBALS);
+        if (!empty(config.get("NumRecentTables")) && !"0".equals(config.get("NumRecentTables"))) {
+            $retval += recentTables.getHtml(httpRequest, sessionMap, GLOBALS);
         }
-        if (!empty(Globals.getConfig().get("NumFavoriteTables")) && !"0".equals(Globals.getConfig().get("NumFavoriteTables"))) {
-            $retval += RecentFavoriteTable.getInstance("favorite", sessionMap, GLOBALS)
-            		.getHtml(httpRequest, sessionMap, GLOBALS);
+        if (!empty(config.get("NumFavoriteTables")) && !"0".equals(config.get("NumFavoriteTables"))) {
+            $retval += favoriteTables.getHtml(httpRequest, sessionMap, GLOBALS);
         }
         $retval += "<div class='clearfloat'></div>";
         $retval += "</div>";

@@ -243,7 +243,7 @@ public class FormDisplayTemplate
                 // In this case we just use getImage() because it"s available
             	for (String $k : $iconInit.keySet()) {
                 	List<String> $v = $iconInit.get($k);
-                    $icons.put($k, Util.getImage(
+                    $icons.put($k, util.getImage(
                         $v.get(0),
                         $v.get(1)
                     ));

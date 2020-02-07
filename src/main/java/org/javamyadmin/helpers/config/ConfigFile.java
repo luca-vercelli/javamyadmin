@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.javamyadmin.helpers.Core;
+import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Callable;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
@@ -82,6 +83,10 @@ public class ConfigFile {
     private SessionMap $_SESSION;
     @Autowired
     private Globals $GLOBALS;
+	@Autowired
+	private Util util;
+	@Autowired
+	private Core core;
     
     /**
      * Constructor
@@ -104,7 +109,7 @@ public class ConfigFile {
         if (overrides != null && !overrides.isEmpty()) {
         	Set<Entry<String, Object>> entries = ((Map)this._cfgDb.get("_overrides")).entrySet(); 
             for (Entry<String, Object> entry : entries) {
-                Core.arrayWrite(entry.getKey(), $cfg, entry.getValue());
+                core.arrayWrite(entry.getKey(), $cfg, entry.getValue());
             }
         }
 
@@ -219,7 +224,7 @@ public class ConfigFile {
         }
         // if the path isn"t protected it may be removed
         if ((this._persistKeys.contains($canonicalPath))) {
-            Core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
+            core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
             return;
         }
 
@@ -233,7 +238,7 @@ public class ConfigFile {
             // get original config values not overwritten by user
             // preferences to allow for overwriting options set in
             // config.inc.php with default values
-            Object $instanceDefaultValue = Core.arrayRead(
+            Object $instanceDefaultValue = core.arrayRead(
                 $canonicalPath,
                 this._baseCfg
             );
@@ -243,11 +248,11 @@ public class ConfigFile {
                 && ($instanceDefaultValue.equals($defaultValue));
         }
         if ($removePath) {
-            Core.arrayRemove($path, (Map) $_SESSION.get(this._id));
+            core.arrayRemove($path, (Map) $_SESSION.get(this._id));
             return;
         }
 
-        Core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
+        core.arrayWrite($path, (Map) $_SESSION.get(this._id), $value);
     }
 
     public void set(String $path, Object $value) {
@@ -346,7 +351,7 @@ public class ConfigFile {
      */
     public Object get(String $path, Object $default /*= null*/)
     {
-        return Core.arrayRead($path, (Map) $_SESSION.get(this._id), $default);
+        return core.arrayRead($path, (Map) $_SESSION.get(this._id), $default);
     }
 
     public Object get(String $path) {
@@ -365,7 +370,7 @@ public class ConfigFile {
      */
     public Object getDefault(String $canonicalPath, Object $default /*= null*/)
     {
-        return Core.arrayRead($canonicalPath, this._defaultCfg, $default);
+        return core.arrayRead($canonicalPath, this._defaultCfg, $default);
     }
 
     public Object getDefault(String $canonicalPath) {
@@ -383,7 +388,7 @@ public class ConfigFile {
      */
     public Object getValue(String $path, Object $default /*= null*/)
     {
-        Object $v = Core.arrayRead($path, (Map) $_SESSION.get(this._id), null);
+        Object $v = core.arrayRead($path, (Map) $_SESSION.get(this._id), null);
         if ($v != null) {
             return $v;
         }
@@ -417,7 +422,7 @@ public class ConfigFile {
      */
     public Object getDbEntry(String $path, Object $default /*= null*/)
     {
-        return Core.arrayRead($path, this._cfgDb, $default);
+        return core.arrayRead($path, this._cfgDb, $default);
     }
 
     public Object getDbEntry(String $path) {
@@ -518,9 +523,9 @@ public class ConfigFile {
         	String $mapTo = $entry.getKey();
         	String $mapFrom = $entry.getValue();
             // if the key $c exists in $map_to
-            if (Core.arrayRead($mapTo, $c) != null) {
-                Core.arrayWrite($mapTo, $c, Core.arrayRead($mapFrom, $c));
-                Core.arrayRemove($mapFrom, $c);
+            if (core.arrayRead($mapTo, $c) != null) {
+                core.arrayWrite($mapTo, $c, core.arrayRead($mapFrom, $c));
+                core.arrayRemove($mapFrom, $c);
             }
         }
         return $c;

@@ -33,6 +33,9 @@ public class UserPreferences {
 	@Autowired
     public Template template;
 
+	@Autowired
+	private Core core;
+
     /**
      * Constructor
      */
@@ -271,7 +274,7 @@ public class UserPreferences {
         if ($hash != null) {
             $hash = "#" + urlencode($hash);
         }
-        Core.sendHeaderLocation("./" + $file_name
+        core.sendHeaderLocation("./" + $file_name
             + Url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash),
             false, request, response);
     }

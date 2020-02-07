@@ -10,7 +10,6 @@ import java.util.Map;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
-import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.Table;
 import org.javamyadmin.helpers.Url;
@@ -77,6 +76,10 @@ public class StructureController extends AbstractController {
 
 	@Autowired
 	private BeanFactory beanFactory;
+	@Autowired
+	private Core core;
+	@Autowired
+	private Util util;
 	
 	/**
      * Retrieves database information for further use
@@ -89,7 +92,7 @@ public class StructureController extends AbstractController {
     private void getDatabaseInfo(String $subPart) throws SQLException
     {
         // [$tables, $numTables, $totalNumTables,, $isShowStats, $dbIsSystemSchema,,, $position]
-        Object[] ret = Util.getDbInfo(this.db, $subPart, httpRequest, GLOBALS, $_SESSION);
+        Object[] ret = util.getDbInfo(this.db, $subPart, httpRequest, GLOBALS, $_SESSION);
         this.tables = (Map<Integer, Map<String, String>>) ret[0];
         this.numTables = (int) ret[1];
         this.position = (Integer) ret[8];
@@ -111,9 +114,7 @@ public class StructureController extends AbstractController {
      */
     @RequestMapping(value = "/structure")
 	public String index(Map $parameters) throws ServletException, IOException, SQLException, NamingException
-    {
-    	Config $cfg = Globals.getConfig();
-    	
+	{
     	commons.execute();
     	
         // TODO require_once ROOT_PATH + "libraries/db_common.inc.php";
@@ -135,10 +136,10 @@ public class StructureController extends AbstractController {
         if (this.totalNumTables > 0 && this.position > this.totalNumTables) {
         	Map<String, String> map = new HashMap();
         	map.put("db", this.db);
-        	map.put("pos", Integer.toString(Math.max(0, this.totalNumTables - new Integer((String)$cfg.get("MaxTableList")))));
+        	map.put("pos", Integer.toString(Math.max(0, this.totalNumTables - new Integer((String)config.get("MaxTableList")))));
         	map.put("reload", "1");
             String $uri = "database/structure" + Url.getCommonRaw(map, "&");
-            Core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
+            core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";
         PageSettings.showGroup("DbStructure", beanFactory);
@@ -154,13 +155,13 @@ public class StructureController extends AbstractController {
             if (!empty($parameters.get("sort_order"))) {
                 $urlParams.put("sort_order", $parameters.get("sort_order"));
             }
-            $listNavigator = Util.getListNavigator(
+            $listNavigator = util.getListNavigator(
                 this.totalNumTables,
                 this.position,
                 $urlParams,
                 Url.getFromRoute("/database/structure"),
                 "frame_content",
-                $cfg.get("MaxTableList")
+                config.get("MaxTableList")
             );
             $tableList = this.displayTableList();
         }
@@ -210,7 +211,7 @@ public class StructureController extends AbstractController {
                 .getTable(this.db, table)
                 .getRealRowCountTable();
             // Format the number.
-            String $realRowCount = Util.formatNumber(new Double($realRowCount_int), 0);
+            String $realRowCount = util.formatNumber(new Double($realRowCount_int), 0);
             Map<String, Object> map = new HashMap<>();
             map.put("real_row_count", $realRowCount);
             return map;
@@ -248,7 +249,7 @@ public class StructureController extends AbstractController {
         //String $create_time_all = "";
         //String $update_time_all = "";
         //String $check_time_all = "";
-        int PropertiesNumColumns = new Integer((String) Globals.getConfig().get("PropertiesNumColumns"));
+        int PropertiesNumColumns = new Integer((String) config.get("PropertiesNumColumns"));
         int $num_columns = PropertiesNumColumns > 1
             ? (int)Math.ceil(this.numTables / PropertiesNumColumns) + 1
             : 0;
@@ -294,7 +295,7 @@ public class StructureController extends AbstractController {
             /*if (!empty($current_table.get("Collation"))) {
                 String $tableCollation = Charsets.findCollationByName(
                     this.dbi,
-                    multiget(Globals.getConfig(), "Server", "DisableIS"),
+                    multiget(config, "Server", "DisableIS"),
                     $current_table.get("Collation")
                 );
                 if ($tableCollation != null) {
@@ -317,13 +318,13 @@ public class StructureController extends AbstractController {
                     $input_class[] = "tbl-overhead";
                 }
             }*/
-            /*if (Globals.getConfig()["ShowDbStructureCharset"]) {
+            /*if (config["ShowDbStructureCharset"]) {
                 $charset = "";
                 if (isset($tableCollation)) {
                     $charset = $tableCollation.getCharset();
                 }
             }*/
-            /*if (Globals.getConfig()["ShowDbStructureCreation"]) {
+            /*if (config["ShowDbStructureCreation"]) {
                 $create_time = $current_table["Create_time"] ?? "";
                 if ($create_time
                     && (! $create_time_all
@@ -332,7 +333,7 @@ public class StructureController extends AbstractController {
                     $create_time_all = $create_time;
                 }
             }*/
-            /*if (Globals.getConfig()["ShowDbStructureLastUpdate"]) {
+            /*if (config["ShowDbStructureLastUpdate"]) {
                 $update_time = $current_table["Update_time"] ?? "";
                 if ($update_time
                     && (! $update_time_all
@@ -341,7 +342,7 @@ public class StructureController extends AbstractController {
                     $update_time_all = $update_time;
                 }
             }*/
-            /*if (Globals.getConfig()["ShowDbStructureLastCheck"]) {
+            /*if (config["ShowDbStructureLastCheck"]) {
                 $check_time = $current_table["Check_time"] ?? "";
                 if ($check_time
                     && (! $check_time_all
@@ -368,13 +369,13 @@ public class StructureController extends AbstractController {
              * the code easier to read without this operator.
              */
             boolean $may_have_rows = true ; // (Integer)$current_table.get("TABLE_ROWS") > 0 || $table_is_view;
-            Map<String, String> $titles = Util.buildActionTitles(GLOBALS, $_SESSION);
+            Map<String, String> $titles = util.buildActionTitles(GLOBALS, $_SESSION);
             if (! this.dbIsSystemSchema) {
                 $drop_query = String.format(
                     "DROP %s %s",
                     $table_is_view || $current_table.get("ENGINE") == null ? "VIEW"
                     : "TABLE",
-                    Util.backquote(
+                    util.backquote(
                         (String) $current_table.get("TABLE_NAME")
                     )
                 );
@@ -395,14 +396,14 @@ public class StructureController extends AbstractController {
                 model1.put("db", this.db);
                 model1.put("db_is_system_schema", this.dbIsSystemSchema);
                 model1.put("replication", null);
-                model1.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
-                model1.put("is_show_stats", Globals.getConfig().get("is_show_stats"));
-                model1.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
-                model1.put("show_comment", Globals.getConfig().get("ShowDbStructureComment"));
-                model1.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
-                model1.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
-                model1.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
-                model1.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
+                model1.put("properties_num_columns", config.get("PropertiesNumColumns"));
+                model1.put("is_show_stats", config.get("is_show_stats"));
+                model1.put("show_charset", config.get("ShowDbStructureCharset"));
+                model1.put("show_comment", config.get("ShowDbStructureComment"));
+                model1.put("show_creation", config.get("ShowDbStructureCreation"));
+                model1.put("show_last_update", config.get("ShowDbStructureLastUpdate"));
+                model1.put("show_last_check", config.get("ShowDbStructureLastCheck"));
+                model1.put("num_favorite_tables", config.get("NumFavoriteTables"));
                 model1.put("structure_table_rows", $structure_table_rows);
                 $html += JtwigFactory.render("database/structure/table_header", model1);
                 $structure_table_rows = new ArrayList<>();
@@ -429,7 +430,7 @@ public class StructureController extends AbstractController {
             $row.put("search_table_title", $may_have_rows ? $titles.get("Search") : $titles.get("NoSearch"));
             $row.put("browse_table_label_title", htmlspecialchars((String)$current_table.get("TABLE_COMMENT")));
             $row.put("browse_table_label_truename", $truename);
-            $row.put("empty_table_sql_query", "TRUNCATE " + Util.backquote(
+            $row.put("empty_table_sql_query", "TRUNCATE " + util.backquote(
                 (String)$current_table.get("TABLE_NAME")
             ));
             $row.put("empty_table_message_to_show", urlencode(
@@ -453,11 +454,11 @@ public class StructureController extends AbstractController {
 //            $row.put("unit", $unit);
             $row.put("overhead", $overhead);
 //            $row.put("create_time", isset($create_time) && $create_time
-//                    ? Util.localisedDate(strtotime($create_time)) : "-");
+//                    ? util.localisedDate(strtotime($create_time)) : "-");
 //            $row.put("update_time", isset($update_time) && $update_time
-//                    ? Util.localisedDate(strtotime($update_time)) : "-");
+//                    ? util.localisedDate(strtotime($update_time)) : "-");
 //            $row.put("check_time", isset($check_time) && $check_time
-//                    ? Util.localisedDate(strtotime($check_time)) : "-");
+//                    ? util.localisedDate(strtotime($check_time)) : "-");
 //            $row.put("charset", $charset);
             $row.put("is_show_stats", this.isShowStats);
             $row.put("ignored", $ignored);
@@ -467,21 +468,21 @@ public class StructureController extends AbstractController {
             $row.put("already_favorite", this.checkFavoriteTable(
                 $current_table.get("TABLE_NAME"), $_SESSION, GLOBALS
             ));
-            $row.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
-            $row.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
-            $row.put("limit_chars", Globals.getConfig().get("LimitChars"));
-            $row.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
-            $row.put("show_comment", Globals.getConfig().get("ShowDbStructureComment"));
-            $row.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
-            $row.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
-            $row.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
+            $row.put("num_favorite_tables", config.get("NumFavoriteTables"));
+            $row.put("properties_num_columns", config.get("PropertiesNumColumns"));
+            $row.put("limit_chars", config.get("LimitChars"));
+            $row.put("show_charset", config.get("ShowDbStructureCharset"));
+            $row.put("show_comment", config.get("ShowDbStructureComment"));
+            $row.put("show_creation", config.get("ShowDbStructureCreation"));
+            $row.put("show_last_update", config.get("ShowDbStructureLastUpdate"));
+            $row.put("show_last_check", config.get("ShowDbStructureLastCheck"));
 //            $overall_approx_rows = $overall_approx_rows || $approx_rows;
         }
         /*$databaseCollation = [];
         $databaseCharset = "";
         $collation = Charsets.findCollationByName(
             this.dbi,
-            Globals.getConfig()["Server"]["DisableIS"],
+            config["Server"]["DisableIS"],
             this.dbi.getDbCollation(this.db)
         );
         if ($collation !== null) {
@@ -502,39 +503,39 @@ public class StructureController extends AbstractController {
 //        body_for_table_summary.put("database_charset", $databaseCharset);
         body_for_table_summary.put("sum_size", $sum_size);
         body_for_table_summary.put("overhead_size", $overhead_size);
-//        body_for_table_summary.put("create_time_all", $create_time_all ? Util.localisedDate(strtotime($create_time_all)) : "-");
-//        body_for_table_summary.put("update_time_all", $update_time_all ? Util.localisedDate(strtotime($update_time_all)) : "-");
-//        body_for_table_summary.put("check_time_all", $check_time_all ? Util.localisedDate(strtotime($check_time_all)) : "-");
+//        body_for_table_summary.put("create_time_all", $create_time_all ? util.localisedDate(strtotime($create_time_all)) : "-");
+//        body_for_table_summary.put("update_time_all", $update_time_all ? util.localisedDate(strtotime($update_time_all)) : "-");
+//        body_for_table_summary.put("check_time_all", $check_time_all ? util.localisedDate(strtotime($check_time_all)) : "-");
         body_for_table_summary.put("approx_rows", $overall_approx_rows);
-        body_for_table_summary.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
+        body_for_table_summary.put("num_favorite_tables", config.get("NumFavoriteTables"));
         body_for_table_summary.put("db", GLOBALS.getDb());
-        body_for_table_summary.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
+        body_for_table_summary.put("properties_num_columns", config.get("PropertiesNumColumns"));
         body_for_table_summary.put("dbi", this.getDbi());
-        body_for_table_summary.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
-        body_for_table_summary.put("show_comment", Globals.getConfig().get("ShowDbStructureComment"));
-        body_for_table_summary.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
-        body_for_table_summary.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
-        body_for_table_summary.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
+        body_for_table_summary.put("show_charset", config.get("ShowDbStructureCharset"));
+        body_for_table_summary.put("show_comment", config.get("ShowDbStructureComment"));
+        body_for_table_summary.put("show_creation", config.get("ShowDbStructureCreation"));
+        body_for_table_summary.put("show_last_update", config.get("ShowDbStructureLastUpdate"));
+        body_for_table_summary.put("show_last_check", config.get("ShowDbStructureLastCheck"));
         Map<String, Object> check_all_tables = new HashMap<>();
         check_all_tables.put("pma_theme_image", GLOBALS.getPmaThemeImage());
         check_all_tables.put("text_dir", GLOBALS.getTextDir());
         check_all_tables.put("overhead_check", $overhead_check);
         check_all_tables.put("db_is_system_schema", this.dbIsSystemSchema);
         check_all_tables.put("hidden_fields", $hidden_fields);
-        check_all_tables.put("disable_multi_table", Globals.getConfig().get("DisableMultiTableMaintenance"));
+        check_all_tables.put("disable_multi_table", config.get("DisableMultiTableMaintenance"));
 //        check_all_tables.put("central_columns_work", GLOBALS.cfgRelation.get("centralcolumnswork"));
         model.clear();;
         model.put("db", this.db);
         model.put("db_is_system_schema", this.dbIsSystemSchema);
 //        model.put("replication", $GLOBALS.get("replication_info").get("slave").get("status"));
-        model.put("properties_num_columns", Globals.getConfig().get("PropertiesNumColumns"));
+        model.put("properties_num_columns", config.get("PropertiesNumColumns"));
         model.put("is_show_stats", this.isShowStats);
-        model.put("show_charset", Globals.getConfig().get("ShowDbStructureCharset"));
-        model.put("show_comment", Globals.getConfig().get("ShowDbStructureComment"));
-        model.put("show_creation", Globals.getConfig().get("ShowDbStructureCreation"));
-        model.put("show_last_update", Globals.getConfig().get("ShowDbStructureLastUpdate"));
-        model.put("show_last_check", Globals.getConfig().get("ShowDbStructureLastCheck"));
-        model.put("num_favorite_tables", Globals.getConfig().get("NumFavoriteTables"));
+        model.put("show_charset", config.get("ShowDbStructureCharset"));
+        model.put("show_comment", config.get("ShowDbStructureComment"));
+        model.put("show_creation", config.get("ShowDbStructureCreation"));
+        model.put("show_last_update", config.get("ShowDbStructureLastUpdate"));
+        model.put("show_last_check", config.get("ShowDbStructureLastCheck"));
+        model.put("num_favorite_tables", config.get("NumFavoriteTables"));
         model.put("structure_table_rows", $structure_table_rows);
         model.put("body_for_table_summary", body_for_table_summary);
         model.put("check_all_tables", check_all_tables);

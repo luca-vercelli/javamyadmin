@@ -42,11 +42,11 @@ public class ListDatabase extends ListAbstract {
 	 * @return void
 	 */
 	protected void checkHideDatabase() {
-		if (empty(((Map) Globals.getConfig().get("Server")).get("hide_db"))) {
+		if (empty(((Map) GLOBALS.getConfig().get("Server")).get("hide_db"))) {
 			return;
 		}
 
-		Pattern pattern = Pattern.compile((String) ((Map) Globals.getConfig().get("Server")).get("hide_db"));
+		Pattern pattern = Pattern.compile((String) ((Map) GLOBALS.getConfig().get("Server")).get("hide_db"));
 
 		// cannot remove items from list while iterating over itself
 		List<String> copy = new ArrayList<>();
@@ -126,12 +126,12 @@ public class ListDatabase extends ListAbstract {
      */
     protected boolean checkOnlyDatabase() throws SQLException
     {
-    	Object only_db = ((Map) Globals.getConfig().get("Server")).get("only_db");
+    	Object only_db = ((Map) GLOBALS.getConfig().get("Server")).get("only_db");
         if (only_db instanceof String && !empty(only_db)
         ) {
         	Array arr = new Array();
         	arr.add(only_db);
-        	multiput(Globals.getConfig().settings, "Server", "only_db", arr);
+        	multiput(GLOBALS.getConfig().settings, "Server", "only_db", arr);
         	only_db = arr;
         } else if (! is_array(only_db)) {
             return false;

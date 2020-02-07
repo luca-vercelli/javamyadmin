@@ -12,13 +12,19 @@ import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Displays the MySQL servers choice form
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Select {
+	
+	@Autowired
+	private Util util;
 	
     /**
      * Renders the server selection in list or selectbox form, or option tags only
@@ -30,21 +36,21 @@ public class Select {
      *
      * @return string
      */
-    public static String render(boolean $not_only_options, boolean $omit_fieldset, Globals GLOBALS, SessionMap $_SESSION, HttpServletRequest request)
+    public String render(boolean $not_only_options, boolean $omit_fieldset, Globals GLOBALS, SessionMap $_SESSION, HttpServletRequest request)
     {
         String $retval = "";
 
         // Show as list?
         boolean $list = false;
         if ($not_only_options) {
-            $list = "true".equals(Globals.getConfig().get("DisplayServersList"));
+            $list = "true".equals(GLOBALS.getConfig().get("DisplayServersList"));
             $not_only_options = ! $list;
         }
 
         if ($not_only_options) {
             $retval += "<form method='post' action='"
-                + Util.getScriptNameForOption(
-                	(String) Globals.getConfig().get("DefaultTabServer"),
+                + util.getScriptNameForOption(
+                	(String) GLOBALS.getConfig().get("DefaultTabServer"),
                     "server"
                 )
                 + "' class='disableAjax'>";
@@ -64,7 +70,7 @@ public class Select {
             $retval += "<ul id='list_server'>";
         }
 
-        Map<String, Object> servers = (Map<String, Object>) Globals.getConfig().get("Servers");
+        Map<String, Object> servers = (Map<String, Object>) GLOBALS.getConfig().get("Servers");
         for (Entry<String, Object> entry : servers.entrySet()) {
         	String $key = entry.getKey();
         	Map $server = (Map) entry.getValue();
@@ -104,8 +110,8 @@ public class Select {
                 if ($selected) {
                     $retval += "<strong>" + htmlspecialchars($label) + "</strong>";
                 } else {
-                    String $scriptName = Util.getScriptNameForOption(
-                    	(String)Globals.getConfig().get("DefaultTabServer"),
+                    String $scriptName = util.getScriptNameForOption(
+                    	(String)GLOBALS.getConfig().get("DefaultTabServer"),
                         "server"
                     );
                     Map<String, String> serverMap = new HashMap<>();

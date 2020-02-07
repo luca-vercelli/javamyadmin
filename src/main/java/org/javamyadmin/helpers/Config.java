@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.java.SmartMap;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class Config {
 
@@ -71,6 +72,9 @@ public class Config {
      * like checking for required functions
      */
     public boolean done = false;
+    
+    @Autowired
+    private Core core;
     
     /**
      * constructor
@@ -162,7 +166,7 @@ public class Config {
     	// so che whole Config object become request-dependent
     	
     	/*String HTTP_USER_AGENT;
-        if (Core.getenv("HTTP_USER_AGENT")) {
+        if (core.getenv("HTTP_USER_AGENT")) {
             HTTP_USER_AGENT = req.getHeader("User-Agent");
         } else {
             HTTP_USER_AGENT = "";
@@ -460,8 +464,8 @@ public class Config {
         // will have everything available in session cache
         int server = !empty(GLOBALS.getServer())
             ? GLOBALS.getServer()
-            : (! empty(Globals.getConfig().get("ServerDefault"))
-                ? new Integer((String)Globals.getConfig().get("ServerDefault"))
+            : (! empty(get("ServerDefault"))
+                ? new Integer((String)get("ServerDefault"))
                 : 0);
         String cache_key = "server_" + server;
         if (server > 0 && ! GLOBALS.get_PMA_MINIMUM_COMMON()) {
@@ -488,7 +492,7 @@ public class Config {
         
         // load config array
         array_replace_recursive(this.settings, config_data);
-        array_replace_recursive(Globals.getConfig().settings, config_data);
+        array_replace_recursive(settings, config_data);
         
         if (GLOBALS.get_PMA_MINIMUM_COMMON()) {
             return;
@@ -576,21 +580,21 @@ public class Config {
         Object prefs_type = this.get("user_preferences");
         if (prefs_type != null) {
             if (default_value == null) {
-                default_value = (String) Core.arrayRead(cfg_path, this.defaults);
+                default_value = (String) core.arrayRead(cfg_path, this.defaults);
             }
             result = userPreferences.persistOption(cfg_path, new_cfg_value, default_value);
         }
         if (prefs_type != "db" && cookie_name != null) {
             // fall back to cookies
             if (default_value == null) {
-                default_value = (String) Core.arrayRead(cfg_path, this.settings);
+                default_value = (String) core.arrayRead(cfg_path, this.settings);
             }
             this.setCookie(cookie_name,
             		new_cfg_value == null ? null : new_cfg_value.toString(),
             		default_value == null ? null : default_value.toString(),
             		null, false, null, null);
         }
-        Core.arrayWrite(cfg_path, this.settings, new_cfg_value);
+        core.arrayWrite(cfg_path, this.settings, new_cfg_value);
         return result;
     }
 
@@ -658,7 +662,7 @@ public class Config {
                 this.checkWebServerOs();
                 if (this.get("PMA_IS_WINDOWS").equals("0")) {
                     this.source_mtime = 0;
-                    Core.fatalError(
+                    core.fatalError(
                         __(
                             "Wrong permissions on configuration file, "
                             + "should not be world writable!"
@@ -681,7 +685,7 @@ public class Config {
     public void checkErrors(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, Response pmaResponse)
     {
         if (this.error_config_default_file) {
-            Core.fatalError(
+            core.fatalError(
                 request, response, GLOBALS, pmaResponse, String.format(
                     __("Could not load default configuration from: %1s"),
                     this.default_source
@@ -797,10 +801,10 @@ public class Config {
         if (postsize = ini_get("post_max_size")) {
             this.set(
                 "max_upload_size",
-                min(Core.getRealSize(filesize), Core.getRealSize(postsize))
+                min(core.getRealSize(filesize), core.getRealSize(postsize))
             );
         } else {
-            this.set("max_upload_size", Core.getRealSize(filesize));
+            this.set("max_upload_size", core.getRealSize(filesize));
         }*/
     }
 
@@ -822,20 +826,20 @@ public class Config {
         boolean is_https = false;
         if (url != null && url.startsWith("https")) {
             is_https = true;
-        }/* else if (strtolower(Core.getenv("HTTP_SCHEME")) == "https") {
+        }/* else if (strtolower(core.getenv("HTTP_SCHEME")) == "https") {
             is_https = true;
-        } else if (strtolower(Core.getenv("HTTPS")) == "on") {
+        } else if (strtolower(core.getenv("HTTPS")) == "on") {
             is_https = true;
-        } else if (strtolower(substr(Core.getenv("REQUEST_URI"), 0, 6)) == "https:") {
+        } else if (strtolower(substr(core.getenv("REQUEST_URI"), 0, 6)) == "https:") {
             is_https = true;
-        } else if (strtolower(Core.getenv("HTTP_HTTPS_FROM_LB")) == "on") {
+        } else if (strtolower(core.getenv("HTTP_HTTPS_FROM_LB")) == "on") {
             // A10 Networks load balancer
             is_https = true;
-        } else if (strtolower(Core.getenv("HTTP_FRONT_END_HTTPS")) == "on") {
+        } else if (strtolower(core.getenv("HTTP_FRONT_END_HTTPS")) == "on") {
             is_https = true;
-        } else if (strtolower(Core.getenv("HTTP_X_FORWARDED_PROTO")) == "https") {
+        } else if (strtolower(core.getenv("HTTP_X_FORWARDED_PROTO")) == "https") {
             is_https = true;
-        } else if (Core.getenv("SERVER_PORT") == 443) {
+        } else if (core.getenv("SERVER_PORT") == 443) {
             is_https = true;
         }*/ //TODO
 
@@ -1062,7 +1066,7 @@ public class Config {
             return;
         }
 
-        Core.fatalError(
+        core.fatalError(
             String.format(
                 "Failed to load phpMyAdmin configuration (%s:%s): %s",
                 Error.relPath(error["file"]),

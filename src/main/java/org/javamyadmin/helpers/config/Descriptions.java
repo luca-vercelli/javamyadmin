@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.javamyadmin.helpers.Sanitize;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static org.javamyadmin.php.Php.*;
 
@@ -13,7 +15,11 @@ import static org.javamyadmin.php.Php.*;
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Descriptions {
+	@Autowired
+	private Sanitize sanitize;
+	
 	/**
 	 * Return Return name or description for a configuration path.
 	 *
@@ -24,7 +30,7 @@ public class Descriptions {
 	 *
 	 * @return string
 	 */
-	public static String get(String $path, String $type /* = "name" */) {
+	public String get(String $path, String $type /* = "name" */) {
 		String $key = $path.replace("Servers/1/", "/").replace("Servers/", "_");
 		String $value = getString($key, $type);
 
@@ -37,10 +43,10 @@ public class Descriptions {
 			}
 		}
 
-		return Sanitize.sanitizeMessage($value);
+		return sanitize.sanitizeMessage($value);
 	}
 
-	public static String get(String $path) {
+	public String get(String $path) {
 		return get($path, "name");
 	}
 	
@@ -843,7 +849,7 @@ public class Descriptions {
 	 *
 	 * @return string|null Null if not found
 	 */
-	public static String getString(String $path, String $type /* = "name" */) {
+	public String getString(String $path, String $type /* = "name" */) {
 		String $key = $path + "_" + $type;
 		return $descriptions.get($key);
 	}

@@ -35,31 +35,31 @@ public class NodeTable extends NodeDatabaseChild {
         this.icon = new ArrayList<>();
         this.addIcon(
             Util.getScriptNameForOption(
-            	(String)Globals.getConfig().get("NavigationTreeDefaultTabTable"),
+            	(String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable"),
                 "table"
             )
         );
         this.addIcon(
             Util.getScriptNameForOption(
-                (String)Globals.getConfig().get("NavigationTreeDefaultTabTable2"),
+                (String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable2"),
                 "table"
             )
         );
         String $title = Util.getTitleForTarget(
-        	(String)Globals.getConfig().get("DefaultTabTable")
+        	(String)GLOBALS.getConfig().get("DefaultTabTable")
         );
         this.title = $title;
 
         String $scriptName = Util.getScriptNameForOption(
-        	(String)Globals.getConfig().get("DefaultTabTable"),
+        	(String)GLOBALS.getConfig().get("DefaultTabTable"),
             "table"
         );
         String $firstIconLink = Util.getScriptNameForOption(
-        	(String)Globals.getConfig().get("NavigationTreeDefaultTabTable"),
+        	(String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable"),
             "table"
         );
         String $secondIconLink = Util.getScriptNameForOption(
-            (String)Globals.getConfig().get("NavigationTreeDefaultTabTable2"),
+            (String)GLOBALS.getConfig().get("NavigationTreeDefaultTabTable2"),
             "table"
         );
         this.links = new HashMap<>();
@@ -133,7 +133,7 @@ public class NodeTable extends NodeDatabaseChild {
      */
     public Array getData(String $type, int $pos, String $searchClause /*= ""*/, Globals GLOBALS) throws SQLException
     {
-        long $maxItems = !empty(Globals.getConfig().get("MaxNavigationItems")) ? new Long((String)Globals.getConfig().get("MaxNavigationItems")) : -1;
+        long $maxItems = !empty(GLOBALS.getConfig().get("MaxNavigationItems")) ? new Long((String)GLOBALS.getConfig().get("MaxNavigationItems")) : -1;
         Array $retval = new Array();
         String $db = this.realParent().realName;
         String $table = this.realName;

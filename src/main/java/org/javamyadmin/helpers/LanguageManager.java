@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
 import org.reflections.Reflections;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -158,6 +159,9 @@ public class LanguageManager {
 	private boolean _lang_failed_cfg;
 	private boolean _lang_failed_cookie;
 	private boolean _lang_failed_request;
+	
+    @Autowired
+	private Config config;
 
 	/**
 	 * Returns list of available locales. Search classes in Globals.LOCALES_BUNDLE.
@@ -192,10 +196,10 @@ public class LanguageManager {
 	 */
 	public List<String> availableLocales() {
 		if (this._available_locales == null) {
-			if (Globals.getConfig() == null || empty(Globals.getConfig().get("FilterLanguages"))) {
+			if (config == null || empty(config.get("FilterLanguages"))) {
 				this._available_locales = this.listLocaleDir();
 			} else {
-				this._available_locales = preg_grep("@" + Globals.getConfig().get("FilterLanguages") + "@",
+				this._available_locales = preg_grep("@" + config.get("FilterLanguages") + "@",
 						this.listLocaleDir());
 			}
 		}
@@ -275,8 +279,8 @@ public class LanguageManager {
 	 */
 	public Language selectLanguage(HttpServletRequest request, HttpServletResponse response) {
 		// check forced language
-		if (!empty(Globals.getConfig().get("Lang"))) {
-			Language $lang = this.getLanguage((String) Globals.getConfig().get("Lang"), request);
+		if (!empty(config.get("Lang"))) {
+			Language $lang = this.getLanguage((String) config.get("Lang"), request);
 			if ($lang != null) {
 				return $lang;
 			}
@@ -294,8 +298,8 @@ public class LanguageManager {
 		}
 
 		// check previous set language
-		if (!empty(Globals.getConfig().getCookie("pma_lang", request))) {
-			Language $lang = this.getLanguage(Globals.getConfig().getCookie("pma_lang", request), request);
+		if (!empty(config.getCookie("pma_lang", request))) {
+			Language $lang = this.getLanguage(config.getCookie("pma_lang", request), request);
 			if ($lang != null) {
 				return $lang;
 			}
@@ -329,8 +333,8 @@ public class LanguageManager {
 		}
 
 		// Didn"t catch any valid lang : we use the default settings
-		if (!empty(Globals.getConfig().get("DefaultLang")) && !empty($langs.get(Globals.getConfig().get("DefaultLang")))) {
-			return $langs.get(Globals.getConfig().get("DefaultLang"));
+		if (!empty(config.get("DefaultLang")) && !empty($langs.get(config.get("DefaultLang")))) {
+			return $langs.get(config.get("DefaultLang"));
 		}
 
 		// Fallback to English

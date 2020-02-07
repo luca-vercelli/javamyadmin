@@ -45,9 +45,13 @@ public class Console {
      */
     @Autowired
     public Template template;
-    
+
     @Autowired
-    Globals GLOBALS;
+    private Globals GLOBALS;
+    @Autowired
+    private Config config;
+	@Autowired
+	private Util util;
     
     /**
      * Creates a new class instance
@@ -88,14 +92,14 @@ public class Console {
      * @return string
      * @throws SQLException 
      */
-    public static String getBookmarkContent(Globals GLOBALS) throws SQLException
+    public String getBookmarkContent(Globals GLOBALS) throws SQLException
     {
         Template $template = new Template();
-        Map<String, Object> $cfgBookmark = Bookmark.getParams((String) multiget(Globals.getConfig().settings, "Server", "user"));
+        Map<String, Object> $cfgBookmark = Bookmark.getParams((String) multiget(config.settings, "Server", "user"));
         if (!empty($cfgBookmark)) {
             List<Bookmark> $bookmarks = Bookmark.getList(
                 GLOBALS.getDbi(),
-                (String)multiget(Globals.getConfig().settings, "Server", "user")
+                (String)multiget(config.settings, "Server", "user")
             );
             int $count_bookmarks = $bookmarks.size();
             String $welcomeMessage;
@@ -146,10 +150,10 @@ public class Console {
     {
         if ((! this._isAjax) && this._isEnabled) {
             Map<String, Object> $cfgBookmark = Bookmark.getParams(
-            	(String) multiget(Globals.getConfig().settings, "Server", "user")
+            	(String) multiget(config.settings, "Server", "user")
             );
 
-            String $image = Util.getImage("console", __("SQL Query Console"));
+            String $image = util.getImage("console", __("SQL Query Console"));
             String $_sql_history = ""; /* TODO = this.relation.getHistory(
             	multiget(Globals.getConfig().settings, "Server", "user")
             );*/

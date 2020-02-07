@@ -2,6 +2,7 @@ package org.javamyadmin.helpers;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,14 +10,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class Session {
+    
+	@Autowired
+    private Util util;
+    
 	/**
 	 * Generates PMA_token session variable.
 	 *
 	 * @return void
 	 */
 	private void generateToken(HttpSession session) {
-		session.setAttribute(" PMA_token ", Util.generateRandom(16/* , true */));
-		session.setAttribute(" HMAC_secret ", Util.generateRandom(16));
+		session.setAttribute(" PMA_token ", util.generateRandom(16/* , true */));
+		session.setAttribute(" HMAC_secret ", util.generateRandom(16));
 
 		/**
 		 * Check if token is properly generated (the generation can fail, for example

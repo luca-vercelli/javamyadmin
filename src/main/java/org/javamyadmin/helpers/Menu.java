@@ -51,6 +51,10 @@ public class Menu {
 	private HttpServletRequest request;
     @Autowired
 	private Globals GLOBALS;
+    @Autowired
+	private Config config;
+    @Autowired
+	private Util util;
 
     private static Map<String, MenuStruct> serverTabs;
     private static Map<String, MenuStruct> dbTabs;
@@ -202,7 +206,7 @@ public class Menu {
     public Menu()
     {
         //this.relation = new Relation(GLOBALS.getDbi());
-        this.cfg = Globals.getConfig().settings;
+        this.cfg = config.settings;
     }
     
     /**
@@ -274,7 +278,7 @@ public class Menu {
                 $tabs.remove($entry.getKey());
             }
         }
-        return Util.getHtmlTabs($tabs, $url_params, "topmenu", true, request, GLOBALS, session);
+        return util.getHtmlTabs($tabs, $url_params, "topmenu", true, request, GLOBALS, session);
     }
 
     /**
@@ -287,19 +291,19 @@ public class Menu {
     private Map<String, String> _getAllowedTabs(String $level)
     {
         String $cache_key = "menu-levels-" + $level;
-        if (Util.cacheExists($cache_key, GLOBALS, session)) {
-            return (Map<String, String>) Util.cacheGet($cache_key, null, GLOBALS, session);
+        if (util.cacheExists($cache_key, GLOBALS, session)) {
+            return (Map<String, String>) util.cacheGet($cache_key, null, GLOBALS, session);
         }
-        Map<String, String> $allowedTabs = Util.getMenuTabList($level);
+        Map<String, String> $allowedTabs = util.getMenuTabList($level);
         /*
         TODO
         $cfgRelation = this.relation.getRelationsParam();
         if ($cfgRelation["menuswork"]) {
-            $groupTable = Util.backquote($cfgRelation["db"])
+            $groupTable = util.backquote($cfgRelation["db"])
                 + "."
-                + Util.backquote($cfgRelation["usergroups"]);
-            $userTable = Util.backquote($cfgRelation["db"])
-                + "." + Util.backquote($cfgRelation["users"]);
+                + util.backquote($cfgRelation["usergroups"]);
+            $userTable = util.backquote($cfgRelation["db"])
+                + "." + util.backquote($cfgRelation["users"]);
 
             String $sql_query = "SELECT `tab` FROM " + $groupTable
                 + " WHERE `allowed` = 'N'"
@@ -319,7 +323,7 @@ public class Menu {
                 }
             }
         }*/
-        Util.cacheSet($cache_key, $allowedTabs, GLOBALS, session);
+        util.cacheSet($cache_key, $allowedTabs, GLOBALS, session);
         return $allowedTabs;
     }
 
@@ -347,7 +351,7 @@ public class Menu {
         String $separator = "<span class='separator item'>&nbsp;Â»</span>";
         String $item = "<a href='%1$s%2$s' class='item'>";
 
-        if (Util.showText("TabsMode", GLOBALS)) {
+        if (util.showText("TabsMode", GLOBALS)) {
             $item += "%4$s: ";
         }
         $item += "%3$s</a>";
@@ -355,14 +359,14 @@ public class Menu {
         $retval += "<div id='serverinfo'>";
         Map<String, Object> params = new HashMap<>();
         params.put("class", "item");
-        if (Util.showIcons("TabsMode", GLOBALS)) {
-            $retval += Util.getImage(
+        if (util.showIcons("TabsMode", GLOBALS)) {
+            $retval += util.getImage(
                 "s_host",
                 "",
                 params
             );
         }
-        String $scriptName = Util.getScriptNameForOption(
+        String $scriptName = util.getScriptNameForOption(
             (String) cfg.get("DefaultTabServer"),
             "server"
         );
@@ -376,14 +380,14 @@ public class Menu {
 
         if (!empty(this._db)) {
             $retval += $separator;
-            if (Util.showIcons("TabsMode", GLOBALS)) {
-                $retval += Util.getImage(
+            if (util.showIcons("TabsMode", GLOBALS)) {
+                $retval += util.getImage(
                     "s_db",
                     "",
                     params
                 );
             }
-            $scriptName = Util.getScriptNameForOption(
+            $scriptName = util.getScriptNameForOption(
                 (String) cfg.get("DefaultTabDatabase"),
                 "database"
             );
@@ -414,15 +418,15 @@ public class Menu {
                     $show_comment = $table_class_object.getComment();
                 }
                 $retval += $separator;
-                if (Util.showIcons("TabsMode", GLOBALS)) {
+                if (util.showIcons("TabsMode", GLOBALS)) {
                     String $icon = $tbl_is_view ? "b_views" : "s_tbl";
-                    $retval += Util.getImage(
+                    $retval += util.getImage(
                         $icon,
                         "",
                         params
                     );
                 }
-                $scriptName = Util.getScriptNameForOption(
+                $scriptName = util.getScriptNameForOption(
                     (String) cfg.get("DefaultTabTable"),
                     "table"
                 );
@@ -461,7 +465,7 @@ public class Menu {
                 $cfgRelation = this.relation.getRelationsParam();
 
                 // Get additional information about tables for tooltip is done
-                // in Util.getDbInfo() only once
+                // in util.getDbInfo() only once
                 if ($cfgRelation["commwork"]) {
                     String $comment = this.relation.getDbComment(this._db);
                     // Displays table comment
@@ -601,7 +605,7 @@ public class Menu {
             multiput($tabs,"tracking", "active",  GLOBALS.getRoute().equals("/table/tracking");
         }
         if (! $db_is_system_schema
-            && Util.currentUserHasPrivilege(
+            && util.currentUserHasPrivilege(
                 "TRIGGER",
                 this._db,
                 this._table
@@ -700,14 +704,14 @@ public class Menu {
             $tabs["routines"]["icon"] = "b_routines";
             $tabs["routines"]["active"] = GLOBALS.route.equals("/database/routines";
 
-            if (Util.currentUserHasPrivilege("EVENT", this._db)) {
+            if (util.currentUserHasPrivilege("EVENT", this._db)) {
                 $tabs["events"]["link"] = Url.getFromRoute("/database/events");
                 $tabs["events"]["text"] = __("Events");
                 $tabs["events"]["icon"] = "b_events";
                 $tabs["events"]["active"] = GLOBALS.route.equals("/database/events";
             }
 
-            if (Util.currentUserHasPrivilege("TRIGGER", this._db)) {
+            if (util.currentUserHasPrivilege("TRIGGER", this._db)) {
                 $tabs["triggers"]["link"] = Url.getFromRoute("/database/triggers");
                 $tabs["triggers"]["text"] = __("Triggers");
                 $tabs["triggers"]["icon"] = "b_triggers";
@@ -754,8 +758,8 @@ public class Menu {
         
     	/* MYSQL Specific!!!
     	Map $binary_logs;
-    	if (Util.cacheExists("binary_logs", session)) {
-            $binary_logs = (Map) Util.cacheGet("binary_logs", null, session);
+    	if (util.cacheExists("binary_logs", session)) {
+            $binary_logs = (Map) util.cacheGet("binary_logs", null, session);
         } else {
             $binary_logs = GLOBALS.getDbi().fetchResult(
                 "SHOW MASTER LOGS",
@@ -764,7 +768,7 @@ public class Menu {
                 DatabaseInterface.CONNECT_USER,
                 DatabaseInterface.QUERY_STORE
             );
-            Util.cacheSet("binary_logs", $binary_logs, session);
+            util.cacheSet("binary_logs", $binary_logs, session);
         }*/
 
         Map<String, MenuStruct> $tabs = new HashMap<>();

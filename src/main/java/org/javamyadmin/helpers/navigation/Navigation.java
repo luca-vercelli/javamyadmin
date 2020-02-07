@@ -62,6 +62,13 @@ public class Navigation {
 	
 	@Autowired
 	private BeanFactory beanFactory;
+
+    @Autowired
+	private Config config;
+    @Autowired
+	private Sanitize sanitize;
+    @Autowired
+	private Select select;
 	
 	/**
 	 * Navigation constructor.
@@ -85,10 +92,9 @@ public class Navigation {
 	 */
 	public String getDisplay(HttpServletRequest httpRequest, SessionMap sessionMap, Globals GLOBALS)
 			throws SQLException {
-		Config $cfg = Globals.getConfig();
 
 		Map<String, Object> $logo = new HashMap<>();
-		$logo.put("is_displayed", $cfg.get("NavigationDisplayLogo"));
+		$logo.put("is_displayed", config.get("NavigationDisplayLogo"));
 		$logo.put("has_link", false);
 		$logo.put("link", "#");
 		$logo.put("attributes", " target='_blank' rel='noopener noreferrer'");
@@ -99,12 +105,12 @@ public class Navigation {
 
 		if (!$response.isAjax()) {
 			$logo.put("source", this.getLogoSource(GLOBALS));
-			$logo.put("has_link", !empty($cfg.get("NavigationLogoLink")));
-			$logo.put("link", ((String) $cfg.get("NavigationLogoLink")).trim());
-			if (!Sanitize.checkLink((String) $logo.get("link"), true)) {
+			$logo.put("has_link", !empty(config.get("NavigationLogoLink")));
+			$logo.put("link", ((String) config.get("NavigationLogoLink")).trim());
+			if (!sanitize.checkLink((String) $logo.get("link"), true)) {
 				$logo.put("link", "index.php");
 			}
-			if ("main".equals($cfg.get("NavigationLogoLinkWindow"))) {
+			if ("main".equals(config.get("NavigationLogoLinkWindow"))) {
 				try {
 					UrlComponents components = parse_url((String) $logo.get("link"));
 					if (empty(components.host)) {
@@ -118,8 +124,8 @@ public class Navigation {
 				$logo.put("attributes", "");
 			}
 
-			if ("true".equals($cfg.get("NavigationDisplayServers")) && ((Map) $cfg.get("Servers")).size() > 1) {
-				$serverSelect = Select.render(true, true, GLOBALS, sessionMap, httpRequest);
+			if ("true".equals(config.get("NavigationDisplayServers")) && ((Map) config.get("Servers")).size() > 1) {
+				$serverSelect = select.render(true, true, GLOBALS, sessionMap, httpRequest);
 			}
 
 			if (!GLOBALS.getPMA_DISABLE_NAVI_SETTINGS()) {
@@ -129,7 +135,7 @@ public class Navigation {
 		String $navRender = "";
 		if (!$response.isAjax() || !empty(httpRequest.getParameter("full"))
 				|| !empty(httpRequest.getParameter("reload"))) {
-			if ("true".equals($cfg.get("ShowDatabasesNavigationAsTree"))) {
+			if ("true".equals(config.get("ShowDatabasesNavigationAsTree"))) {
 				// provide database tree in navigation
 				$navRender = this.tree.renderState();
 			} else {
@@ -143,18 +149,18 @@ public class Navigation {
 		Map<String, Object> model = new HashMap<>();
 		model.put("is_ajax", $response.isAjax());
 		model.put("logo", $logo);
-		model.put("is_synced", $cfg.get("NavigationLinkWithMainPanel"));
-		model.put("is_highlighted", $cfg.get("NavigationTreePointerEnable"));
-		model.put("is_autoexpanded", $cfg.get("NavigationTreeAutoexpandSingleDb"));
+		model.put("is_synced", config.get("NavigationLinkWithMainPanel"));
+		model.put("is_highlighted", config.get("NavigationTreePointerEnable"));
+		model.put("is_autoexpanded", config.get("NavigationTreeAutoexpandSingleDb"));
 		model.put("server", GLOBALS.getServer());
-		model.put("auth_type", multiget($cfg.settings, "Server", "auth_type"));
-		model.put("is_servers_displayed", $cfg.get("NavigationDisplayServers"));
-		model.put("servers", $cfg.get("Servers"));
+		model.put("auth_type", multiget(config.settings, "Server", "auth_type"));
+		model.put("is_servers_displayed", config.get("NavigationDisplayServers"));
+		model.put("servers", config.get("Servers"));
 		model.put("server_select", $serverSelect);
 		model.put("navigation_tree", $navRender);
 		model.put("is_navigation_settings_enabled", !GLOBALS.getPMA_DISABLE_NAVI_SETTINGS());
 		model.put("navigation_settings", $navigationSettings);
-		model.put("is_drag_drop_import_enabled", "true".equals($cfg.get("enable_drag_drop_import")));
+		model.put("is_drag_drop_import_enabled", "true".equals(config.get("enable_drag_drop_import")));
 
 		return this.template.render("navigation/main", model);
 	}

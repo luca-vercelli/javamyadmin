@@ -38,7 +38,7 @@ public class Globals {
 	public static String LOCALES_BUNDLE = "org.javamyadmin.Translations";
 	
 	/* TODO. This should be a Bean. However this means Globals.getConfig() won't be static anymore. */
-	private static Config PMA_Config = new Config(null);
+	private Config PMA_Config = new Config(null);
 	
 	private static boolean pma_config_loading = false;
 	private static File PMA_PHP_SELF = new File("???"); // TODO
@@ -139,11 +139,11 @@ public class Globals {
 		TEMPLATES_PATH = path;
 	}
 
-	public static Config getConfig() {
+	public Config getConfig() {
 		return PMA_Config;
 	}
 
-	public static void setConfig(Config config) {
+	public void setConfig(Config config) {
 		PMA_Config = config;
 	}
 

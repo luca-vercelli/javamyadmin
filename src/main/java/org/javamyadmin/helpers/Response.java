@@ -80,12 +80,15 @@ public class Response {
 
 	@Autowired
     private HttpServletRequest request;
-	
 	@Autowired
     private HttpServletResponse response;
 	
 	@Autowired
     private Globals GLOBALS;
+    @Autowired
+	private Config config;
+	@Autowired
+	private Core core;
     
     /**
      * Creates a new class instance
@@ -336,15 +339,15 @@ public class Response {
                 // set current db, table and sql query in the querywindow
                 // (this is for the bottom console)
                 String $query = "";
-                Integer $maxChars = new Integer((String) Globals.getConfig().get("MaxCharactersInDisplayedSQL"));
+                Integer $maxChars = new Integer((String) config.get("MaxCharactersInDisplayedSQL"));
                 if (!empty(GLOBALS.getSqlQuery())
                     && GLOBALS.getSqlQuery().length() < $maxChars
                 ) {
                     $query = GLOBALS.getSqlQuery();
                 }
                 Map<String, Object> params = new HashMap<>();
-                params.put("db", Core.ifSetOr(GLOBALS.getDb(), ""));
-                params.put("table", Core.ifSetOr(GLOBALS.getTable(), ""));
+                params.put("db", core.ifSetOr(GLOBALS.getDb(), ""));
+                params.put("table", core.ifSetOr(GLOBALS.getTable(), ""));
                 params.put("sql_query", $query);
                 this.addJSON(
                     "reloadQuerywindow",
@@ -362,7 +365,7 @@ public class Response {
 
         // Set the Content-Type header to JSON so that jQuery parses the
         // response correctly.
-        Core.headerJSON(response);
+        core.headerJSON(response);
 
         String $result = json_encode(this._JSON);
         /* TDO if ($result === false) {

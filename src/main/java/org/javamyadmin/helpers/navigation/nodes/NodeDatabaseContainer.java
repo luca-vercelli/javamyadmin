@@ -34,7 +34,7 @@ public class NodeDatabaseContainer extends Node {
         $checkUserPrivileges->getPrivileges();*/
         
         if (GLOBALS.getIsCreateDbPriv()
-            && "true".equals(Globals.getConfig().get("ShowCreateDb"))
+            && "true".equals(GLOBALS.getConfig().get("ShowCreateDb"))
         ) {
             Node $new = NodeFactory.getInstance(
                 "Node",

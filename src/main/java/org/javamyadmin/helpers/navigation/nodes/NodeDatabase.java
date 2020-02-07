@@ -48,7 +48,7 @@ public class NodeDatabase extends Node {
         ));
 
         String $scriptName = Util.getScriptNameForOption(
-            (String)Globals.getConfig().get("DefaultTabDatabase"),
+            (String)GLOBALS.getConfig().get("DefaultTabDatabase"),
             "database"
         );
         boolean $hasRoute = $scriptName.contains("?");

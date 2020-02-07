@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.CommonsInc;
+import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Template;
@@ -44,6 +45,8 @@ public abstract class AbstractController {
 	protected Template template;
 	@Autowired
 	protected CommonsInc commons;
+	@Autowired
+	protected Config config;
 
 	public DatabaseInterface getDbi() {
 		return dbi;

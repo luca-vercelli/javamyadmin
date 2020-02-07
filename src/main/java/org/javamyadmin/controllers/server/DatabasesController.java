@@ -67,7 +67,6 @@ public class DatabasesController extends AbstractController {
         //global $cfg, $server, $dblist, $is_create_db_priv;
         //global $replication_info, $db_to_create, $pmaThemeImage, $text_dir;
         
-		Config $cfg = Globals.getConfig();
 		boolean $is_create_db_priv = GLOBALS.getIsCreateDbPriv();
 		String $db_to_create = GLOBALS.getDbToCreate();
 		
@@ -128,7 +127,7 @@ public class DatabasesController extends AbstractController {
         String $headerStatistics = ""; //this.getStatisticsColumns();
         
 		Map<String, Object> model = new HashMap<>();
-	    model.put("is_create_database_shown", $cfg.get("ShowCreateDb"));
+	    model.put("is_create_database_shown", config.get("ShowCreateDb"));
 	    model.put("has_create_database_privileges", $is_create_db_priv);
 	    model.put("has_statistics", this.hasStatistics);
 	    model.put("database_to_create", $db_to_create);
@@ -139,10 +138,10 @@ public class DatabasesController extends AbstractController {
 	    model.put("database_count", this.databaseCount);
 	    model.put("pos", this.position);
 	    model.put("url_params", $urlParams);
-	    model.put("max_db_list", $cfg.get("MaxDbList"));
+	    model.put("max_db_list", config.get("MaxDbList"));
 	    //model.put("has_master_replication", $replication_info["master"]["status"]);
 	    //model.put("has_slave_replication", $replication_info["slave"]["status"]);
-	    model.put("is_drop_allowed", this.getDbi().isSuperuser() || "true".equals($cfg.get("AllowUserDropDatabase")));
+	    model.put("is_drop_allowed", this.getDbi().isSuperuser() || "true".equals(config.get("AllowUserDropDatabase")));
 	    model.put("pma_theme_image", GLOBALS.getPmaThemeImage());
 	    model.put("text_dir", GLOBALS.getTextDir());
 
@@ -166,7 +165,7 @@ public class DatabasesController extends AbstractController {
     {
 		commons.execute();
     	
-		Config $cfg = Globals.getConfig();
+		Config $cfg = config;
 		
 		Array $json = new Array();
 		
@@ -228,7 +227,7 @@ public class DatabasesController extends AbstractController {
     {
 		commons.execute();
 
-		Config $cfg = Globals.getConfig();
+		Config $cfg = config;
 		
         // global $submit_mult, $mult_btn, $selected, $err_url, $cfg;
 		Message $message = null;

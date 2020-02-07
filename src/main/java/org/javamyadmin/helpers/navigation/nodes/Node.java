@@ -819,10 +819,10 @@ public class Node
      *
      * @return String with html classes.
      */
-    public String getCssClasses(boolean $match)
+    public String getCssClasses(boolean $match, Globals GLOBALS)
     {
     	
-        if ("false".equals(Globals.getConfig().get("NavigationTreeEnableExpansion"))
+        if ("false".equals(GLOBALS.getConfig().get("NavigationTreeEnableExpansion"))
         ) {
             return "";
         }
@@ -846,9 +846,9 @@ public class Node
      *
      * @return String with image name
      */
-    public String getIcon(boolean $match)
+    public String getIcon(boolean $match, Globals GLOBALS)
     {
-        if ("false".equals(Globals.getConfig().get("NavigationTreeEnableExpansion"))
+        if ("false".equals(GLOBALS.getConfig().get("NavigationTreeEnableExpansion"))
         ) {
             return "";
         } else if ($match) {

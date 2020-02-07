@@ -631,7 +631,7 @@ public class FormDisplay {
 
         Map<String, String> $values = new HashMap<>();
         Map<String, String> $toSave = new HashMap<>();
-        boolean $isSetupScript = "true".equals(Globals.getConfig().get("is_setup"));
+        boolean $isSetupScript = "true".equals($GLOBALS.getConfig().get("is_setup"));
         if ($isSetupScript) {
             this._loadUserprefsInfo();
         }

@@ -40,6 +40,12 @@ public class CommonsInc {
 	private LanguageManager languageManager;
 	@Autowired
 	private ThemeManager themeManager;
+	@Autowired
+	private Config config;
+    @Autowired
+    private Sanitize sanitize;
+    @Autowired
+    private Core core;
 
     
     /**
@@ -58,20 +64,20 @@ public class CommonsInc {
 		}
 		 
 		// Security fix: disallow accessing serious server files via "?goto="
-		if (!empty(httpRequest.getParameter("goto")) && Core.checkPageValidity(httpRequest.getParameter("goto"))) {
+		if (!empty(httpRequest.getParameter("goto")) && core.checkPageValidity(httpRequest.getParameter("goto"))) {
 			GLOBALS.setGoto(httpRequest.getParameter("goto"));
 			GLOBALS.getUrlParameters().put("goto", httpRequest.getParameter("goto"));
 		} else {
 			GLOBALS.setGoto(httpRequest.getParameter(""));
-			Globals.getConfig().removeCookie("goto", httpRequest, httpResponse);
+			config.removeCookie("goto", httpRequest, httpResponse);
 			// TODO unset($_REQUEST['goto'], $_GET['goto'], $_POST['goto']);
 		}
 
 		// returning page
-		if (!empty(httpRequest.getParameter("back")) && Core.checkPageValidity(httpRequest.getParameter("back"))) {
+		if (!empty(httpRequest.getParameter("back")) && core.checkPageValidity(httpRequest.getParameter("back"))) {
 			GLOBALS.setBack(httpRequest.getParameter("back"));
 		} else {
-			Globals.getConfig().removeCookie("back", httpRequest, httpResponse);
+			config.removeCookie("back", httpRequest, httpResponse);
 		    // TODO unset($_REQUEST['back'], $_GET['back'], $_POST['back']);
 		}
 
@@ -95,7 +101,7 @@ public class CommonsInc {
 		boolean $token_mismatch = true;
 		boolean $token_provided = false;
 		if (httpRequest.getMethod().equals("POST")) {
-		    if (Core.isValid(httpRequest.getParameter("token"))) {
+		    if (core.isValid(httpRequest.getParameter("token"))) {
 		        $token_provided = true;
 		        $token_mismatch = ! httpRequest.getParameter("token").equals(httpRequest.getSession().getAttribute(" PMA_token "));
 		    }
@@ -113,19 +119,19 @@ public class CommonsInc {
 		        // We don"t allow any POST operation parameters if the token is mismatched
 		        // or is not provided
 		        String[] $whitelist = new String[] {"ajax_request"};
-		        Sanitize.removeRequestVars($whitelist);
+		        sanitize.removeRequestVars($whitelist);
 		    }
 		}
 		
 		// current selected database
-		Core.setGlobalDbOrTable("db");
+		core.setGlobalDbOrTable("db");
 		
 		// current selected table
-		Core.setGlobalDbOrTable("table");
+		core.setGlobalDbOrTable("table");
 		
 		// Store currently selected recent table.
 		// Affect GLOBALS.db"] and GLOBALS.table"]
-		if (!empty(httpRequest.getParameter("selected_recent_table")) && Core.isValid(httpRequest.getParameter("selected_recent_table"))) {
+		if (!empty(httpRequest.getParameter("selected_recent_table")) && core.isValid(httpRequest.getParameter("selected_recent_table"))) {
 		    Map $recent_table = (Map)json_decode(httpRequest.getParameter("selected_recent_table"));
 		    GLOBALS.setDb($recent_table.containsKey("db") && ($recent_table.get("db") instanceof String) ? (String) $recent_table.get("db") : "");
 		    GLOBALS.setDb($recent_table.containsKey("table") && ($recent_table.get("table") instanceof String) ? (String) $recent_table.get("table") : "");
@@ -134,7 +140,7 @@ public class CommonsInc {
 		}
 		
 		// SQL query to be executed
-		if (Core.isValid(httpRequest.getParameter("sql_query"))) {
+		if (core.isValid(httpRequest.getParameter("sql_query"))) {
 			GLOBALS.setSqlQuery(httpRequest.getParameter("sql_query"));
 		}
 		
@@ -144,22 +150,22 @@ public class CommonsInc {
 		
 		// check for errors occurred while loading configuration
 		// this check is done here after loading language files to present errors in locale
-		Globals.getConfig().checkPermissions();
-		Globals.getConfig().checkErrors(httpRequest, httpResponse, GLOBALS, response);
+		config.checkPermissions();
+		config.checkErrors(httpRequest, httpResponse, GLOBALS, response);
 		
 		// Check server configuration
-		Core.checkConfiguration();
+		core.checkConfiguration();
 
 		// Check request for possible attacks
-		Core.checkRequest(httpRequest, httpResponse, GLOBALS, response);
+		core.checkRequest(httpRequest, httpResponse, GLOBALS, response);
 
 		/******************************************************************************/
 		/* setup servers                                       LABEL_setup_servers    */
 
-		Globals.getConfig().checkServers();
+		config.checkServers();
 
 		// current server
-		GLOBALS.setServer(Globals.getConfig().selectServer(httpRequest));
+		GLOBALS.setServer(config.selectServer(httpRequest));
 		if (GLOBALS.getServer() != null) {
 			GLOBALS.getUrlParameters().put("server", Integer.toString(GLOBALS.getServer()));
 		}
@@ -178,9 +184,9 @@ public class CommonsInc {
 		     * save some settings in cookies
 		     * @todo should be done in PhpMyAdmin\Config
 		     */
-		    Globals.getConfig().setCookie("pma_lang", GLOBALS.getLang(), httpRequest, httpResponse);
+		    config.setCookie("pma_lang", GLOBALS.getLang(), httpRequest, httpResponse);
 		    GLOBALS.getThemeManager().setThemeCookie(httpRequest, httpResponse);
-		    if (! empty(Globals.getConfig().get("Server"))) {
+		    if (! empty(config.get("Server"))) {
 		        /**
 		         * Loads the proper database interface for this server
 		         */
@@ -197,7 +203,7 @@ public class CommonsInc {
 		        ) {
 		            String $value
 		                = (String) httpRequest.getSession().getAttribute("cache." + $cache_key + ".userprefs.LoginCookieValidity");
-		            Globals.getConfig().set("LoginCookieValidity", $value);
+		            config.set("LoginCookieValidity", $value);
 		        }
 		        // Gets the authentication library that fits the GLOBALS.cfg["Server"] settings
 		        // and run authentication
@@ -207,7 +213,7 @@ public class CommonsInc {
 		        /* TODO ?
 		        $auth_class = "PhpMyAdmin\\Plugins\\Auth\\Authentication" . ucfirst(strtolower(GLOBALS.cfg["Server"]["auth_type"]));
 		        if (! @class_exists($auth_class)) {
-		            Core.fatalError(
+		            core.fatalError(
 		                __("Invalid authentication method set in configuration:")
 		                + " " . GLOBALS.cfg.get("Server.auth_type")
 		            );
@@ -223,7 +229,7 @@ public class CommonsInc {
 		        // must be open after this one so it would be default one for all the
 		        // scripts)
 		        Connection $controllink = null;
-		        if (!empty(((Map) Globals.getConfig().get("Server")).get("controluser"))) {
+		        if (!empty(((Map) config.get("Server")).get("controluser"))) {
 		            $controllink = GLOBALS.getDbi().connect(
 		                DatabaseInterface.CONNECT_CONTROL
 		            );
@@ -296,7 +302,7 @@ public class CommonsInc {
 		    }
 		}
 		// load user preferences
-		Globals.getConfig().loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse, languageManager);
+		config.loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse, languageManager);
 		return true;
 	}
 }

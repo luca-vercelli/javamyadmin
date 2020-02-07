@@ -62,11 +62,11 @@ public class Url {
         }
 
         if (GLOBALS.getServer() != null
-            && GLOBALS.getServer() != Globals.getConfig().get("ServerDefault")
+            && GLOBALS.getServer() != GLOBALS.getConfig().get("ServerDefault")
         ) {
             params.put("server", GLOBALS.getServer());
         }
-        if (empty(Globals.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
+        if (empty(GLOBALS.getConfig().getCookie("pma_lang", req)) && ! empty(GLOBALS.getLang())) {
             params.put("lang", GLOBALS.getLang());
         }
 

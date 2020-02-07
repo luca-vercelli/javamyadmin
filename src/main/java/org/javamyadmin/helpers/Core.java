@@ -1,31 +1,38 @@
 package org.javamyadmin.helpers;
 
+import static org.javamyadmin.php.Php.*;
+
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
-import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Globals;
-import static org.javamyadmin.php.Php.*;
+import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class Core {
+
+    @Autowired
+    private Sanitize sanitize;
+    @Autowired
+    private Config config;
+	@Autowired
+	private Util util;
+    
     /**
      * the whitelist for goto parameter
      * @static array $goto_whitelist
      */
-    public static String[] $goto_whitelist = new String[] {
+    public String[] $goto_whitelist = new String[] {
         "index.php",
     };
     /**
@@ -38,15 +45,15 @@ public class Core {
      * echo Core.ifSetOr($_REQUEST["db"], ""); // ""
      * // $_POST["sql_query"] not set
      * echo Core.ifSetOr($_POST["sql_query"]); // null
-     * // Globals.getConfig()["EnableFoo"] not set
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"]); // null
-     * // Globals.getConfig()["EnableFoo"] set to 1
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // false
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "similar"); // 1
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false); // 1
-     * // Globals.getConfig()["EnableFoo"] set to true
-     * echo Core.ifSetOr(Globals.getConfig()["EnableFoo"], false, "boolean"); // true
+     * // config["EnableFoo"] not set
+     * echo Core.ifSetOr(config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(config["EnableFoo"]); // null
+     * // config["EnableFoo"] set to 1
+     * echo Core.ifSetOr(config["EnableFoo"], false, "boolean"); // false
+     * echo Core.ifSetOr(config["EnableFoo"], false, "similar"); // 1
+     * echo Core.ifSetOr(config["EnableFoo"], false); // 1
+     * // config["EnableFoo"] set to true
+     * echo Core.ifSetOr(config["EnableFoo"], false, "boolean"); // true
      * </code>
      *
      * @param mixed $var     param to check
@@ -57,17 +64,17 @@ public class Core {
      *
      * @see isValid()
      */
-    public static Object ifSetOr(Object $var, Object $default /*= null*/, String $type /*= "similar"*/)
+    public Object ifSetOr(Object $var, Object $default /*= null*/, String $type /*= "similar"*/)
     {
         if (! isValid($var, $type, $default)) {
             return $default;
         }
         return $var;
     }
-    public static Object ifSetOr(Object $var, Object $default) {
+    public Object ifSetOr(Object $var, Object $default) {
     	return ifSetOr($var, $default, "similar");
     }
-    public static Object ifSetOr(Object $var) {
+    public Object ifSetOr(Object $var) {
     	return ifSetOr($var, null, "similar");
     }
     
@@ -113,7 +120,7 @@ public class Core {
      * @todo add some more var types like hex, bin, ...?
      * @see https://secure.php.net/gettype
      */
-    public static boolean isValid(Object $var, Object $type /*= "length"*/, Object $compare /*= null*/)
+    public boolean isValid(Object $var, Object $type /*= "length"*/, Object $compare /*= null*/)
     {
         if ($var == null) {
             // var is not even set
@@ -184,7 +191,7 @@ public class Core {
         }
         return gettype($var).equals($type);
     }
-    public static boolean isValid(Object $var) {
+    public boolean isValid(Object $var) {
     	return isValid($var, "length", null);
     }
     /**
@@ -198,13 +205,13 @@ public class Core {
      *
      * @access  public
      */
-    public static String securePath(String $path)
+    public String securePath(String $path)
     {
         // change .. to .
         return $path.replace("..", ".");
     } // end function
     
-    public static class ErrorBean {
+    public class ErrorBean {
     	boolean success;
     	String message;
     	public ErrorBean(boolean success, String message) {
@@ -223,7 +230,7 @@ public class Core {
      *
      * @return void
      */
-    public static void fatalError(
+    public void fatalError(
         HttpServletRequest req, HttpServletResponse resp, Globals GLOBALS, Response pmaResponse,
         String $error_message,
         Object $message_args /*= null*/
@@ -238,8 +245,8 @@ public class Core {
          * Avoid using Response class as config does not have to be loaded yet
          * (this can happen on early fatal error)
          */
-        if (GLOBALS.getDbi() != null && Globals.getConfig() != null
-            && Globals.getConfig().get("is_setup").equals("false")
+        if (GLOBALS.getDbi() != null && config != null
+            && config.get("is_setup").equals("false")
             && pmaResponse.isAjax()) {
         	pmaResponse.setRequestStatus(false);
         	pmaResponse.addJSON("message", Message.error($error_message));
@@ -261,7 +268,7 @@ public class Core {
         }
     }
     
-    public static void fatalError(
+    public void fatalError(
             HttpServletRequest req, HttpServletResponse resp, Globals GLOBALS, Response pmaResponse,
             String $error_message)
     {
@@ -277,7 +284,7 @@ public class Core {
      *
      * @access  public
      */
-    public static String getPHPDocLink(String $target)
+    public String getPHPDocLink(String $target)
     {
     	return ""; // Unsupported
         /* List of PHP documentation translations */
@@ -310,7 +317,7 @@ public class Core {
      *
      * @return void
      */
-    public static void warnMissingExtension(
+    public void warnMissingExtension(
         String $extension,
         boolean $fatal /*= false*/,
         String $extra /*= ""*/
@@ -324,13 +331,13 @@ public class Core {
      *
      * @return integer count of tables in $db
      */
-    public static int getTableCount(String $db)
+    public int getTableCount(String $db)
     {
     	// FIXME mysql specific
     	return -1;
     	// see https://stackoverflow.com/questions/2780284/how-to-get-all-table-names-from-a-database
         /*$tables = GLOBALS["dbi"].tryQuery(
-            "SHOW TABLES FROM " + Util.backquote($db) + ";",
+            "SHOW TABLES FROM " + util.backquote($db) + ";",
             DatabaseInterface.CONNECT_USER,
             DatabaseInterface.QUERY_STORE
         );
@@ -352,7 +359,7 @@ public class Core {
      *
      * @return integer
      */
-    public static Long getRealSize(String $size /*= 0*/)
+    public Long getRealSize(String $size /*= 0*/)
     {
         if (empty($size)) {
             return 0L;
@@ -380,7 +387,7 @@ public class Core {
      *
      * @return boolean whether $page is valid or not (in $whitelist or not)
      */
-    public static boolean checkPageValidity(String $page, List $whitelist /*= []*/, boolean $include /*= false*/)
+    public boolean checkPageValidity(String $page, List $whitelist /*= []*/, boolean $include /*= false*/)
     {
     	if (empty($whitelist)) {
             $whitelist = Arrays.asList($goto_whitelist);
@@ -407,7 +414,7 @@ public class Core {
         return false;
     }
     
-    public static boolean checkPageValidity(String $page) {
+    public boolean checkPageValidity(String $page) {
     	return checkPageValidity($page, new ArrayList<>(), false);
     }
     
@@ -421,7 +428,7 @@ public class Core {
      *
      * @return String  value of $var or empty String
      */
-    public static String getenv(String $var_name)
+    public String getenv(String $var_name)
     {
     	if (! empty(System.getenv($var_name))) {
     		return System.getenv($var_name);
@@ -440,19 +447,19 @@ public class Core {
      *
      * @return void
      */
-    public static void sendHeaderLocation(String $uri, boolean $use_refresh /*= false*/, HttpServletRequest request, HttpServletResponse response)
+    public void sendHeaderLocation(String $uri, boolean $use_refresh /*= false*/, HttpServletRequest request, HttpServletResponse response)
     {
         /*
          * Avoid relative path redirect problems in case user entered URL
          * like /phpmyadmin/index.php/ which some web servers happily accept.
          */
         if ($uri.charAt(0) == '.') {
-            $uri = Globals.getConfig().getRootPath(request) + $uri.substring(2);
+            $uri = config.getRootPath(request) + $uri.substring(2);
         }
         response.addHeader("Location: ", $uri);
     }
     
-    public static void sendHeaderLocation(String $uri, HttpServletRequest request, HttpServletResponse response) {
+    public void sendHeaderLocation(String $uri, HttpServletRequest request, HttpServletResponse response) {
     	sendHeaderLocation($uri, false, request, response);
     }
     
@@ -461,7 +468,7 @@ public class Core {
      *
      * @return void
      */
-    public static void headerJSON(HttpServletResponse response)
+    public void headerJSON(HttpServletResponse response)
     {
         /*if (defined("TESTSUITE")) {
             return;
@@ -480,7 +487,7 @@ public class Core {
      *
      * @return void
      */
-    public static void noCacheHeader(HttpServletResponse response)
+    public void noCacheHeader(HttpServletResponse response)
     {
         // rfc2616 - Section 14.21
     	response.addHeader("Expires", new Date().toString()); //FIXME check format
@@ -506,7 +513,7 @@ public class Core {
      *
      * @return void
      */
-    public static void downloadHeader(
+    public void downloadHeader(
         String $filename,
         String $mimetype,
         int $length /*= 0*/,
@@ -518,7 +525,7 @@ public class Core {
             noCacheHeader(response);
         }
         /* Replace all possibly dangerous chars in filename */
-        $filename = Sanitize.sanitizeFilename($filename);
+        $filename = sanitize.sanitizeFilename($filename);
         if (! empty($filename)) {
         	response.addHeader("Content-Description", "File Transfer");
         	response.addHeader("Content-Disposition", "attachment; filename=\"" + $filename + "\"");
@@ -547,7 +554,7 @@ public class Core {
      *
      * @return mixed    array element or $default
      */
-    public static Object arrayRead(String $path, Map $array, Object $default /*= null*/)
+    public Object arrayRead(String $path, Map $array, Object $default /*= null*/)
     {
         String[] $keys = $path.split("/");
         for (String $key : $keys ) {
@@ -559,7 +566,7 @@ public class Core {
         return $array;
     }
     
-    public static Object arrayRead(String $path, Map $array) {
+    public Object arrayRead(String $path, Map $array) {
     	return arrayRead($path, $array, null);
     }
     
@@ -572,7 +579,7 @@ public class Core {
      *
      * @return void
      */
-    public static void arrayWrite(String $path, Map $array, Object $value)
+    public void arrayWrite(String $path, Map $array, Object $value)
     {
         String[] $keys = $path.split("/");
         for (int i = 0 ; i < $keys.length-1; ++i) {
@@ -592,7 +599,7 @@ public class Core {
      *
      * @return void
      */
-    public static void arrayRemove(String $path, Map $array)
+    public void arrayRemove(String $path, Map $array)
     {
     	throw new IllegalStateException("Not implemented");
         /*String[] $keys = $path.split("/");
@@ -633,7 +640,7 @@ public class Core {
      *
      * @return String URL for a link.
      */
-    public static String linkURL(String $url)
+    public String linkURL(String $url)
     {
         if (! $url.matches("^https?://")) {
             return $url;
@@ -642,7 +649,7 @@ public class Core {
         //FIXME not sure of what the original function did
         $url = urlencode($url);
         		
-        if (Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"))) {
+        if (config != null && "true".equals(config.get("is_setup"))) {
             $url = "../url.php?url=" + $url;
         } else {
             $url = "./url.php?url=" + $url;
@@ -658,7 +665,7 @@ public class Core {
      * @return boolean True: if domain of $url is allowed domain,
      *                 False: otherwise.
      */
-    public static boolean isAllowedDomain(String $url)
+    public boolean isAllowedDomain(String $url)
     {
     	return true; // TODO
         /* $arr = parse_url($url);
@@ -705,7 +712,7 @@ public class Core {
      *
      * @return String Escaped and cleaned up text suitable for html
      */
-    public static String mimeDefaultFunction(String $buffer)
+    public String mimeDefaultFunction(String $buffer)
     {
         $buffer = htmlspecialchars($buffer);
         $buffer = $buffer.replace("  ", " &nbsp;");
@@ -719,27 +726,27 @@ public class Core {
      *
      * @return void
      */
-    public static void previewSQL(String $query_data, Response pmaResponse)
+    public void previewSQL(String $query_data, Response pmaResponse)
     {
         String $retval = "<div class='preview_sql'>";
         if (empty($query_data)) {
             $retval += __("No change");
         } else {
-            $retval += Util.formatSql($query_data, false);
+            $retval += util.formatSql($query_data, false);
         }
         $retval += "</div>";
         pmaResponse.addJSON("sql_data", $retval);
         //exit();  //FIXME
     }
 
-    public static void previewSQL(List<String> $query_data, Response pmaResponse)
+    public void previewSQL(List<String> $query_data, Response pmaResponse)
     {
         String $retval = "<div class='preview_sql'>";
         if (empty($query_data)) {
             $retval += __("No change");
         } else {
             for (String $query : $query_data ) {
-                $retval += Util.formatSql($query, false);
+                $retval += util.formatSql($query, false);
             }
         }
         $retval += "</div>";
@@ -753,7 +760,7 @@ public class Core {
      *
      * @return boolean true if empty
      */
-    public static boolean emptyRecursive(Object $value)
+    public boolean emptyRecursive(Object $value)
     {
         boolean $empty = true;
         if ($value instanceof Map) {
@@ -776,7 +783,7 @@ public class Core {
      *
      * @return void
      */
-    public static void setPostAsGlobal(Map $post_patterns)
+    public void setPostAsGlobal(Map $post_patterns)
     {
     	/* TODO
         foreach (array_keys($_POST) as $post_key) {
@@ -794,7 +801,7 @@ public class Core {
      *
      * @return void
      */
-    public static void setGlobalDbOrTable(String $param)
+    public void setGlobalDbOrTable(String $param)
     {
     	/* TODO
         $value = "";
@@ -811,7 +818,7 @@ public class Core {
      *
      * @return void
      */
-    public static void cleanupPathInfo()
+    public void cleanupPathInfo()
     {
     	/* TODO
         global $PMA_PHP_SELF;
@@ -855,7 +862,7 @@ public class Core {
      * Checks that required PHP extensions are there.
      * @return void
      */
-    public static void checkExtensions()
+    public void checkExtensions()
     {
     	// Unsupported
     }
@@ -866,7 +873,7 @@ public class Core {
      *
      * @access  private
      */
-    public static String getIp(SessionMap session)
+    public String getIp(SessionMap session)
     {
         /* Get the address of user */
         if (empty(session.get("REMOTE_ADDR"))) {
@@ -875,7 +882,7 @@ public class Core {
         }
         String $direct_ip = (String) session.get("REMOTE_ADDR");
         /* Do we trust this IP as a proxy? If yes we will use it"s header. */
-        if (! empty(multiget(Globals.getConfig().settings, "TrustedProxies", $direct_ip))) {
+        if (! empty(multiget(config.settings, "TrustedProxies", $direct_ip))) {
             /* Return true IP */
             return $direct_ip;
         }
@@ -884,7 +891,7 @@ public class Core {
          * X-Forwarded-For: client, proxy1, proxy2
          */
         // Get header content
-        String $value = getenv((String) multiget(Globals.getConfig().settings,"TrustedProxies", $direct_ip));
+        String $value = getenv((String) multiget(config.settings,"TrustedProxies", $direct_ip));
         // Grab first element what is client adddress
         $value = $value.split(",")[0];
         // checks that the header contains only one IP address,
@@ -907,7 +914,7 @@ public class Core {
      *
      * @return String
      */
-    public static String sanitizeMySQLHost(String $name)
+    public String sanitizeMySQLHost(String $name)
     {
     	return $name; //Unsupported
         /*while (strtolower(substr($name, 0, 2)) == "p:") {
@@ -924,7 +931,7 @@ public class Core {
      *
      * @return String
      */
-    public static String sanitizeMySQLUser(String $name) 
+    public String sanitizeMySQLUser(String $name) 
     {
     	return $name; //Unsupported
         /*$position = strpos($name, chr(0));
@@ -942,7 +949,7 @@ public class Core {
      *
      * @return mixed
      */
-    public static Object safeUnserialize(String $data)
+    public Object safeUnserialize(String $data)
     {
     	return null; //TODO
     	/*
@@ -1021,7 +1028,7 @@ public class Core {
      *
      * @return void
      */
-    public static void configure()
+    public void configure()
     {
     	//Unsupported
     }
@@ -1030,7 +1037,7 @@ public class Core {
      *
      * @return void
      */
-    public static void checkConfiguration()
+    public void checkConfiguration()
     {
     	//Unsupported
     }
@@ -1042,7 +1049,7 @@ public class Core {
      *
      * @return void
      */
-    public static void checkRequest(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, Response pmaResponse)
+    public void checkRequest(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS, Response pmaResponse)
     {
         if (!empty(request.getParameter("GLOBALS")) ) {
             fatalError(request, response, GLOBALS, pmaResponse, __("GLOBALS overwrite attempt"));
@@ -1060,10 +1067,10 @@ public class Core {
      * @param String $sqlQuery The sql query
      * @return String
      */
-    public static String signSqlQuery(String $sqlQuery, SessionMap session)
+    public String signSqlQuery(String $sqlQuery, SessionMap session)
     {
     	return null; // TODO
-        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.getConfig().get("blowfish_secret"));
+        //return hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)config.get("blowfish_secret"));
     }
     /**
      * Check that the sql query has a valid hmac signature
@@ -1072,10 +1079,10 @@ public class Core {
      * @param String $signature The Signature to check
      * @return boolean
      */
-    public static boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
+    public boolean checkSqlQuerySignature(String $sqlQuery, String $signature, SessionMap session)
     {
     	return true; // TODO
-        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)Globals.getConfig().get("blowfish_secret"));
+        //String $hmac = hash_hmac("sha256", $sqlQuery, (String)session.get(" HMAC_secret ") + (String)config.get("blowfish_secret"));
         //return hash_equals($hmac, $signature);
     }
 }

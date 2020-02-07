@@ -33,6 +33,11 @@ public class Table {
      * @var Relation
      */
     //private Relation $relation; TODO?
+    
+    @Autowired
+    protected Config config;
+    @Autowired
+    protected Util util;
 
 	public Table(String $table_name, String $db_name/*, DatabaseInterface $databaseInterface*/) {
 		this._name = $table_name;
@@ -136,14 +141,14 @@ public class Table {
         }*/
         // for a VIEW, $row_count is always false at this point
         if ($row_count != null
-            && $row_count >= new Long((String)Globals.getConfig().get("MaxExactCount"))
+            && $row_count >= new Long((String)config.get("MaxExactCount"))
         ) {
             return $row_count;
         }
         //if (! $is_view) {
             $row_count = (Long) this._dbi.fetchValue(
-                "SELECT COUNT(*) FROM " + Util.backquote($db) + "."
-                + Util.backquote($table)
+                "SELECT COUNT(*) FROM " + util.backquote($db) + "."
+                + util.backquote($table)
             );
         /* TODO } else {
             // For complex views, even trying to get a partial record
@@ -158,8 +163,8 @@ public class Table {
                 // Use try_query because it can fail (when a VIEW is
                 // based on a table that no longer exists)
                 ResultSet $result = this._dbi.tryQuery(
-                    "SELECT 1 FROM " + Util.backquote($db) + "."
-                    + Util.backquote($table) 
+                    "SELECT 1 FROM " + util.backquote($db) + "."
+                    + util.backquote($table) 
                     //+ " LIMIT " + $GLOBALS["cfg"]["MaxExactCountViews"]
                     ,
                     DatabaseInterface.CONNECT_USER,

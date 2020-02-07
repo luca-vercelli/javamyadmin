@@ -11,16 +11,24 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * This class includes various sanitization methods that can be called statically
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Sanitize {
 
-
+	@Autowired
+	private Config config;
+    @Autowired
+    private Core core;
+    @Autowired
+    private Util util;
+	
     /**
      * Checks whether given link is valid
      *
@@ -30,7 +38,7 @@ public class Sanitize {
      *
      * @return boolean True if string can be used as link
      */
-    public static boolean checkLink(String $url, boolean $http /*= false*/, boolean $other /*= false*/)
+    public boolean checkLink(String $url, boolean $http /*= false*/, boolean $other /*= false*/)
     {
         $url = $url.toLowerCase();
         List<String> $valid_starts = new ArrayList<>(Arrays.asList(new String[] {
@@ -39,7 +47,7 @@ public class Sanitize {
             "./doc/html/",
             "./index.php?",
         }));
-        boolean $is_setup = Globals.getConfig() != null && "true".equals(Globals.getConfig().get("is_setup"));
+        boolean $is_setup = config != null && "true".equals(config.get("is_setup"));
         // Adjust path to setup script location
         if ($is_setup) {
             /* TODO foreach ($valid_starts as $key => $value) {
@@ -67,11 +75,11 @@ public class Sanitize {
         return false;
     }
     
-    public static boolean checkLink(String $url) {
+    public boolean checkLink(String $url) {
     	return checkLink($url, false, false);
     }
     
-    public static boolean checkLink(String $url, boolean $http) {
+    public boolean checkLink(String $url, boolean $http) {
     	return checkLink($url, $http, false);
     }
 
@@ -84,7 +92,7 @@ public class Sanitize {
      *
      * @return string Replaced string
      */
-    public static String replaceBBLink(String[] $found)
+    public String replaceBBLink(String[] $found)
     {
         /* Check for valid link */
         if (! checkLink($found[1])) {
@@ -107,7 +115,7 @@ public class Sanitize {
         String $url;
         /* Construct url */
         if ($found[1].startsWith("http")) {
-            $url = Core.linkURL($found[1]);
+            $url = core.linkURL($found[1]);
         } else {
             $url = $found[1];
         }
@@ -133,7 +141,7 @@ public class Sanitize {
      *
      * @return String   the sanitized message
      */
-    public static String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/)
+    public String sanitizeMessage(String message, boolean escape /*= false*/, boolean safe /*= false*/)
     {
     	if (message == null) {
     		message = "";
@@ -159,18 +167,18 @@ public class Sanitize {
         message = message.replace(    "[/sup]"    , "</sup>");
             // used in common.inc.php:
         message = message.replace(    "[conferr]" , "<iframe src='show_config_errors.php'><a href='show_config_errors.php'>show_config_errors.php</a></iframe>");
-            // used in libraries/Util.php
-        message = message.replace(    "[dochelpicon]" , Util.getImage("b_help", __("Documentation"), null));
+            // used in libraries/util.php
+        message = message.replace(    "[dochelpicon]" , util.getImage("b_help", __("Documentation"), null));
 
         // Match links in bb code ([a@url@target], where @target is options) 
         String pattern = "/\\[a@([^]\"@]*)(@([^]\"]*))?\\]/";
 
-        // Find and replace all links 
+        // Find and replace all links
         message = preg_replace_callback(pattern, new Function<String[], String>() {
 
 			@Override
 			public String apply(String[] match) {
-				return Sanitize.replaceBBLink(match);
+				return replaceBBLink(match);
 			}
         }, message);
 
@@ -195,7 +203,7 @@ public class Sanitize {
         return message;
     }
     
-    public static String sanitizeMessage(String message) {
+    public String sanitizeMessage(String message) {
     	return sanitizeMessage(message, false, false);
     }
 
@@ -207,7 +215,7 @@ public class Sanitize {
      * @return possibly modified whitelist
      * @access public
      */
-    public static String[] removeRequestVars(String[] $whitelist) {
+    public String[] removeRequestVars(String[] $whitelist) {
 		// TODO
     	// Really required ?!?
 		return $whitelist;
@@ -225,7 +233,7 @@ public class Sanitize {
      *
      * @return string  the escaped string
      */
-	public static String escapeJsString(String $string) {
+	public String escapeJsString(String $string) {
 
 		return $string == null ? null : $string.replace("\000", "")	//
 				.replace("\\", "\\\\")	//
@@ -251,7 +259,7 @@ public class Sanitize {
      * @return string  the sanitized filename
      *
      */
-	public static String sanitizeFilename(String $filename, boolean $replaceDots) {
+	public String sanitizeFilename(String $filename, boolean $replaceDots) {
 
         String $pattern = "/[^A-Za-z0-9_";
         // if we don't have to replace dots
@@ -264,7 +272,7 @@ public class Sanitize {
         return $filename;
 	}
 	
-	public static String sanitizeFilename(String $filename) {
+	public String sanitizeFilename(String $filename) {
 		return sanitizeFilename($filename, false);
 	}
 
@@ -275,7 +283,7 @@ public class Sanitize {
      *
      * @return string formatted value.
      */
-    public static String formatJsVal(Object $value)
+    public String formatJsVal(Object $value)
     {
         if ($value instanceof Boolean) {
             if ((Boolean)$value) {
@@ -304,7 +312,7 @@ public class Sanitize {
      * @return string Javascript code.
      */
     @SuppressWarnings("rawtypes")
-	public static String getJsValue(String $key, Object $value, boolean $escape /*= true*/)
+	public String getJsValue(String $key, Object $value, boolean $escape /*= true*/)
     {
         String $result = $key + " = ";
         if (! $escape) {
@@ -335,7 +343,7 @@ public class Sanitize {
         return $result;
     }
     
-    public static String getJsValue(String $key, Object $value) {
+    public String getJsValue(String $key, Object $value) {
     	return getJsValue($key, $value, true);
     }
 
@@ -349,7 +357,7 @@ public class Sanitize {
      * @return void
 	 * @throws IOException 
      */
-    public static void printJsValue(String string, Object obj, HttpServletResponse response) throws IOException {
+    public void printJsValue(String string, Object obj, HttpServletResponse response) throws IOException {
     	response.getWriter().write(getJsValue(string, obj));
 	}
 
@@ -364,7 +372,7 @@ public class Sanitize {
      *
      * @return string Javascript code.
      */
-    public static String getJsValueForFormValidation(String $key, String $value, boolean $addOn, boolean $comma)
+    public String getJsValueForFormValidation(String $key, String $value, boolean $addOn, boolean $comma)
     {
         String $result = $key + ": ";
         if ($addOn) {
@@ -393,18 +401,18 @@ public class Sanitize {
      * @return void
      * @throws IOException 
      */
-    public static void printJsValueForFormValidation(String $key, String $value, boolean $addOn /*= false*/, boolean $comma /*= true*/,
+    public void printJsValueForFormValidation(String $key, String $value, boolean $addOn /*= false*/, boolean $comma /*= true*/,
     		HttpServletResponse response) throws IOException
     {
     	response.getWriter().write(getJsValueForFormValidation($key, $value, $addOn, $comma));
     }
 
-	public static void printJsValueForFormValidation(String $key, String $value, HttpServletResponse response) throws IOException {
+	public void printJsValueForFormValidation(String $key, String $value, HttpServletResponse response) throws IOException {
 		printJsValueForFormValidation($key, $value, false, true, response);
 		
 	}
 
-	public static void printJsValueForFormValidation(String $key, String $value, boolean $addOn, HttpServletResponse response) throws IOException {
+	public void printJsValueForFormValidation(String $key, String $value, boolean $addOn, HttpServletResponse response) throws IOException {
 		printJsValueForFormValidation($key, $value, $addOn, true, response); 
 	}
 	
@@ -421,7 +429,7 @@ public class Sanitize {
      *
      * @access  public
      */
-    public static String jsFormat(String $a_string, boolean $add_backquotes /*= true*/)
+    public String jsFormat(String $a_string, boolean $add_backquotes /*= true*/)
     {
         $a_string = htmlspecialchars($a_string);
         $a_string = escapeJsString($a_string);
@@ -430,11 +438,11 @@ public class Sanitize {
         $a_string = $a_string.replace("#", "\\#");
 
         return $add_backquotes
-            ? Util.backquote($a_string)
+            ? util.backquote($a_string)
             : $a_string;
     } // end of the 'jsFormat' function
 
-    public static String jsFormat(String $a_string) {
+    public String jsFormat(String $a_string) {
     	return jsFormat($a_string, true);
     }
 }

@@ -131,7 +131,7 @@ public class DatabaseInterface {
         boolean $cache_affected_rows /*= true*/
     ) {
     	
-    	boolean $debug = "true".equals(((Map) Globals.getConfig().get("DBG")).get("sql"));
+    	boolean $debug = "true".equals(((Map) GLOBALS.getConfig().get("DBG")).get("sql"));
         if (! _links.containsKey($link)) {
             return null;
         }
@@ -823,7 +823,7 @@ public class DatabaseInterface {
      */
     public ConnectionParams getConnectionParams(int $mode, Map<String, Object> $serverMap /*= null*/)
     {
-        Config $cfg = Globals.getConfig();
+        Config $cfg = GLOBALS.getConfig();
         ConnectionParams connectionParams = new ConnectionParams();
         String $user = null;
         String $password = null;
@@ -1173,7 +1173,7 @@ public class DatabaseInterface {
     		$sort_order = $sort_order.toUpperCase();
     	}
         if ($limit_count == null) {
-            $limit_count = new Integer((String)Globals.getConfig().get("MaxDbList"));
+            $limit_count = new Integer((String)GLOBALS.getConfig().get("MaxDbList"));
         }
         
         // Warning: $GLOBALS['cfg']['Server']['DisableIS'] is not supported

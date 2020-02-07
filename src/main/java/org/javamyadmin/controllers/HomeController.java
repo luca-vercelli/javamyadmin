@@ -39,8 +39,6 @@ public class HomeController extends AbstractController {
 	LanguageManager $languageManager;
 	@Autowired
 	ThemeManager themeManager;
-	@Autowired
-	Config config;
 	
 	@RequestMapping(value = {"/", "/index.html", "/index.jsp"})
 	public void root() throws IOException {

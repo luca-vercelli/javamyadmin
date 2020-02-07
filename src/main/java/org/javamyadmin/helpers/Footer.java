@@ -70,7 +70,15 @@ public class Footer {
     @Autowired
     private Globals GLOBALS;
     @Autowired
+    private Config config;
+    @Autowired
     private Response response;
+    @Autowired
+    private Sanitize sanitize;
+    @Autowired
+    private Core core;
+    @Autowired
+    private Util util;
     @Autowired
     private HttpServletRequest httpRequest;
     @Autowired
@@ -180,7 +188,7 @@ public class Footer {
     public String getDebugMessage()
     {
         String $retval = "\"null\"";
-        if (!empty(Globals.getConfig().get("DBG.sql"))
+        if (!empty(config.get("DBG.sql"))
             && empty(httpRequest.getParameter("no_debug"))
             && ! empty($_SESSION.get("debug"))
         ) {
@@ -241,7 +249,7 @@ public class Footer {
         ) {
             $params.put("single_table", httpRequest.getParameter("single_table"));
         }
-        return /* TODO basename(Core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params);
+        return /* TODO basename(core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params);
     }
 
     /**
@@ -257,8 +265,8 @@ public class Footer {
         $retval += "<div id='selflink' class='print_ignore'>";
         $retval += "<a href='" + htmlspecialchars($url) + "'"
             + " title='" + __("Open new phpMyAdmin window") + "' target='_blank' rel='noopener noreferrer'>";
-        if (Util.showIcons("TabsMode", GLOBALS)) {
-            $retval += Util.getImage(
+        if (util.showIcons("TabsMode", GLOBALS)) {
+            $retval += util.getImage(
                 "window-new",
                 __("Open new phpMyAdmin window"),
                 null
@@ -300,7 +308,7 @@ public class Footer {
      */
     private void _setHistory()
     {
-        if (! Core.isValid(httpRequest.getParameter("no_history"))
+        if (! core.isValid(httpRequest.getParameter("no_history"))
             && empty(GLOBALS.getMessage())
             && ! empty(GLOBALS.getSqlQuery())
             && GLOBALS.getDbi() != null
@@ -308,9 +316,9 @@ public class Footer {
         ) {
         	/* TODO
             this.relation.setHistory(
-                Core.ifSetOr(GLOBALS.getDb(), ""),
-                Core.ifSetOr(GLOBALS.getTable(), ""),
-                Globals.getConfig().get("Server.user"),
+                core.ifSetOr(GLOBALS.getDb(), ""),
+                core.ifSetOr(GLOBALS.getTable(), ""),
+                config.get("Server.user"),
                 GLOBALS.getSqlQuery()
             ); */
         }
@@ -382,7 +390,7 @@ public class Footer {
             String $footer = null;
         	
             if (! this._isAjax && ! this._isMinimal) {
-                if (Core.getenv("SCRIPT_NAME") != null
+                if (core.getenv("SCRIPT_NAME") != null
                     //&& empty($_POST)
                     && ! this._isAjax
                 ) {
@@ -399,13 +407,13 @@ public class Footer {
                             + " scripts: %s,"
                             + " menuHash: '%s'"
                             + "};",
-                            Sanitize.escapeJsString($url),
+                            sanitize.escapeJsString($url),
                             json_encode($files),
-                            Sanitize.escapeJsString($menuHash)
+                            sanitize.escapeJsString($menuHash)
                         )
                     );
                 }
-                if (Core.getenv("SCRIPT_NAME") != null
+                if (core.getenv("SCRIPT_NAME") != null
                     && ! this._isAjax
                 ) {
                     $url = this.getSelfUrl();
@@ -418,7 +426,7 @@ public class Footer {
                 $errorMessages = this.getErrorMessages();
                 $scripts = this._scripts.getDisplay();
 
-                if ("true".equals(multiget(Globals.getConfig().settings, "DBG" , "demo"))) {
+                if ("true".equals(multiget(config.settings, "DBG" , "demo"))) {
                     $demoMessage = this._getDemoMessage();
                 }
 
@@ -430,7 +438,7 @@ public class Footer {
             model.put("self_link", $selfLink);
             model.put("error_messages",  $errorMessages);
             model.put("scripts", $scripts);
-            model.put("is_demo", multiget(Globals.getConfig().settings, "DBG", "demo"));
+            model.put("is_demo", multiget(config.settings, "DBG", "demo"));
             model.put("demo_message", $demoMessage);
             model.put("footer", $footer);
             

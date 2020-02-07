@@ -126,6 +126,13 @@ public class Header {
     @Autowired
     private Template template;
 
+    @Autowired
+    private Sanitize sanitize;
+    @Autowired
+    private Core core;
+    @Autowired
+    private Util util;
+
     /**
      * @var Navigation
      */
@@ -140,6 +147,9 @@ public class Header {
 	private HttpServletResponse response;
     @Autowired
 	private SessionMap session;
+    @Autowired
+	private Config config;
+    
     private SmartMap cfg;
     
     /**
@@ -151,7 +161,7 @@ public class Header {
 
     @PostConstruct
     private void init() {
-    	this.cfg = Globals.getConfig().settings;
+    	this.cfg = config.settings;
 
         this._isEnabled = true;
         this._isAjax = false;
@@ -229,7 +239,7 @@ public class Header {
         if ("true".equals(cfg.get("enable_drag_drop_import"))) {
             this._scripts.addFile("drag_drop_import.js");
         }
-        if (empty(Globals.getConfig().get("DisableShortcutKeys"))) {
+        if (empty(config.get("DisableShortcutKeys"))) {
             this._scripts.addFile("shortcuts_handler.js");
         }
         this._scripts.addCode(this.getJsParamsCode());
@@ -250,7 +260,7 @@ public class Header {
         String $pftext = (String) multiget(session, "tmpval", "pftext");
 
         $params.put("common_query", Url.getCommonRaw());
-        $params.put("opendb_url", Util.getScriptNameForOption(
+        $params.put("opendb_url", util.getScriptNameForOption(
                 (String) cfg.get("DefaultTabDatabase"),
                 "database"
             ));
@@ -260,13 +270,13 @@ public class Header {
         $params.put("token", session.get(" PMA_token "));
         $params.put("text_dir", GLOBALS.getTextDir());
         $params.put("show_databases_navigation_as_tree", cfg.get("ShowDatabasesNavigationAsTree"));
-        $params.put("pma_text_default_tab", Util.getTitleForTarget(
+        $params.put("pma_text_default_tab", util.getTitleForTarget(
                 (String) cfg.get("DefaultTabTable")
             ));
-        $params.put("pma_text_left_default_tab", Util.getTitleForTarget(
+        $params.put("pma_text_left_default_tab", util.getTitleForTarget(
                 (String) cfg.get("NavigationTreeDefaultTabTable")
             ));
-        $params.put("pma_text_left_default_tab2", Util.getTitleForTarget(
+        $params.put("pma_text_left_default_tab2", util.getTitleForTarget(
                 (String) cfg.get("NavigationTreeDefaultTabTable2")
             ));
         $params.put("text_dir", GLOBALS.getTextDir());
@@ -280,8 +290,8 @@ public class Header {
         $params.put("LoginCookieValidity", cfg.get("LoginCookieValidity"));
         $params.put("session_gc_maxlifetime", -1); // Java Unsupported
         $params.put("logged_in", GLOBALS.getDbi() != null && GLOBALS.getDbi().isUserType("logged"));
-        $params.put("is_https", Globals.getConfig().isHttps());
-        $params.put("rootPath", Globals.getConfig().getRootPath(request));
+        $params.put("is_https", config.isHttps());
+        $params.put("rootPath", config.getRootPath(request));
         $params.put("arg_separator", Url.getArgSeparator());
         $params.put("PMA_VERSION", Globals.getPmaVersion());
         
@@ -306,7 +316,7 @@ public class Header {
             if (entry.getValue() instanceof Boolean) {
                 $params.put(entry.getKey(), key + ":" + (((Boolean)entry.getValue()) ? "true" : "false") + "");
             } else {
-                $params.put(entry.getKey(), key + ":'" + Sanitize.escapeJsString(value) + "'");
+                $params.put(entry.getKey(), key + ":'" + sanitize.escapeJsString(value) + "'");
             }
         }
         return "CommonParams.setAll({" + String.join(",", (Collection)$params.values()) + "});";
@@ -438,7 +448,7 @@ public class Header {
                 this.sendHttpHeaders();
 
                 $baseDir = Globals.getPmaPathToBasedir();
-                $uniqueValue = Globals.getConfig().getThemeUniqueValue(GLOBALS);
+                $uniqueValue = config.getThemeUniqueValue(GLOBALS);
                 $themePath = GLOBALS.getPmaThemePath();
                 $version = getVersionParameter();
 
@@ -543,7 +553,7 @@ public class Header {
             if (GLOBALS.getBufferMessage() != null) {
                 $buffer_message = GLOBALS.getBufferMessage();
             }
-            $retval += Util.getMessage($message);
+            $retval += util.getMessage($message);
             if (!empty($buffer_message)) {
                 GLOBALS.setBufferMessage($buffer_message);
             }
@@ -660,7 +670,7 @@ public class Header {
         response.addHeader(
             "X-Robots-Tag", "noindex, nofollow"
         );
-        Core.noCacheHeader(response);
+        core.noCacheHeader(response);
         if (!GLOBALS.isTransformationWrapper()) {
             // Define the charset to be used
             response.addHeader("Content-Type", "text/html; charset=utf-8");
@@ -689,7 +699,7 @@ public class Header {
                     $temp_title = (String) cfg.get("TitleDefault");
                 }
                 this._title = htmlspecialchars(
-                    Util.expandUserString($temp_title)
+                    util.expandUserString($temp_title)
                 );
             } else {
                 this._title = "phpMyAdmin";

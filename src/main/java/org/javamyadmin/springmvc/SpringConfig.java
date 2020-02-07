@@ -14,6 +14,7 @@ import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Footer;
 import org.javamyadmin.helpers.Header;
 import org.javamyadmin.helpers.Menu;
+import org.javamyadmin.helpers.RecentFavoriteTable;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Table;
@@ -70,7 +71,7 @@ public class SpringConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-	@RequestScope
+	@SessionScope
 	public DatabaseInterface getDbi() {
 		return new DatabaseInterface();
 	}
@@ -163,5 +164,17 @@ public class SpringConfig implements WebMvcConfigurer {
 	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public PageSettings getPageSettings(String $formGroupName, String $elemId) {
 		return new PageSettings($formGroupName, $elemId);
+	}
+
+	@Bean(name="recent")
+	@SessionScope
+	public RecentFavoriteTable getRecentTables(SessionMap $_SESSION, Globals GLOBALS) {
+		return new RecentFavoriteTable("recent", $_SESSION, GLOBALS);
+	}
+	
+	@Bean(name="favorite")
+	@SessionScope
+	public RecentFavoriteTable getFavoriteTables(SessionMap $_SESSION, Globals GLOBALS) {
+		return new RecentFavoriteTable("favorite", $_SESSION, GLOBALS);
 	}
 }

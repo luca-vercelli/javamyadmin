@@ -12,7 +12,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
 import org.javamyadmin.helpers.Sanitize;
-import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MessagesJs extends AbstractController {
 
+	@Autowired
+	private Sanitize sanitize;
+	
 	@RequestMapping(value = "/js/messages.php")
 	public void messages() throws ServletException, IOException, SQLException, NamingException {
 
@@ -554,7 +557,7 @@ public class MessagesJs extends AbstractController {
 		$js_messages.put("back", __("Back"));
 
 		// this approach does not work when the parameter is changed via user prefs
-		switch ((String) Globals.getConfig().get("GridEditing")) {
+		switch ((String) config.get("GridEditing")) {
 		case "double-click":
 			$js_messages.put("strGridEditFeatureHint",
 					__("You can also edit most values<br>by double-clicking directly on them."));
@@ -668,7 +671,7 @@ public class MessagesJs extends AbstractController {
 		for (Entry<String, String> entry : $js_messages.entrySet()) {
 			String $name = entry.getKey();
 			String $js_message = entry.getValue();
-			Sanitize.printJsValue("Messages." + $name + "", $js_message, httpResponse);
+			sanitize.printJsValue("Messages." + $name + "", $js_message, httpResponse);
 		}
 
 		/* Calendar */
@@ -676,7 +679,7 @@ public class MessagesJs extends AbstractController {
 
 		/* Calendar First Day */
 		httpResponse.getWriter()
-				.write("var firstDayOfCalendar = '" + Globals.getConfig().get("FirstDayOfCalendar") + "';\n");
+				.write("var firstDayOfCalendar = '" + config.get("FirstDayOfCalendar") + "';\n");
 
 		/* Image path */
 		httpResponse.getWriter().write("var pmaThemeImage = '" + GLOBALS.getPmaThemeImage() + "';\n");
@@ -688,18 +691,18 @@ public class MessagesJs extends AbstractController {
 
 		httpResponse.getWriter().write("if ($.datepicker) {\n");
 		/* l10n: Display text for calendar close link */
-		Sanitize.printJsValue("$.datepicker.regional['']['closeText']", __("Done"), httpResponse);
+		sanitize.printJsValue("$.datepicker.regional['']['closeText']", __("Done"), httpResponse);
 		/* l10n: Display text for previous month link in calendar */
-		Sanitize.printJsValue("$.datepicker.regional['']['prevText']", _pgettext("Previous month", "Prev"), httpResponse);
+		sanitize.printJsValue("$.datepicker.regional['']['prevText']", _pgettext("Previous month", "Prev"), httpResponse);
 		/* l10n: Display text for next month link in calendar */
-		Sanitize.printJsValue("$.datepicker.regional['']['nextText']", _pgettext("Next month", "Next"), httpResponse);
+		sanitize.printJsValue("$.datepicker.regional['']['nextText']", _pgettext("Next month", "Next"), httpResponse);
 		/* l10n: Display text for current month link in calendar */
-		Sanitize.printJsValue("$.datepicker.regional['']['currentText']", __("Today"), httpResponse);
-		Sanitize.printJsValue("$.datepicker.regional['']['monthNames']",
+		sanitize.printJsValue("$.datepicker.regional['']['currentText']", __("Today"), httpResponse);
+		sanitize.printJsValue("$.datepicker.regional['']['monthNames']",
 				new String[] { __("January"), __("February"), __("March"), __("April"), __("May"), __("June"),
 						__("July"), __("August"), __("September"), __("October"), __("November"), __("December"), },
 				httpResponse);
-		Sanitize.printJsValue("$.datepicker.regional['']['monthNamesShort']", new String[] {
+		sanitize.printJsValue("$.datepicker.regional['']['monthNamesShort']", new String[] {
 				/* l10n: Short month name */
 				__("Jan"),
 				/* l10n: Short month name */
@@ -724,9 +727,9 @@ public class MessagesJs extends AbstractController {
 				__("Nov"),
 				/* l10n: Short month name */
 				__("Dec"), }, httpResponse);
-		Sanitize.printJsValue("$.datepicker.regional['']['dayNames']", new String[] { __("Sunday"), __("Monday"),
+		sanitize.printJsValue("$.datepicker.regional['']['dayNames']", new String[] { __("Sunday"), __("Monday"),
 				__("Tuesday"), __("Wednesday"), __("Thursday"), __("Friday"), __("Saturday"), }, httpResponse);
-		Sanitize.printJsValue("$.datepicker.regional['']['dayNamesShort']", new String[] {
+		sanitize.printJsValue("$.datepicker.regional['']['dayNamesShort']", new String[] {
 				/* l10n: Short week day name for Sunday */
 				__("Sun"),
 				/* l10n: Short week day name for Monday */
@@ -741,7 +744,7 @@ public class MessagesJs extends AbstractController {
 				__("Fri"),
 				/* l10n: Short week day name for Saturday */
 				__("Sat"), }, httpResponse);
-		Sanitize.printJsValue("$.datepicker.regional['']['dayNamesMin']", new String[] {
+		sanitize.printJsValue("$.datepicker.regional['']['dayNamesMin']", new String[] {
 				/* l10n: Minimal week day name for Sunday */
 				__("Su"),
 				/* l10n: Minimal week day name for Monday */
@@ -757,9 +760,9 @@ public class MessagesJs extends AbstractController {
 				/* l10n: Minimal week day name for Saturday */
 				__("Sa"), }, httpResponse);
 		/* l10n: Column header for week of the year in calendar */
-		Sanitize.printJsValue("$.datepicker.regional['']['weekHeader']", __("Wk"), httpResponse);
+		sanitize.printJsValue("$.datepicker.regional['']['weekHeader']", __("Wk"), httpResponse);
 
-		Sanitize.printJsValue("$.datepicker.regional['']['showMonthAfterYear']",
+		sanitize.printJsValue("$.datepicker.regional['']['showMonthAfterYear']",
 				/*
 				 * l10n: Month-year order for calendar, use either "calendar-month-year" or
 				 * "calendar-year-month".
@@ -767,17 +770,17 @@ public class MessagesJs extends AbstractController {
 				__("calendar-month-year") == "calendar-year-month", httpResponse);
 		/* l10n: Year suffix for calendar, "none" is empty. */
 		String $year_suffix = _pgettext("Year suffix", "none");
-		Sanitize.printJsValue("$.datepicker.regional['']['yearSuffix']",
+		sanitize.printJsValue("$.datepicker.regional['']['yearSuffix']",
 				("none".equals($year_suffix) ? "" : $year_suffix), httpResponse);
 
 		httpResponse.getWriter().write("$.extend($.datepicker._defaults, $.datepicker.regional['']);\n");
 		httpResponse.getWriter().write("} /* if ($.datepicker) */\n");
 
 		httpResponse.getWriter().write("if ($.timepicker) {\n");
-		Sanitize.printJsValue("$.timepicker.regional['']['timeText']", __("Time"), httpResponse);
-		Sanitize.printJsValue("$.timepicker.regional['']['hourText']", __("Hour"), httpResponse);
-		Sanitize.printJsValue("$.timepicker.regional['']['minuteText']", __("Minute"), httpResponse);
-		Sanitize.printJsValue("$.timepicker.regional['']['secondText']", __("Second"), httpResponse);
+		sanitize.printJsValue("$.timepicker.regional['']['timeText']", __("Time"), httpResponse);
+		sanitize.printJsValue("$.timepicker.regional['']['hourText']", __("Hour"), httpResponse);
+		sanitize.printJsValue("$.timepicker.regional['']['minuteText']", __("Minute"), httpResponse);
+		sanitize.printJsValue("$.timepicker.regional['']['secondText']", __("Second"), httpResponse);
 
 		httpResponse.getWriter().write("$.extend($.timepicker._defaults, $.timepicker.regional['']);\n");
 		httpResponse.getWriter().write("} /* if ($.timepicker) */\n");
@@ -788,32 +791,32 @@ public class MessagesJs extends AbstractController {
 		httpResponse.getWriter().write("$.extend($.validator.messages, {\n");
 
 		/* Default validation functions */
-		Sanitize.printJsValueForFormValidation("required", __("This field is required"), httpResponse);
-		Sanitize.printJsValueForFormValidation("remote", __("Please fix this field"), httpResponse);
-		Sanitize.printJsValueForFormValidation("email", __("Please enter a valid email address"), httpResponse);
-		Sanitize.printJsValueForFormValidation("url", __("Please enter a valid URL"), httpResponse);
-		Sanitize.printJsValueForFormValidation("date", __("Please enter a valid date"), httpResponse);
-		Sanitize.printJsValueForFormValidation("dateISO", __("Please enter a valid date ( ISO )"), httpResponse);
-		Sanitize.printJsValueForFormValidation("number", __("Please enter a valid number"), httpResponse);
-		Sanitize.printJsValueForFormValidation("creditcard", __("Please enter a valid credit card number"), httpResponse);
-		Sanitize.printJsValueForFormValidation("digits", __("Please enter only digits"), httpResponse);
-		Sanitize.printJsValueForFormValidation("equalTo", __("Please enter the same value again"), httpResponse);
-		Sanitize.printJsValueForFormValidation("maxlength", __("Please enter no more than {0} characters"), true,
+		sanitize.printJsValueForFormValidation("required", __("This field is required"), httpResponse);
+		sanitize.printJsValueForFormValidation("remote", __("Please fix this field"), httpResponse);
+		sanitize.printJsValueForFormValidation("email", __("Please enter a valid email address"), httpResponse);
+		sanitize.printJsValueForFormValidation("url", __("Please enter a valid URL"), httpResponse);
+		sanitize.printJsValueForFormValidation("date", __("Please enter a valid date"), httpResponse);
+		sanitize.printJsValueForFormValidation("dateISO", __("Please enter a valid date ( ISO )"), httpResponse);
+		sanitize.printJsValueForFormValidation("number", __("Please enter a valid number"), httpResponse);
+		sanitize.printJsValueForFormValidation("creditcard", __("Please enter a valid credit card number"), httpResponse);
+		sanitize.printJsValueForFormValidation("digits", __("Please enter only digits"), httpResponse);
+		sanitize.printJsValueForFormValidation("equalTo", __("Please enter the same value again"), httpResponse);
+		sanitize.printJsValueForFormValidation("maxlength", __("Please enter no more than {0} characters"), true,
 				httpResponse);
-		Sanitize.printJsValueForFormValidation("minlength", __("Please enter at least {0} characters"), true, httpResponse);
-		Sanitize.printJsValueForFormValidation("rangelength",
+		sanitize.printJsValueForFormValidation("minlength", __("Please enter at least {0} characters"), true, httpResponse);
+		sanitize.printJsValueForFormValidation("rangelength",
 				__("Please enter a value between {0} and {1} characters long"), true, httpResponse);
-		Sanitize.printJsValueForFormValidation("range", __("Please enter a value between {0} and {1}"), true, httpResponse);
-		Sanitize.printJsValueForFormValidation("max", __("Please enter a value less than or equal to {0}"), true,
+		sanitize.printJsValueForFormValidation("range", __("Please enter a value between {0} and {1}"), true, httpResponse);
+		sanitize.printJsValueForFormValidation("max", __("Please enter a value less than or equal to {0}"), true,
 				httpResponse);
-		Sanitize.printJsValueForFormValidation("min", __("Please enter a value greater than or equal to {0}"), true,
+		sanitize.printJsValueForFormValidation("min", __("Please enter a value greater than or equal to {0}"), true,
 				httpResponse);
 		/* customed functions */
-		Sanitize.printJsValueForFormValidation("validationFunctionForDateTime", __("Please enter a valid date or time"),
+		sanitize.printJsValueForFormValidation("validationFunctionForDateTime", __("Please enter a valid date or time"),
 				true, httpResponse);
-		Sanitize.printJsValueForFormValidation("validationFunctionForHex", __("Please enter a valid HEX input"), true,
+		sanitize.printJsValueForFormValidation("validationFunctionForHex", __("Please enter a valid HEX input"), true,
 				httpResponse);
-		Sanitize.printJsValueForFormValidation("validationFunctionForFuns", __("Error"), true, false, httpResponse);
+		sanitize.printJsValueForFormValidation("validationFunctionForFuns", __("Error"), true, false, httpResponse);
 		httpResponse.getWriter().write("\n});");
 		httpResponse.getWriter().write("\n} /* if ($.validator) */");
 	}

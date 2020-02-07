@@ -1,16 +1,16 @@
 package org.javamyadmin.helpers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
+import static org.javamyadmin.php.Php.*;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,22 +20,28 @@ import java.util.function.Function;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.List;
-
 import org.javamyadmin.helpers.Menu.MenuStruct;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
-
-import static org.javamyadmin.php.Php.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Misc functions used all over the scripts.
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Util {
+	@Autowired
+	private Core core;
+	@Autowired
+	private Sanitize sanitize;
+	@Autowired
+	private Config config;
+	
     /**
      * Checks whether configuration value tells to show icons.
      *
@@ -43,9 +49,9 @@ public class Util {
      *
      * @return boolean Whether to show icons.
      */
-    public static boolean showIcons(String $value, Globals GLOBALS)
+    public boolean showIcons(String $value, Globals GLOBALS)
     {
-    	String type = (String) Globals.getConfig().get($value);
+    	String type = (String) config.get($value);
     	return "icons".equals(type) || "both".equals(type);
     }
 
@@ -56,9 +62,9 @@ public class Util {
      *
      * @return boolean Whether to show text.
      */
-    public static boolean showText(String $value, Globals GLOBALS)
+    public boolean showText(String $value, Globals GLOBALS)
     {
-    	String type = (String) Globals.getConfig().get($value);
+    	String type = (String) config.get($value);
     	return "text".equals(type) || "both".equals(type);
     }
 
@@ -76,7 +82,7 @@ public class Util {
      *
      * @return String an html snippet
      */
-    public static String getIcon(
+    public String getIcon(
         String $icon,
         String $alternate /*= ""*/,
         boolean $force_text /*= false*/,
@@ -112,7 +118,7 @@ public class Util {
         return $button;
     }
 
-    public static String getIcon(
+    public String getIcon(
             String $icon,
             String $alternate /*= ""*/,
             Globals GLOBALS,
@@ -151,7 +157,7 @@ public class Util {
      *
      * @return string an html IMG tag
      */
-    public static String getImage(String $image, String $alternate /*= ""*/, Map<String, Object> $attributes /*= []*/)
+    public String getImage(String $image, String $alternate /*= ""*/, Map<String, Object> $attributes /*= []*/)
     {
     	if ($alternate == null) $alternate = "";
     	if ($attributes == null) $attributes = new HashMap<>();
@@ -193,11 +199,11 @@ public class Util {
         return String.format(template, title, alt, attr_str);
     }
     
-    public static String getImage(String $image) {
+    public String getImage(String $image) {
     	return getImage($image, "", null);
     }
     
-    public static String getImage(String $image, String $alternate) {
+    public String getImage(String $image, String $alternate) {
     	return getImage($image, $alternate, null);
     }
     
@@ -210,7 +216,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getFormattedMaximumUploadSize(int $max_upload_size)
+    public String getFormattedMaximumUploadSize(int $max_upload_size)
     {
         // I have to reduce the second parameter (sensitiveness) from 6 to 4
         // to avoid weird results like 512 kKib
@@ -229,7 +235,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String generateHiddenMaxFileSize(int $max_size)
+    public String generateHiddenMaxFileSize(int $max_size)
     {
         return "<input type='hidden' name='MAX_FILE_SIZE' value='"
             + $max_size + "'>";
@@ -246,7 +252,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String escapeMysqlWildcards(String $name)
+    public String escapeMysqlWildcards(String $name)
     {
     	return $name.replace("_", "\\_").replace("%", "\\%");
     } // end of the "escapeMysqlWildcards()" function
@@ -261,7 +267,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String unescapeMysqlWildcards(String $name)
+    public String unescapeMysqlWildcards(String $name)
     {
     	return $name.replace("\\_", "_").replace("\\%", "%");
     } // end of the "unescapeMysqlWildcards()" function
@@ -276,7 +282,7 @@ public class Util {
      *
      * @return String unqoted String
      */
-    public static String unQuote(String $quoted_string, String $quote /*= null*/)
+    public String unQuote(String $quoted_string, String $quote /*= null*/)
     {
     	return null; //TODO
         /*$quotes = [];
@@ -320,7 +326,7 @@ public class Util {
      * @access  public
      * @todo    move into PMA_Sql
      */
-    public static String formatSql(String $sqlQuery, boolean $truncate /*= false*/)
+    public String formatSql(String $sqlQuery, boolean $truncate /*= false*/)
     {
     	return null; //TODO
         /*global $cfg;
@@ -348,7 +354,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String showCopyToClipboard(String $text)
+    public String showCopyToClipboard(String $text)
     {
     	String $open_link = "  <a href='#' class='copyQueryBtn' data-text='"
             + htmlspecialchars($text) + "'>" + __("Copy") + "</a>";
@@ -366,7 +372,7 @@ public class Util {
      *
      * @access public
      */
-    public static String showDocLink(String $link, String $target /*= "documentation"*/, boolean $bbcode /*= false*/)
+    public String showDocLink(String $link, String $target /*= "documentation"*/, boolean $bbcode /*= false*/)
     {
         if ($bbcode) {
             return "[a@$link@$target][dochelpicon][/a]";
@@ -377,7 +383,7 @@ public class Util {
             + "</a>";
     } // end of the "showDocLink()" function
 
-    public static String showDocLink(String $link) {
+    public String showDocLink(String $link) {
     	return showDocLink($link, "documentation", false);
     }
     /**
@@ -390,7 +396,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getMySQLDocuURL(String $link, String $anchor /*= ""*/)
+    public String getMySQLDocuURL(String $link, String $anchor /*= ""*/)
     {
     	return ""; //Unsupported
     	/*
@@ -418,7 +424,7 @@ public class Util {
             $url += "#" + $anchor;
         }
 
-        return Core.linkURL($url);*/
+        return core.linkURL($url);*/
     }
 
     /**
@@ -429,7 +435,7 @@ public class Util {
      * @param String  $text       (optional) The text for the link
      * @return String link or empty String
      */
-    public static String linkToVarDocumentation(
+    public String linkToVarDocumentation(
         String $name,
         boolean $useMariaDB /*= false*/,
         String $text /*= null*/
@@ -467,7 +473,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String showMySQLDocu(
+    public String showMySQLDocu(
     	String $link,
         boolean $bigIcon /*= false*/,
         String $url /*= null*/,
@@ -485,7 +491,7 @@ public class Util {
      *
      * @return String URL
      */
-    public static String getDocuLink(String $page, String $anchor /*= ""*/)
+    public String getDocuLink(String $page, String $anchor /*= ""*/)
     {
     	return ""; // unsupported
     }
@@ -501,7 +507,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String showDocu(String $page, String $anchor /*= ""*/, boolean $bbcode /*= false*/)
+    public String showDocu(String $page, String $anchor /*= ""*/, boolean $bbcode /*= false*/)
     {
         return showDocLink(getDocuLink($page, $anchor), "documentation", $bbcode);
     } // end of the "showDocu()" function
@@ -515,9 +521,9 @@ public class Util {
      *
      * @access  public
      */
-    public static String showPHPDocu(String $target)
+    public String showPHPDocu(String $target)
     {
-        String $url = Core.getPHPDocLink($target);
+        String $url = core.getPHPDocLink($target);
 
         return showDocLink($url);
     } // end of the "showPHPDocu()" function
@@ -531,10 +537,10 @@ public class Util {
      *
      * @access  public
      */
-    public static String showHint(String $message, Globals GLOBALS)
+    public String showHint(String $message, Globals GLOBALS)
     {
     	String $classClause;
-        if (!empty(Globals.getConfig().get("ShowHint"))) {
+        if (!empty(config.get("ShowHint"))) {
             $classClause = " class='pma_hint'";
         } else {
             $classClause = "";
@@ -564,7 +570,7 @@ public class Util {
      *
      * @access public
      */
-    public static void mysqlDie(
+    public void mysqlDie(
         String $server_msg /*= ""*/,
         String $sql_query /*= ""*/,
         boolean $is_modify_link /*= true*/,
@@ -795,7 +801,7 @@ public class Util {
      *
      * @return array    (recursive) grouped table list
      */
-    public static Map getTableList(
+    public Map getTableList(
         String $db,
         String $tables /*= null*/,
         int $limit_offset /*= 0*/,
@@ -803,7 +809,7 @@ public class Util {
     ) {
     	return null;
     	/* TODO
-        String $sep = Globals.getConfig().get("NavigationTreeTableSeparator");
+        String $sep = config.get("NavigationTreeTableSeparator");
 
         if ($tables === null) {
             $tables = GLOBALS.getDbi().getTablesFull(
@@ -813,7 +819,7 @@ public class Util {
                 $limit_offset,
                 $limit_count
             );
-            if (Globals.getConfig()["NaturalOrder"]) {
+            if (config["NaturalOrder"]) {
                 uksort($tables, "strnatcasecmp");
             }
         }
@@ -836,7 +842,7 @@ public class Util {
 
             // in $group we save the reference to the place in $table_groups
             // where to store the table info
-            if (Globals.getConfig()["NavigationTreeEnableGrouping"]
+            if (config["NavigationTreeEnableGrouping"]
                 && $sep && mb_strstr($table_name, $sep)
             ) {
                 $parts = explode($sep, $table_name);
@@ -847,7 +853,7 @@ public class Util {
                 $parts_cnt = count($parts) - 1;
 
                 while (($i < $parts_cnt)
-                    && ($i < Globals.getConfig()["NavigationTreeTableLevel"])
+                    && ($i < config["NavigationTreeTableLevel"])
                 ) {
                     $group_name = $parts[$i] + $sep;
                     $group_name_full += $group_name;
@@ -908,21 +914,21 @@ public class Util {
      *
      * @access  public
      */
-    public static String backquote(String $a_name, boolean $do_it /*= true*/)
+    public String backquote(String $a_name, boolean $do_it /*= true*/)
     {
         return backquoteCompat($a_name, "NONE", $do_it);
     } // end of the "backquote()" function
 
-    public static Array backquote(Array $a_name, boolean $do_it /*= true*/)
+    public Array backquote(Array $a_name, boolean $do_it /*= true*/)
     {
         return backquoteCompat($a_name, "NONE", $do_it);
     } // end of the "backquote()" function
 
-    public static String backquote(String $a_name) {
+    public String backquote(String $a_name) {
     	return backquote($a_name, true);
     }
     
-    public static Array backquote(Array $a_name) {
+    public Array backquote(Array $a_name) {
     	return backquote($a_name, true);
     }
     
@@ -947,7 +953,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String backquoteCompat(
+    public String backquoteCompat(
         String $a_name,
         String $compatibility /*= "MSSQL"*/,
         boolean $do_it /*= true*/
@@ -987,7 +993,7 @@ public class Util {
         return $a_name;*/
     } // end of the "backquoteCompat()" function
 
-    public static Array backquoteCompat(
+    public Array backquoteCompat(
             Array $a_name,
             String $compatibility /*= "MSSQL"*/,
             boolean $do_it /*= true*/
@@ -1007,7 +1013,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getMessage(
+    public String getMessage(
         Object $message,
         String $sql_query /*= null*/,
         String $type /*= "notice"*/
@@ -1271,7 +1277,7 @@ public class Util {
         return $retval;*/
     } // end of the "getMessage()" function
 
-    public static String getMessage(
+    public String getMessage(
             Object $message) {
     	return getMessage($message, null, "notice");
     }
@@ -1322,7 +1328,7 @@ public class Util {
      *
      * @return boolean whether profiling is supported
      */
-    public static boolean profilingSupported(Globals GLOBALS, SessionMap session)
+    public boolean profilingSupported(Globals GLOBALS, SessionMap session)
     {
         return false; //Unsupported
     }
@@ -1338,7 +1344,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String[] formatByteDown(Double $value, int $limes /*= 6*/, int $comma /*= 0*/)
+    public String[] formatByteDown(Double $value, int $limes /*= 6*/, int $comma /*= 0*/)
     {
         if ($value == null) {
             return null;
@@ -1441,7 +1447,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String formatNumber(
+    public String formatNumber(
         double $value,
         int $digits_left /*= 3*/,
         int $digits_right /*= 0*/,
@@ -1530,7 +1536,7 @@ public class Util {
         return $sign + $formattedValue + " " + $unit; */
     } // end of the "formatNumber" function
 
-    public static String formatNumber(
+    public String formatNumber(
             double $value,
             int $digits_left
         ) {
@@ -1543,7 +1549,7 @@ public class Util {
      *
      * @return integer  The numerical part of the expression (for example 8)
      */
-    public static int extractValueFromFormattedSize(String $formatted_size)
+    public int extractValueFromFormattedSize(String $formatted_size)
     {
     	int $return_value = -1;
 
@@ -1581,7 +1587,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String localisedDate(long $timestamp /*= -1*/, String $format /*= ""*/)
+    public String localisedDate(long $timestamp /*= -1*/, String $format /*= ""*/)
     {
     	if (empty($format)) {
     		$format = "yyyy-MM-dd HH:mm:SS";
@@ -1603,13 +1609,13 @@ public class Util {
      *
      * @access  public
      */
-    public static String getHtmlTab(MenuStruct $tab, Map<String, String> $url_params /*= []*/, HttpServletRequest request, Globals GLOBALS, SessionMap session)
+    public String getHtmlTab(MenuStruct $tab, Map<String, String> $url_params /*= []*/, HttpServletRequest request, Globals GLOBALS, SessionMap session)
     {
 
         // determine additional style-class
         if (empty($tab.getClazz())) {
             if (! empty($tab.getActive())
-                || Core.isValid(GLOBALS.getActivePage(), "identical", $tab.getLink())
+                || core.isValid(GLOBALS.getActivePage(), "identical", $tab.getLink())
             ) {
                 $tab.setClazz("active");
             } else if ($tab.getActive() == null && empty(GLOBALS.getActivePage())
@@ -1689,7 +1695,7 @@ public class Util {
      *
      * @return String  html-code for tab-navigation
      */
-    public static String getHtmlTabs(
+    public String getHtmlTabs(
     	Map<String, MenuStruct> $tabs,
         Map<String, String> $url_params,
         String $menu_id,
@@ -1737,7 +1743,7 @@ public class Util {
      *
      * @return String  the results to be echoed or saved in an array
      */
-    public static String linkOrButton(
+    public String linkOrButton(
         String $url,
         String $message,
         Map $tag_params /*= []*/, String $js_confirmation,
@@ -1750,7 +1756,7 @@ public class Util {
         }
         if (! empty($js_confirmation)) {
                 $tag_params.put("onclick", "return Functions.confirmLink(this, \""
-                    + Sanitize.escapeJsString($js_confirmation) + "\")");
+                    + sanitize.escapeJsString($js_confirmation) + "\")");
            }
         if (! empty($target)) {
             $tag_params.put("target", $target);
@@ -1761,7 +1767,7 @@ public class Util {
 
         /* Suhosin: Check that each query parameter is not above maximum
         boolean $in_suhosin_limits = true;
-        if ($url_length <= new Integer(Globals.getConfig().get("LinkLengthLimit"))) {
+        if ($url_length <= new Integer(config.get("LinkLengthLimit"))) {
             $suhosin_get_MaxValueLength = ini_get("suhosin.get.max_value_length");
             if ($suhosin_get_MaxValueLength) {
                 $query_parts = splitURLQuery($url);
@@ -1781,7 +1787,7 @@ public class Util {
         }*/
 
         List<String> $tag_params_strings = new ArrayList<>();
-        if (($url_length > new Integer((String) Globals.getConfig().get("LinkLengthLimit")))
+        if (($url_length > new Integer((String) config.get("LinkLengthLimit")))
             //|| ! $in_suhosin_limits
             // Has as sql_query without a signature
             || ( $url.contains( "sql_query=") && !$url.contains( "sql_signature="))
@@ -1820,7 +1826,7 @@ public class Util {
      *
      * @return array  the parameter/value pairs, for example [0] db=sakila
      */
-    public static Map<String, String> splitURLQuery(String $url)
+    public Map<String, String> splitURLQuery(String $url)
     {
     	return null; //TODO
         /*// decode encoded url separators
@@ -1850,7 +1856,7 @@ public class Util {
      *
      * @return String  the formatted value
      */
-    public static String timespanFormat(long $seconds)
+    public String timespanFormat(long $seconds)
     {
     	return null; //TODO
     	/*
@@ -1891,7 +1897,7 @@ public class Util {
      *
      * @access public
      */
-    public static void checkParameters(String[] $params, boolean $request /*= false*/)
+    public void checkParameters(String[] $params, boolean $request /*= false*/)
     {
     	//TODO
         /*$reported_script_name = basename(GLOBALS["PMA_PHP_SELF"]);
@@ -1914,7 +1920,7 @@ public class Util {
             }
         }
         if ($found_error) {
-            Core.fatalError($error_message);
+            core.fatalError($error_message);
         }*/
     } // end function
 
@@ -1936,7 +1942,7 @@ public class Util {
      *
      * @return array the calculated condition and whether condition is unique
      */
-    public static Map getUniqueCondition(
+    public Map getUniqueCondition(
         Object $handle,
         int $fields_cnt,
         Map $fields_meta,
@@ -2113,7 +2119,7 @@ public class Util {
      *
      * @return String
      */
-    public static String getCharsetQueryPart(String $collation, boolean $override /*= false*/)
+    public String getCharsetQueryPart(String $collation, boolean $override /*= false*/)
     {
     	return null; //TODO
         /*list($charset) = explode("_", $collation);
@@ -2139,7 +2145,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String getButtonOrImage(
+    public String getButtonOrImage(
     	String $button_name,
     	String $button_class,
     	String $text,
@@ -2151,7 +2157,7 @@ public class Util {
         if ($value == "") {
             $value = $text;
         }
-        if (Globals.getConfig().get("ActionLinksMode") == "text") {
+        if (config.get("ActionLinksMode") == "text") {
             return " <input class='btn btn-link' type='submit' name='" + $button_name + "'"
                 + " value='" + htmlspecialchars($value) + "'"
                 + " title='" + htmlspecialchars($text) + "'>" + "\n";
@@ -2185,7 +2191,7 @@ public class Util {
      *
      * @access  public
      */
-    public static String pageselector(
+    public String pageselector(
     	String $name,
         int $rows,
         int $pageNow /*= 1*/,
@@ -2310,7 +2316,7 @@ public class Util {
      * @return int $page_num
      * @access public
      */
-    public static int getPageFromPosition(int $pos, int $max_count)
+    public int getPageFromPosition(int $pos, int $max_count)
     {
         return (int) Math.floor($pos / $max_count) + 1;
     }
@@ -2334,7 +2340,7 @@ public class Util {
      *
      * @todo    use $pos from $_url_params
      */
-    public static String getListNavigator(
+    public String getListNavigator(
         int $count,
         int $pos,
         Map<String, String> $_url_params,
@@ -2437,7 +2443,7 @@ public class Util {
         return $list_navigator_html;*/
     }
 
-    public static String getListNavigator(
+    public String getListNavigator(
             int $count,
             int $pos,
             Map<String, String> $_url_params,
@@ -2456,7 +2462,7 @@ public class Util {
                 new String [] {});
     }
 
-    public static String getListNavigator(
+    public String getListNavigator(
             int $count,
             int $pos,
             Map<String, String> $_url_params,
@@ -2487,14 +2493,14 @@ public class Util {
      *
      * @return String  per user directory
      */
-    public static String  userDir(String $dir)
+    public String  userDir(String $dir)
     {
         // add trailing slash
         if (!$dir.endsWith("/")) {
             $dir += "/";
         }
 
-        return $dir.replace("%u", Core.securePath((String) multiget(Globals.getConfig().settings, "Server", "user")));
+        return $dir.replace("%u", core.securePath((String) multiget(config.settings, "Server", "user")));
     }
 
     /**
@@ -2505,7 +2511,7 @@ public class Util {
      *
      * @return String  html link to default db page
      */
-    public static String getDbLink(String $database /*= ""*/, HttpServletRequest request, Globals GLOBALS)
+    public String getDbLink(String $database /*= ""*/, HttpServletRequest request, Globals GLOBALS)
     {
         if (empty( $database) ) {
             if (empty(GLOBALS.getDb())) {
@@ -2517,7 +2523,7 @@ public class Util {
         }
 
         String $scriptName = getScriptNameForOption(
-            (String)Globals.getConfig().get("DefaultTabDatabase"),
+            (String)config.get("DefaultTabDatabase"),
             "database"
         );
         Map<String, String> params = new HashMap<>();
@@ -2546,7 +2552,7 @@ public class Util {
      *
      * @return String
      */
-    public static String getExternalBug(
+    public String getExternalBug(
     		String $functionality,
     		String $component,
     		String $minimum_version,
@@ -2560,7 +2566,7 @@ public class Util {
                 sprintf(
                     __("The %s functionality is affected by a known bug, see %s"),
                     $functionality,
-                    Core.linkURL("https://bugs.mysql.com/") + $bugref
+                    core.linkURL("https://bugs.mysql.com/") + $bugref
                 )
             );
         }
@@ -2581,7 +2587,7 @@ public class Util {
      *
      * @return String                  set of html radio fiels
      */
-    public static String getRadioFields(
+    public String getRadioFields(
     		String $html_field_name,
         	Map $choices,
         	String $checked_choice /*= ""*/,
@@ -2643,7 +2649,7 @@ public class Util {
      *
      * @todo    support titles
      */
-    public static String getDropdown(
+    public String getDropdown(
     	String $select_name,
         Map $choices,
         String $active_choice,
@@ -2693,11 +2699,11 @@ public class Util {
      * @return String         html div element
      *
      */
-    public static String getDivForSliderEffect(String $id /*= ""*/,String $message /*= ""*/, String $overrideDefault /*= null*/)
+    public String getDivForSliderEffect(String $id /*= ""*/,String $message /*= ""*/, String $overrideDefault /*= null*/)
     {
         Map<String, Object> model = new HashMap<>();
         model.put("id" , $id);
-        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : Globals.getConfig().get("InitialSlidersState"));
+        model.put("initial_sliders_state" , ($overrideDefault != null) ? $overrideDefault : config.get("InitialSlidersState"));
         model.put("message" , $message);
         
         return JtwigFactory.render("div_for_slider_effect", model);
@@ -2715,7 +2721,7 @@ public class Util {
      *
      * @return String   HTML code for the toggle button
      */
-    public static String toggleButton(String $action, String $select_name, List<Map> $options, String $callback, Globals GLOBALS)
+    public String toggleButton(String $action, String $select_name, List<Map> $options, String $callback, Globals GLOBALS)
     {
         
         // Do the logic first
@@ -2750,7 +2756,7 @@ public class Util {
      *
      * @return void
      */
-    public static void clearUserCache(Globals GLOBALS, SessionMap session)
+    public void clearUserCache(Globals GLOBALS, SessionMap session)
     {
         cacheUnset("is_superuser", GLOBALS, session);
         cacheUnset("is_createuser", GLOBALS, session);
@@ -2762,10 +2768,10 @@ public class Util {
      *
      * @return String
      */
-    public static String cacheKey(Globals GLOBALS)
+    public String cacheKey(Globals GLOBALS)
     {
-        if (!empty(multiget(Globals.getConfig().settings, "Server", "user"))) {
-            return "server_" + GLOBALS.getServer() + "_" + multiget(Globals.getConfig().settings, "Server", "user");
+        if (!empty(multiget(config.settings, "Server", "user"))) {
+            return "server_" + GLOBALS.getServer() + "_" + multiget(config.settings, "Server", "user");
         }
 
         return "server_" + GLOBALS.getServer();
@@ -2778,7 +2784,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean cacheExists(String $var, Globals GLOBALS, SessionMap session)
+    public boolean cacheExists(String $var, Globals GLOBALS, SessionMap session)
     {
         return !empty(multiget(session, "cache", cacheKey(GLOBALS), $var));
     }
@@ -2791,7 +2797,7 @@ public class Util {
      *
      * @return mixed
      */
-    public static Object cacheGet(String $var, Function $callback /*= null*/, Globals GLOBALS, SessionMap session)
+    public Object cacheGet(String $var, Function $callback /*= null*/, Globals GLOBALS, SessionMap session)
     {
         if (cacheExists($var, GLOBALS, session)) {
         	//System.out.println("DEBUG Loading: " + $var + " that contains:" + multiget(session, "cache", cacheKey(GLOBALS), $var));
@@ -2814,7 +2820,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheSet(String $var, Object $val /*= null*/, Globals GLOBALS, SessionMap session)
+    public void cacheSet(String $var, Object $val /*= null*/, Globals GLOBALS, SessionMap session)
     {
     	multiput(session, "cache", cacheKey(GLOBALS), $var, $val);
     }
@@ -2826,7 +2832,7 @@ public class Util {
      *
      * @return void
      */
-    public static void cacheUnset(String $var, Globals GLOBALS, SessionMap session)
+    public void cacheUnset(String $var, Globals GLOBALS, SessionMap session)
     {
     	multiremove(session, "cache", cacheKey(GLOBALS), $var);
     }
@@ -2842,7 +2848,7 @@ public class Util {
      *
      * @return String the printable value
      */
-    public static String printableBitValue(int $value, int $length)
+    public String printableBitValue(int $value, int $length)
     {
     	return null; // TODO
     	/*
@@ -2883,7 +2889,7 @@ public class Util {
      *
      * @return String the converted value
      */
-    public static String convertBitDefaultValue(String $bit_default_value)
+    public String convertBitDefaultValue(String $bit_default_value)
     {
     	return null; //TODO
         //return rtrim(ltrim(htmlspecialchars_decode($bit_default_value, ENT_QUOTES), "b'"), "'");
@@ -2897,7 +2903,7 @@ public class Util {
      * @return array associative array containing type, spec_in_brackets
      *          and possibly enum_set_values (another array)
      */
-    public static String extractColumnSpec(Map $columnspec)
+    public String extractColumnSpec(Map $columnspec)
     {
     	return ""; //TODO
     	/*
@@ -2991,13 +2997,13 @@ public class Util {
 
         // for the case ENUM("&#8211;","&ldquo;")
         $displayed_type = htmlspecialchars($printtype);
-        if (mb_strlen($printtype) > Globals.getConfig()["LimitChars"]) {
+        if (mb_strlen($printtype) > config["LimitChars"]) {
             $displayed_type  = "<abbr title='" + htmlspecialchars($printtype) + "'>";
             $displayed_type += htmlspecialchars(
                 mb_substr(
                     $printtype,
                     0,
-                    Globals.getConfig()["LimitChars"]
+                    config["LimitChars"]
                 ) + "..."
             );
             $displayed_type += "</abbr>";
@@ -3024,7 +3030,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean isForeignKeySupported(String $engine)
+    public boolean isForeignKeySupported(String $engine)
     {
     	return false; //TODO
     	/*
@@ -3049,13 +3055,13 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean isForeignKeyCheck()
+    public boolean isForeignKeyCheck()
     {
     	return false; //TODO
     	/*
-        if (Globals.getConfig()["DefaultForeignKeyChecks"] === "enable") {
+        if (config["DefaultForeignKeyChecks"] === "enable") {
             return true;
-        } else if (Globals.getConfig()["DefaultForeignKeyChecks"] === "disable") {
+        } else if (config["DefaultForeignKeyChecks"] === "disable") {
             return false;
         }
         return (GLOBALS.getDbi().getVariable("FOREIGN_KEY_CHECKS") == "ON");*/
@@ -3066,7 +3072,7 @@ public class Util {
      *
      * @return String HTML for checkbox
      */
-    public static String getFKCheckbox()
+    public String getFKCheckbox()
     {
         Map<String, Object> model = new HashMap<>();
         model.put("checked", isForeignKeyCheck());
@@ -3078,7 +3084,7 @@ public class Util {
      *
      * @return boolean Default foreign key checks value
      */
-    public static boolean handleDisableFKCheckInit()
+    public boolean handleDisableFKCheckInit()
     {
     	return false; //TODO
     	/*
@@ -3103,7 +3109,7 @@ public class Util {
      *
      * @return void
      */
-    public static void handleDisableFKCheckCleanup(boolean $default_fk_check_value)
+    public void handleDisableFKCheckCleanup(boolean $default_fk_check_value)
     {
     	//TODO
     	/*GLOBALS.getDbi().setVariable(
@@ -3120,7 +3126,7 @@ public class Util {
      *
      * @return String GIS data in Well Know Text format
      */
-    public static String asWKT(String $data, boolean $includeSRID /*= false*/)
+    public String asWKT(String $data, boolean $includeSRID /*= false*/)
     {
     	return null; //TODO
     	/*
@@ -3159,7 +3165,7 @@ public class Util {
      *
      * @return String with the chars replaced
      */
-    public static String duplicateFirstNewline(String $String)
+    public String duplicateFirstNewline(String $String)
     {
         int $first_occurence = $String.indexOf("\r\n");
         if ($first_occurence == 0) {
@@ -3178,7 +3184,7 @@ public class Util {
      *
      * @return String|boolean Title for the $cfg value
      */
-    public static String getTitleForTarget(String $target)
+    public String getTitleForTarget(String $target)
     {
     	Map<String, String> $mapping = new HashMap<>();
     	$mapping.put("structure", __("Structure"));
@@ -3204,7 +3210,7 @@ public class Util {
      *
      * @return String script name corresponding to the config word
      */
-    public static String getScriptNameForOption(String $target, String $location)
+    public String getScriptNameForOption(String $target, String $location)
     {
     	if ($target == null) {
     		return "";
@@ -3271,7 +3277,7 @@ public class Util {
      *
      * @return String
      */
-    public static String expandUserString(
+    public String expandUserString(
         String $String,
         Object $escape /*= null*/,
         Map $updates /*= []*/
@@ -3280,14 +3286,14 @@ public class Util {
     	/*
         // Content
         $vars = [];
-        $vars["http_host"] = Core.getenv("HTTP_HOST");
-        $vars["server_name"] = Globals.getConfig()["Server"]["host"];
-        $vars["server_verbose"] = Globals.getConfig()["Server"]["verbose"];
+        $vars["http_host"] = core.getenv("HTTP_HOST");
+        $vars["server_name"] = config["Server"]["host"];
+        $vars["server_verbose"] = config["Server"]["verbose"];
 
-        if (empty(Globals.getConfig()["Server"]["verbose"])) {
-            $vars["server_verbose_or_name"] = Globals.getConfig()["Server"]["host"];
+        if (empty(config["Server"]["verbose"])) {
+            $vars["server_verbose_or_name"] = config["Server"]["host"];
         } else {
-            $vars["server_verbose_or_name"] = Globals.getConfig()["Server"]["verbose"];
+            $vars["server_verbose_or_name"] = config["Server"]["verbose"];
         }
 
         $vars["database"] = GLOBALS["db"];
@@ -3365,7 +3371,7 @@ public class Util {
         */
     }
 
-    public static String expandUserString(
+    public String expandUserString(
             String $String) {
     	return expandUserString($String, null, new HashMap<>());
     }
@@ -3378,11 +3384,11 @@ public class Util {
      *
      * @return String
      */
-    public static String getBrowseUploadFileBlock(int $max_upload_size, Globals GLOBALS)
+    public String getBrowseUploadFileBlock(int $max_upload_size, Globals GLOBALS)
     {
         String $block_html = "";
 
-        if (GLOBALS.isUpload() && ! empty(Globals.getConfig().get("UploadDir"))) {
+        if (GLOBALS.isUpload() && ! empty(config.get("UploadDir"))) {
             $block_html += "<label for='radio_import_file'>";
         } else {
             $block_html += "<label for='input_import_file'>";
@@ -3408,7 +3414,7 @@ public class Util {
      *
      * @return String
      */
-    public static String getSelectUploadFileBlock(List $import_list, String $uploaddir)
+    public String getSelectUploadFileBlock(List $import_list, String $uploaddir)
     {
     	return null; //TODO
     	/*
@@ -3469,7 +3475,7 @@ public class Util {
      *
      * @return array   the action titles
      */
-    public static Map<String,String> buildActionTitles(Globals GLOBALS, SessionMap session)
+    public Map<String,String> buildActionTitles(Globals GLOBALS, SessionMap session)
     {
     	Map<String,String> $titles = new HashMap<String,String>();
 
@@ -3509,7 +3515,7 @@ public class Util {
      * @return mixed   An HTML snippet or an array of datatypes.
      *
      */
-    public static Object getSupportedDatatypes(boolean $html /*= false*/, String $selected /*= ""*/)
+    public Object getSupportedDatatypes(boolean $html /*= false*/, String $selected /*= ""*/)
     {
     	return null; //TODO
     	/*
@@ -3582,7 +3588,7 @@ public class Util {
      *
      * @return array   list of datatypes
      */
-    public static Map unsupportedDatatypes()
+    public Map unsupportedDatatypes()
     {
         return new HashMap();
     }
@@ -3594,7 +3600,7 @@ public class Util {
      *
      * @return String[] GIS data types
      */
-    public static String[] getGISDatatypes(boolean $upper_case /*= false*/)
+    public String[] getGISDatatypes(boolean $upper_case /*= false*/)
     {
         String [] $gis_data_types = new String[] {
             "geometry",
@@ -3622,7 +3628,7 @@ public class Util {
      *
      * @return String GIS data enclosed in "ST_GeomFromText" or "GeomFromText" function
      */
-    public static String createGISData(String $gis_string, int $mysqlVersion)
+    public String createGISData(String $gis_string, int $mysqlVersion)
     {
     	return null; //TODO
     	/*
@@ -3653,7 +3659,7 @@ public class Util {
      * @return array names and details of the functions that can be applied on
      *               geometry data types.
      */
-    public static Map getGISFunctions(
+    public Map getGISFunctions(
     	String $geom_type /*= null*/,
         boolean $binary /*= true*/,
         boolean $display /*= false*/
@@ -3894,7 +3900,7 @@ public class Util {
      * @return String   An HTML snippet of a dropdown list with function
      *                    names appropriate for the requested column.
      */
-    public static String getDefaultFunctionForField(Map $field, boolean $insert_mode)
+    public String getDefaultFunctionForField(Map $field, boolean $insert_mode)
     {
     	return null;         //TODO
     	/*
@@ -3951,7 +3957,7 @@ public class Util {
      * @return String   An HTML snippet of a dropdown list with function
      *                    names appropriate for the requested column.
      */
-    public static String getFunctionsForField(Map $field, boolean $insert_mode, Map $foreignData)
+    public String getFunctionsForField(Map $field, boolean $insert_mode, Map $foreignData)
     {
     	return ""; //TODO
     	/*
@@ -4016,7 +4022,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean currentUserHasPrivilege(String $priv, String $db /*= null*/, String $tbl /*= null*/)
+    public boolean currentUserHasPrivilege(String $priv, String $db /*= null*/, String $tbl /*= null*/)
     {
     	return true; //TODO
     	/*
@@ -4103,7 +4109,7 @@ public class Util {
      *
      * @return String
      */
-    public static String getServerType()
+    public String getServerType()
     {
     	return null; //Unsupported
     	/*
@@ -4123,11 +4129,11 @@ public class Util {
      *
      * @return String
      */
-    public static String getServerSSL()
+    public String getServerSSL()
     {
     	return null; // Unsupported
     	/*
-        $server = Globals.getConfig()["Server"];
+        $server = config["Server"];
         $class = "caution";
         if (! $server["ssl"]) {
             $message = __("SSL is not being used");
@@ -4154,7 +4160,7 @@ public class Util {
      *
      * @return array
      */
-    public static Map parseEnumSetValues(String $definition, boolean $escapeHtml /*= true*/)
+    public Map parseEnumSetValues(String $definition, boolean $escapeHtml /*= true*/)
     {
     	return null; //TODO
     	/*
@@ -4213,7 +4219,7 @@ public class Util {
      *
      * @return String Matching regular expression.
      */
-    public static String getFirstOccurringRegularExpression(List<String> $regex_array, String $query)
+    public String getFirstOccurringRegularExpression(List<String> $regex_array, String $query)
     {
     	return null; //TODO
     	/*
@@ -4293,7 +4299,7 @@ public class Util {
      *
      * @return array|null list of tabs for the menu
      */
-    public static Map<String, String> getMenuTabList(String $level)
+    public Map<String, String> getMenuTabList(String $level)
     {
     	if ($level == null) {
     		throw new IllegalArgumentException("$level cannot be null in JMA");
@@ -4317,7 +4323,7 @@ public class Util {
      *
      * @return String time, datetime or timestamp strings with fractional seconds
      */
-    public static String addMicroseconds(String $value)
+    public String addMicroseconds(String $value)
     {
         if (empty($value) || $value == "CURRENT_TIMESTAMP"
             || $value == "current_timestamp()") {
@@ -4344,7 +4350,7 @@ public class Util {
      * @return String the MIME type for compression, or "none"
      * @throws IOException 
      */
-    public static String getCompressionMimeType(File $file) throws IOException
+    public String getCompressionMimeType(File $file) throws IOException
     {
     	FileReader fw = new FileReader($file);
     	char[] $buffer = new char[4];
@@ -4380,7 +4386,7 @@ public class Util {
      *
      * @return String HTML code for one link
      */
-    public static String getNavigationLink(
+    public String getNavigationLink(
     	String $link,
         boolean $showText,
         String $text,
@@ -4425,7 +4431,7 @@ public class Util {
         return $retval;
     }
 
-    public static String getNavigationLink(
+    public String getNavigationLink(
         	String $link,
             boolean $showText,
             String $text,
@@ -4446,7 +4452,7 @@ public class Util {
      *
      * @return String COLLATE clause if needed or empty String.
      */
-    public static String getCollateForIS()
+    public String getCollateForIS()
     {
     	return ""; //TODO
     	/*
@@ -4466,7 +4472,7 @@ public class Util {
      *
      * @return array processes index data
      */
-    public static Map processIndexData(Map $indexes)
+    public Map processIndexData(Map $indexes)
     {
     	return null; // TODO
     	/*
@@ -4522,7 +4528,7 @@ public class Util {
      *
      * @return String html
      */
-    public static String getStartAndNumberOfRowsPanel(String $sql_query, HttpServletRequest request, SessionMap session)
+    public String getStartAndNumberOfRowsPanel(String $sql_query, HttpServletRequest request, SessionMap session)
     {
     	Integer $rows;
         if (!empty(request.getParameter("session_max_rows"))) {
@@ -4532,7 +4538,7 @@ public class Util {
         ) {
             $rows = new Integer( (String) multiget(session,"tmpval","max_rows"));
         } else {
-            $rows = new Integer( (String) Globals.getConfig().get("MaxRows"));
+            $rows = new Integer( (String) config.get("MaxRows"));
             multiput(session,"tmpval","max_rows", $rows.toString());
         }
 
@@ -4561,7 +4567,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean isVirtualColumnsSupported()
+    public boolean isVirtualColumnsSupported()
     {
     	return false; // TODO
     	/*
@@ -4596,12 +4602,12 @@ public class Util {
      * @throws SQLException 
      *
      */
-    public static Object[] getDbInfo(String $db, String $sub_part, HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) throws SQLException
+    public Object[] getDbInfo(String $db, String $sub_part, HttpServletRequest request, Globals GLOBALS, SessionMap $_SESSION) throws SQLException
     {
     	//ResultSet metadata = this._links.get($link).getMetaData()
 		//		.getTables($catalogName, $database, null, new String[] {"TABLE"});
     	
-        Config $cfg = Globals.getConfig();
+        Config $cfg = config;
 
         // limits for table list
          
@@ -4683,7 +4689,7 @@ public class Util {
                     $tbl_type
                 );
                 $groupWithSeparator = $tbl_group
-                    + Globals.getConfig().get("NavigationTreeTableSeparator");
+                    + config.get("NavigationTreeTableSeparator");
             }
         } else {
             // all tables in db
@@ -4747,7 +4753,7 @@ public class Util {
      * @return array list of tables
      *
      */
-    public static List getTablesWhenOpen(String $db, Object $db_info_result)
+    public List getTablesWhenOpen(String $db, Object $db_info_result)
     {
     	return new ArrayList<>(); //TODO
     	/*
@@ -4763,11 +4769,11 @@ public class Util {
         if (count($sot_cache) > 0) {
             $tblGroupSql = "";
             $whereAdded = false;
-            if (Core.isValid($_REQUEST["tbl_group"])) {
+            if (core.isValid($_REQUEST["tbl_group"])) {
                 $group = escapeMysqlWildcards($_REQUEST["tbl_group"]);
                 $groupWithSeparator = escapeMysqlWildcards(
                     $_REQUEST["tbl_group"]
-                    + Globals.getConfig()["NavigationTreeTableSeparator"]
+                    + config["NavigationTreeTableSeparator"]
                 );
                 $tblGroupSql += " WHERE ("
                     + backquote("Tables_in_" + $db)
@@ -4777,7 +4783,7 @@ public class Util {
                     + " LIKE "" + $group + "")";
                 $whereAdded = true;
             }
-            if (Core.isValid($_REQUEST["tbl_type"], ["table", "view"])) {
+            if (core.isValid($_REQUEST["tbl_type"], ["table", "view"])) {
                 $tblGroupSql += $whereAdded ? " AND" : " WHERE";
                 if ($_REQUEST["tbl_type"] == "view") {
                     $tblGroupSql += " `Table_type` NOT IN ("BASE TABLE", "SYSTEM VERSIONED")";
@@ -4813,7 +4819,7 @@ public class Util {
                         GLOBALS.getDbi().getTablesFull($db, $names)
                     );
                 }
-                if (Globals.getConfig()["NaturalOrder"]) {
+                if (config["NaturalOrder"]) {
                     uksort($tables, "strnatcasecmp");
                 }
             } else if ($db_info_result) {
@@ -4829,7 +4835,7 @@ public class Util {
      *
      * @return array of strings
      */
-    public static List listPHPExtensions()
+    public List listPHPExtensions()
     {
     	return new ArrayList(); //Unsupported
     }
@@ -4841,7 +4847,7 @@ public class Util {
      *
      * @return String
      */
-    public static String requestString(Object $value)
+    public String requestString(Object $value)
     {
     	return $value.toString(); //TODO
     	/*
@@ -4861,7 +4867,7 @@ public class Util {
      * 
      * @see https://www.geeksforgeeks.org/generate-random-string-of-given-size-in-java/
      */
-    public static String generateRandom(int $length /*, boolean $asHex = false*/)
+    public String generateRandom(int $length /*, boolean $asHex = false*/)
     {
         // chose a Character random from this String 
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -4892,12 +4898,12 @@ public class Util {
      *
      * @return void
      */
-    public static void setTimeLimit()
+    public void setTimeLimit()
     {
     	//Unsupported
         // The function can be disabled in php.ini
         /*if (function_exists("set_time_limit")) {
-            @set_time_limit(Globals.getConfig()["ExecTimeLimit"]);
+            @set_time_limit(config["ExecTimeLimit"]);
         }*/
     }
 
@@ -4910,13 +4916,13 @@ public class Util {
      *
      * @return mixed Searched value
      */
-    public static Object getValueByKey(Map $array, String[] $path, Object $default /*= null*/)
+    public Object getValueByKey(Map $array, String[] $path, Object $default /*= null*/)
     {
         Object $value = multiget($array, $path);
         return !empty($value) ? $value : $default;
     }
     
-    public static Object getValueByKey(Map $array, String $path, Object $default /*= null*/)  {
+    public Object getValueByKey(Map $array, String $path, Object $default /*= null*/)  {
     	return getValueByKey($array, $path.split("\\."), $default);
     }
 
@@ -4930,7 +4936,7 @@ public class Util {
      *
      * @return String Link to be displayed in the table header
      */
-    public static String sortableTableHeader(String $title, String $sort, String $initialSortOrder /*= "ASC"*/)
+    public String sortableTableHeader(String $title, String $sort, String $initialSortOrder /*= "ASC"*/)
     {
     	return null; //TODO
     	/*
@@ -5003,7 +5009,7 @@ public class Util {
             "sort_order" => $futureSortOrder,
         ];
 
-        if (Core.isValid($_REQUEST["tbl_type"], ["view", "table"])) {
+        if (core.isValid($_REQUEST["tbl_type"], ["view", "table"])) {
             $urlParams["tbl_type"] = $_REQUEST["tbl_type"];
         }
         if (! empty($_REQUEST["tbl_group"])) {
@@ -5015,7 +5021,7 @@ public class Util {
         return linkOrButton($url, $title + $orderImg, $orderLinkParams);*/
     }
 
-    public static String sortableTableHeader(String $title, String $sort) {
+    public String sortableTableHeader(String $title, String $sort) {
     	return sortableTableHeader($title, $sort, "ASC");
     }
     
@@ -5026,7 +5032,7 @@ public class Util {
      *
      * @return boolean
      */
-    public static boolean isInteger(Object $input)
+    public boolean isInteger(Object $input)
     {
     	if ($input instanceof String) {
     		try {
@@ -5039,7 +5045,7 @@ public class Util {
     	return $input instanceof Integer || $input instanceof Long;
     }
 
-	public static String getListNavigator(int totalNumTables, int position, Map<String, Object> $urlParams,
+	public String getListNavigator(int totalNumTables, int position, Map<String, Object> $urlParams,
 			String fromRoute, String string, Object object) {
 		// TODO Auto-generated method stub
 		return null;

@@ -12,7 +12,7 @@ import javax.servlet.ServletException;
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.ListDatabase;
 import org.javamyadmin.helpers.Message;
-import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +29,7 @@ public class AjaxController extends AbstractController {
 	/**
 	 * @var Config
 	 */
+	@Autowired
 	private Config config;
 
 	/**
@@ -44,7 +45,6 @@ public class AjaxController extends AbstractController {
 	 *            $config Config instance
 	 */
 	public AjaxController() {
-		this.config = Globals.getConfig();
 	}
 
 	/*

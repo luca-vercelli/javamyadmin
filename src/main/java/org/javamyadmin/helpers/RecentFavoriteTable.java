@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import static org.javamyadmin.php.Php.*;
 
 /**
@@ -37,16 +39,13 @@ public class RecentFavoriteTable
      */
     private String _tableType;
 
-    /**
-     * RecentFavoriteTable instances.
-     *
-     * @access private
-     * @var array
-     */
-    private static Map<String, RecentFavoriteTable> _instances = new HashMap<>();
-
     /** @var Relation */
     // TODO private relation;
+    
+    @Autowired
+    private Config config;
+	@Autowired
+	private Util util;
 
     /**
      * Creates a new instance of RecentFavoriteTable
@@ -55,7 +54,7 @@ public class RecentFavoriteTable
      *
      * @access private
      */
-    private RecentFavoriteTable(String $type, SessionMap $_SESSION, Globals GLOBALS)
+    public RecentFavoriteTable(String $type, SessionMap $_SESSION, Globals GLOBALS)
     {
         //this.relation = new Relation(GLOBALS.getDbi());
         this._tableType = $type;
@@ -69,21 +68,6 @@ public class RecentFavoriteTable
         this._tables = new ArrayList<>();
         Map tables = (Map) multiget($_SESSION, "tmpval", this._tableType + "Tables", $server_id);
         this._tables.addAll(tables.values());
-    }
-
-    /**
-     * Returns class instance.
-     *
-     * @param String $type the table type
-     *
-     * @return RecentFavoriteTable
-     */
-    public static RecentFavoriteTable getInstance(String $type, SessionMap $_SESSION, Globals GLOBALS)
-    {
-        if (! _instances.containsKey($type)) {
-        	_instances.put($type, new RecentFavoriteTable($type, $_SESSION, GLOBALS));
-        }
-        return _instances.get($type);
     }
 
     /**
@@ -169,7 +153,7 @@ public class RecentFavoriteTable
      */
     public boolean trim()
     {
-    	String num = (String) Globals.getConfig().get("Num" + ucfirst(this._tableType) + "Tables");
+    	String num = (String) config.get("Num" + ucfirst(this._tableType) + "Tables");
     	if (empty(num)) {
     		num = "0";
     	}
@@ -218,7 +202,7 @@ public class RecentFavoriteTable
                         + "' data-favtargetn='"
                         + md5($table.get("db") + "." + $table.get("table"))
                         + "' >"
-                        + Util.getIcon("b_favorite", null, GLOBALS, $_SESSION)
+                        + util.getIcon("b_favorite", null, GLOBALS, $_SESSION)
                         + "</a>";
 
                     Map<String, String> map2 = new HashMap<>();
