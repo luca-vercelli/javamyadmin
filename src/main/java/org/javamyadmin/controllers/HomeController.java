@@ -41,7 +41,7 @@ public class HomeController extends AbstractController {
 	public void index()
 			throws ServletException, IOException, SQLException, NamingException {
 		
-		super.prepareResponse();
+    	commons.execute();
 		
 		if (response.isAjax() && !empty(httpRequest.getParameter("access_time"))) {
 			response.response();

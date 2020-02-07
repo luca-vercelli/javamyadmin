@@ -20,7 +20,7 @@ public class WhitelistJs extends AbstractController {
 	@RequestMapping(value = "/js/whitelist.php")
 	public void whitelist() throws ServletException, IOException, SQLException, NamingException {
 
-		super.prepareResponse();
+		commons.execute();
 		
 		GLOBALS.set_PMA_MINIMUM_COMMON(true);
 

@@ -63,7 +63,7 @@ public class DatabasesController extends AbstractController {
 			@RequestParam(defaultValue="0") Integer pos)
 	throws ServletException, IOException, SQLException, NamingException {
 
-		super.prepareResponse();
+		commons.execute();
         //global $cfg, $server, $dblist, $is_create_db_priv;
         //global $replication_info, $db_to_create, $pmaThemeImage, $text_dir;
         
@@ -164,7 +164,7 @@ public class DatabasesController extends AbstractController {
 	@RequestMapping(value = "/create")
     public Array create(@RequestParam String new_db) throws ServletException, IOException, SQLException, NamingException
     {
-    	super.prepareResponse();
+		commons.execute();
     	
 		Config $cfg = Globals.getConfig();
 		
@@ -226,7 +226,7 @@ public class DatabasesController extends AbstractController {
 	@RequestMapping(value = "/destroy")
     public Array destroy(@RequestParam String drop_selected_dbs, @RequestParam String selected_dbs) throws ServletException, IOException, SQLException, NamingException
     {
-    	super.prepareResponse();
+		commons.execute();
 
 		Config $cfg = Globals.getConfig();
 		

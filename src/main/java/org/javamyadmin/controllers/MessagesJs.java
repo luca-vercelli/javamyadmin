@@ -29,7 +29,7 @@ public class MessagesJs extends AbstractController {
 	@RequestMapping(value = "/js/messages.php")
 	public void messages() throws ServletException, IOException, SQLException, NamingException {
 
-		super.prepareResponse();
+		commons.execute();
 		
 		GLOBALS.set_PMA_MINIMUM_COMMON(true);
 

@@ -114,7 +114,7 @@ public class StructureController extends AbstractController {
     {
     	Config $cfg = Globals.getConfig();
     	
-    	super.prepareResponse();
+    	commons.execute();
     	
         // TODO require_once ROOT_PATH + "libraries/db_common.inc.php";
         this.response.getHeader().getScripts().addFiles(new String[] {
@@ -197,7 +197,7 @@ public class StructureController extends AbstractController {
     @RequestMapping(value = "/structure/real-row-count")
     public Map<String, Object> handleRealRowCountRequestAction(@RequestParam String table, @RequestParam String real_row_count_all) throws ServletException, IOException, SQLException, NamingException
     {
-    	super.prepareResponse();
+    	commons.execute();
     	
         // TODO require_once ROOT_PATH + "libraries/db_common.inc.php";
         if (! this.response.isAjax()) {
