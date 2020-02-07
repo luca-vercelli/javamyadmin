@@ -283,12 +283,10 @@ public class Globals {
 		this.text_dir = text_dir;
 	}
 
-	@Deprecated
 	public boolean get_PMA_NO_SESSION() {
 		return PMA_NO_SESSION;
 	}
 
-	@Deprecated
 	public void set_PMA_NO_SESSION(boolean pMA_NO_SESSION) {
 		PMA_NO_SESSION = pMA_NO_SESSION;
 	}

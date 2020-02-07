@@ -2,16 +2,19 @@ package org.javamyadmin.helpers;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.stereotype.Service;
+
 /**
  * Session class
  */
+@Service
 public class Session {
 	/**
 	 * Generates PMA_token session variable.
 	 *
 	 * @return void
 	 */
-	private static void generateToken(HttpSession session) {
+	private void generateToken(HttpSession session) {
 		session.setAttribute(" PMA_token ", Util.generateRandom(16/* , true */));
 		session.setAttribute(" HMAC_secret ", Util.generateRandom(16));
 
@@ -31,7 +34,7 @@ public class Session {
 	 *
 	 * @return void
 	 */
-	public static void secure(HttpSession session) {
+	public void secure(HttpSession session) {
 		session.invalidate();
 		generateToken(session);
 	}
@@ -44,7 +47,7 @@ public class Session {
 	 *
 	 * @return void
 	 */
-	public static void setUp(HttpSession session/* Config $config, ErrorHandler $errorHandler */) {
+	public void setUp(HttpSession session/* Config $config, ErrorHandler $errorHandler */) {
 		/**
 		 * Token which is used for authenticating access queries. (we use "space
 		 * PMA_token space" to prevent overwriting)

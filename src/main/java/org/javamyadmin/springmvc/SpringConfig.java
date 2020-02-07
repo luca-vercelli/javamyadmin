@@ -4,6 +4,7 @@ import static org.javamyadmin.php.Php.$_SESSION;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.javamyadmin.helpers.CommonsInc;
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.Console;
 import org.javamyadmin.helpers.DatabaseInterface;
@@ -50,6 +51,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 	public Config getConfig() {
 		return new Config(null);
+	}
+
+	@Bean
+	@RequestScope
+	public CommonsInc getCommonsInc() {
+		return new CommonsInc();
 	}
 
 	@Bean
