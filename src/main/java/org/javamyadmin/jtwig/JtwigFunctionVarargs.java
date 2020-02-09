@@ -37,11 +37,13 @@ public class JtwigFunctionVarargs extends AbstractJtwigFunction {
 		try {
 			return staticMethod.invoke(null, realArgs);
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException("Exception on function " + name, e);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException("Exception on function " + name, e);
 		} catch (InvocationTargetException e) {
-			throw new IllegalStateException(e);
+			throw new IllegalStateException("Exception on function " + name, e);
+		} catch (RuntimeException e) {
+			throw new RuntimeException("Exception on function " + name, e);
 		}
 	}
 
