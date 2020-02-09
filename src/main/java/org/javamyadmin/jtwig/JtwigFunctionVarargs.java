@@ -14,11 +14,13 @@ import org.jtwig.functions.FunctionRequest;
 public class JtwigFunctionVarargs extends AbstractJtwigFunction {
 
 	private Method staticMethod;
+	private Object service;
 	private Object[] defaults;
 
-	public JtwigFunctionVarargs(String name, Method staticMethod, Object... defaults) {
+	public JtwigFunctionVarargs(String name, Method staticMethod, Object service, Object... defaults) {
 		super(name);
 		this.staticMethod = staticMethod;
+		this.service = service;
 		this.defaults = defaults;
 	}
 
@@ -35,7 +37,7 @@ public class JtwigFunctionVarargs extends AbstractJtwigFunction {
 		}
 
 		try {
-			return staticMethod.invoke(null, realArgs);
+			return staticMethod.invoke(service, realArgs);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException("Exception on function " + name, e);
 		} catch (IllegalArgumentException e) {

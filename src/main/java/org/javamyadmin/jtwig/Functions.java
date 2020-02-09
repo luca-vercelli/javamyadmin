@@ -34,7 +34,7 @@ public class Functions {
 		ApplicationContext context = ApplicationContextProvider.getApplicationContext();
 		Util util = context.getBean(Util.class);
 		Sanitize sanitize = context.getBean(Sanitize.class);
-
+//FIXME Url
 		if (functions == null) {
 			functions = new ArrayList<>();
 			// Message extension ==========================
@@ -48,7 +48,7 @@ public class Functions {
 			functions.add(new JtwigFunction2Ary("get_common_raw", (x, y) -> Url.getCommonRaw((Map) x, (String) y), null, ""));
 			functions.add(new JtwigFunctionVarargs("get_hidden_fields",
 					getMethod(Url.class, "getHiddenFields",
-							new Class[] { Map.class, String.class, String.class }),
+							new Class[] { Map.class, String.class, String.class }), 
 					null, "", "FIXME_pma_token"));
 			// Sanitize extension ==========================
 			functions.add(new JtwigFunction1Ary("sanitize", x -> x)); // TODO
@@ -70,10 +70,12 @@ public class Functions {
 			functions.add(new JtwigFunctionVarargs("link_or_button",
 					getMethod(Util.class, "linkOrButton",
 							new Class[] { String.class, String.class, Map.class, String.class, String.class }),
+					util,
 					"", "", null, "", ""));
 			functions.add(new JtwigFunctionVarargs("get_image",
-					getMethod(Util.class, "getImage", new Class[] { String.class, String.class, Map.class }), "",
-					"", null));
+					getMethod(Util.class, "getImage", new Class[] { String.class, String.class, Map.class }),
+					util,
+					"", "", null));
 			// where the hell is defined this ?!? ==========================
 			functions.add(new JtwigFunction1Ary("link", x -> x)); // TODO
 		}
