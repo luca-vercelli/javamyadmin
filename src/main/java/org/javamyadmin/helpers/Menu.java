@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -205,8 +206,11 @@ public class Menu {
      */
     public Menu()
     {
-        //this.relation = new Relation(GLOBALS.getDbi());
-        this.cfg = config.settings;
+    }
+    
+    @PostConstruct
+    private void init() {
+    	this.cfg = config.settings;
     }
     
     /**
