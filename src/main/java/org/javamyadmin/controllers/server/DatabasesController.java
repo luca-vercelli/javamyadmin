@@ -20,11 +20,7 @@ import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Header;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.Scripts;
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Array;
-import org.javamyadmin.php.Globals;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,9 +52,6 @@ public class DatabasesController extends AbstractController {
      * @var int position in list navigation
      */
     private int position;
-
-	@Autowired
-	private Util util;
     
 	@RequestMapping(value = "/databases")
 	public void index(@RequestParam(required=false) String sort_by,
@@ -208,7 +201,7 @@ public class DatabasesController extends AbstractController {
             
             Map<String, String> $queryParam = new HashMap<>();
             $queryParam.put("db", new_db);
-            $json.put("url_query", $scriptName + Url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?"));
+            $json.put("url_query", $scriptName + url.getCommon($queryParam, $scriptName.contains("?") ? "&" : "?"));
             
         }
 
@@ -245,7 +238,7 @@ public class DatabasesController extends AbstractController {
             $message = Message.error(__("No databases selected."));
         } else {
             // for mult_submits.inc.php
-            String $action = Url.getFromRoute("/server/databases");
+            String $action = url.getFromRoute("/server/databases");
             GLOBALS.setErrUrl($action);
 
             GLOBALS.setSubmitMult("drop_db");

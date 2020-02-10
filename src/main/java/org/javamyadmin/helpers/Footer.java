@@ -80,6 +80,8 @@ public class Footer {
     @Autowired
     private Util util;
     @Autowired
+    private Url url;
+    @Autowired
     private HttpServletRequest httpRequest;
     @Autowired
     private SessionMap $_SESSION;
@@ -249,7 +251,7 @@ public class Footer {
         ) {
             $params.put("single_table", httpRequest.getParameter("single_table"));
         }
-        return /* TODO basename(core.getenv("SCRIPT_NAME")) + */ Url.getCommonRaw($params);
+        return /* TODO basename(core.getenv("SCRIPT_NAME")) + */ url.getCommonRaw($params);
     }
 
     /**

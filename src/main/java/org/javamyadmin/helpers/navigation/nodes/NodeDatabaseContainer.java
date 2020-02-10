@@ -10,8 +10,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.navigation.NodeFactory;
 
 /**
@@ -46,8 +44,8 @@ public class NodeDatabaseContainer extends Node {
             
             Map<String, String> serverMap = new HashMap<>();
             serverMap.put("server", Integer.toString(GLOBALS.getServer()));
-            $new.links.put("text", Url.getFromRoute("/server/databases", serverMap));
-            $new.links.put("icon", Url.getFromRoute("/server/databases", serverMap));
+            $new.links.put("text", url.getFromRoute("/server/databases", serverMap));
+            $new.links.put("icon", url.getFromRoute("/server/databases", serverMap));
             $new.classes = "new_database italics";
             this.addChild($new);
         }

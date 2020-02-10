@@ -116,6 +116,8 @@ public class NavigationTree {
     @Autowired
     private Util util;
     @Autowired
+    private Url url;
+    @Autowired
     private SessionMap sessionMap;
     @Autowired
     private Response response;
@@ -1344,7 +1346,7 @@ public class NavigationTree {
             this.tree.getPresence("databases", "", GLOBALS),
             this.pos,
             args0,
-            Url.getFromRoute("/navigation"),
+            url.getFromRoute("/navigation"),
             "frame_navigation",
             new Integer((String)config.get("FirstLevelNavigationItems")),
             "pos",
@@ -1445,7 +1447,7 @@ public class NavigationTree {
             $urlParams.put("pos", 0);
             $retval += "<li class='fast_filter db_fast_filter'>";
             $retval += "<form class='ajax fast_filter'>";
-            $retval += Url.getHiddenInputs(httpRequest, GLOBALS, sessionMap/*$urlParams*/); //FIXME
+            $retval += url.getHiddenInputs(httpRequest, GLOBALS, sessionMap/*$urlParams*/); //FIXME
             $retval += "<input class='searchClause' type='text'";
             $retval += " name='searchClause' accesskey='q'";
             $retval += " placeholder='"
@@ -1476,7 +1478,7 @@ public class NavigationTree {
             $urlParams.put("pos2_value", 0);
             $retval += "<li class='fast_filter'>";
             $retval += "<form class='ajax fast_filter'>";
-            $retval += Url.getHiddenFields($urlParams, (String)sessionMap.get(" PMA_token "));
+            $retval += url.getHiddenFields($urlParams, (String)sessionMap.get(" PMA_token "));
             $retval += "<input class='searchClause' type='text'";
             $retval += " name='searchClause2'";
             $retval += " placeholder='"
@@ -1553,7 +1555,7 @@ public class NavigationTree {
                 this.tree.getPresence("databases", this.searchClause, GLOBALS),
                 this.pos,
                 params1,
-                Url.getFromRoute("/navigation"),
+                url.getFromRoute("/navigation"),
                 "frame_navigation",
                 new Integer((String)config.get("FirstLevelNavigationItems")),
                 "pos",
@@ -1587,7 +1589,7 @@ public class NavigationTree {
                     $num,
                     $pos,
                     $urlParams,
-                    Url.getFromRoute("/navigation"),
+                    url.getFromRoute("/navigation"),
                     "frame_navigation",
                     new Integer((String)config.get("MaxNavigationItems")),
                     "pos" + $level + "_value"

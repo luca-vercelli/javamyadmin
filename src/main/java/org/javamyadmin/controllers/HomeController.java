@@ -13,11 +13,9 @@ import java.util.Map;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
-import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.LanguageManager;
 import org.javamyadmin.helpers.Message;
 import org.javamyadmin.helpers.ThemeManager;
-import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.server.Select;
 import org.javamyadmin.php.Globals;
@@ -72,8 +70,8 @@ public class HomeController extends AbstractController {
 
 		if (GLOBALS.getServer() > 0) {
 			// @see libraries/server_common.inc.php
-			GLOBALS.setUrlQuery(Url.getCommon(null));
-			GLOBALS.setErrUrl(Url.getFromRoute("/"));
+			GLOBALS.setUrlQuery(url.getCommon(null));
+			GLOBALS.setErrUrl(url.getFromRoute("/"));
 			GLOBALS.setIsGrantuser(dbi.isUserType("grant"));
 			GLOBALS.setIsCreateuser(dbi.isUserType("create"));
 		}
@@ -124,7 +122,7 @@ public class HomeController extends AbstractController {
                         "id" => "li_change_password",
                         "class" => "no_bullets",
                         "url" => [
-                            "href" => Url.getFromRoute("/user_password"),
+                            "href" => url.getFromRoute("/user_password"),
                             "target" => null,
                             "id" => "change_password_anchor",
                             "class" => "ajax",
@@ -162,7 +160,7 @@ public class HomeController extends AbstractController {
             	model0.put("id", "li_user_preferences");
             	model0.put("class", "no_bullets");
 	            Map<String,Object> modelUrl = new HashMap<>();
-            	modelUrl.put("href", Url.getFromRoute("/preferences/manage"));
+            	modelUrl.put("href", url.getFromRoute("/preferences/manage"));
             	model0.put("url", modelUrl);
                 $userPreferences = template.render("list/item", model0);
             }

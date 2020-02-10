@@ -149,6 +149,8 @@ public class Header {
 	private SessionMap session;
     @Autowired
 	private Config config;
+    @Autowired
+    private Url url;
     
     private SmartMap cfg;
     
@@ -259,7 +261,7 @@ public class Header {
     	String $table = !empty(GLOBALS.getTable()) ? GLOBALS.getTable() : "";
         String $pftext = (String) multiget(session, "tmpval", "pftext");
 
-        $params.put("common_query", Url.getCommonRaw());
+        $params.put("common_query", url.getCommonRaw());
         $params.put("opendb_url", util.getScriptNameForOption(
                 (String) cfg.get("DefaultTabDatabase"),
                 "database"
@@ -292,7 +294,7 @@ public class Header {
         $params.put("logged_in", GLOBALS.getDbi() != null && GLOBALS.getDbi().isUserType("logged"));
         $params.put("is_https", config.isHttps());
         $params.put("rootPath", config.getRootPath(request));
-        $params.put("arg_separator", Url.getArgSeparator());
+        $params.put("arg_separator", url.getArgSeparator());
         $params.put("PMA_VERSION", Globals.getPmaVersion());
         
         $params.put("auth_type", multiget(cfg, "Server", "auth_type"));

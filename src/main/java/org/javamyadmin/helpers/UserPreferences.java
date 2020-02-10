@@ -35,6 +35,8 @@ public class UserPreferences {
 
 	@Autowired
 	private Core core;
+    @Autowired
+    private Url url;
 
     /**
      * Constructor
@@ -275,7 +277,7 @@ public class UserPreferences {
             $hash = "#" + urlencode($hash);
         }
         core.sendHeaderLocation("./" + $file_name
-            + Url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash),
+            + url.getCommonRaw($url_params, ($file_name.contains( "?") ? "&" : "?") + $hash),
             false, request, response);
     }
     
@@ -302,7 +304,7 @@ public class UserPreferences {
         String $return_url = $script_name + "?" + http_build_query($_REQUEST(request), "&");
 
         Map<String, Object> model = new HashMap<>();
-        model.put("hidden_inputs", Url.getHiddenInputs(request, GLOBALS, $_SESSION));
+        model.put("hidden_inputs", url.getHiddenInputs(request, GLOBALS, $_SESSION));
         model.put("return_url", $return_url);
         
         return template.render("preferences/autoload", model);

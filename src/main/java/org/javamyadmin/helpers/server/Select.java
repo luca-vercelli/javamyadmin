@@ -25,6 +25,8 @@ public class Select {
 	
 	@Autowired
 	private Util util;
+    @Autowired
+    private Url url;
 	
     /**
      * Renders the server selection in list or selectbox form, or option tags only
@@ -59,7 +61,7 @@ public class Select {
                 $retval += "<fieldset>";
             }
 
-            $retval += Url.getHiddenFields(null, (String)$_SESSION.get(" PMA_token "));
+            $retval += url.getHiddenFields(null, (String)$_SESSION.get(" PMA_token "));
             $retval += "<label for='select_server'>"
                 + __("Current server:") + "</label> ";
 
@@ -119,7 +121,7 @@ public class Select {
                     
                     $retval += "<a class='disableAjax item' href='"
                         + $scriptName
-                        + Url.getCommon(serverMap, $scriptName.contains("?") ? "&" : "?")
+                        + url.getCommon(serverMap, $scriptName.contains("?") ? "&" : "?")
                         + "' >" + htmlspecialchars($label) + "</a>";
                 }
                 $retval += "</li>";

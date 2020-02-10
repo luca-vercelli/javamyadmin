@@ -1,7 +1,5 @@
 package org.javamyadmin.helpers.navigation.nodes;
 
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Array;
 import org.javamyadmin.php.Globals;
 
@@ -182,15 +180,15 @@ public class NodeTable extends NodeDatabaseChild {
             return;
         }
 
-        if ($page.equals(Url.getFromRoute("/table/structure"))) {
+        if ($page.equals(url.getFromRoute("/table/structure"))) {
         	this.icon.add(util.getImage("b_props", __("Structure")));
-        } else if ($page.equals(Url.getFromRoute("/table/search"))) {
+        } else if ($page.equals(url.getFromRoute("/table/search"))) {
             this.icon.add(util.getImage("b_search", __("Search")));
-        } else if ($page.equals(Url.getFromRoute("/table/change"))) {
+        } else if ($page.equals(url.getFromRoute("/table/change"))) {
             this.icon.add(util.getImage("b_insrow", __("Insert")));
-        } else if ($page.equals(Url.getFromRoute("/table/sql"))) {
+        } else if ($page.equals(url.getFromRoute("/table/sql"))) {
             this.icon.add( util.getImage("b_sql", __("SQL")));
-        } else if ($page.equals(Url.getFromRoute("/sql"))) {
+        } else if ($page.equals(url.getFromRoute("/sql"))) {
             this.icon.add(util.getImage("b_browse", __("Browse")));
         }
     }

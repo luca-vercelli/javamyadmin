@@ -7,9 +7,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.javamyadmin.helpers.CommonsInc;
 import org.javamyadmin.helpers.Config;
+import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.DatabaseInterface;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Template;
+import org.javamyadmin.helpers.Url;
+import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +50,12 @@ public abstract class AbstractController {
 	protected CommonsInc commons;
 	@Autowired
 	protected Config config;
+	@Autowired
+	protected Core core;
+	@Autowired
+	protected Util util;
+    @Autowired
+    protected Url url;
 
 	public DatabaseInterface getDbi() {
 		return dbi;

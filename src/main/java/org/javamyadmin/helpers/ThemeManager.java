@@ -81,6 +81,8 @@ public class ThemeManager {
 	private SessionMap $_SESSION;
 	@Autowired
 	private Config cfg;
+    @Autowired
+    private Url url;
 
 	/**
 	 * Constructor for Theme Manager class
@@ -308,10 +310,10 @@ public class ThemeManager {
 		if (form) {
 			select_box += "<form name='setTheme' method='post'";
 			select_box += " action='set-theme' class='disableAjax'>";
-			select_box += Url.getHiddenInputs(httpRequest, GLOBALS, $_SESSION);
+			select_box += url.getHiddenInputs(httpRequest, GLOBALS, $_SESSION);
 		}
 
-		String theme_preview_href = "<a href='" + Url.getFromRoute("/themes", null)
+		String theme_preview_href = "<a href='" + url.getFromRoute("/themes", null)
 				+ "' target='themes' class='themeselect'>";
 		select_box += theme_preview_href + __("Theme:") + "</a>" + "\n";
 

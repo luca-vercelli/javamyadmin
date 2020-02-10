@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.javamyadmin.helpers.Url;
 import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.springmvc.ApplicationContextProvider;
@@ -116,6 +117,7 @@ public class Node
     public String displayName;
 
     protected Util util; //not really @Autowired
+    protected Url url; //not really @Autowired
     
     /**
      * Initialises the class by setting the mandatory variables
@@ -138,6 +140,7 @@ public class Node
         //this.relation = new Relation(GLOBALS.getDbi());
 
     	this.util = ApplicationContextProvider.getApplicationContext().getBean(Util.class);
+    	this.url = ApplicationContextProvider.getApplicationContext().getBean(Url.class);
     	
     }
 

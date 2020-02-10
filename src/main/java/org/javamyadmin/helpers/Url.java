@@ -10,15 +10,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.php.Globals;
 import org.javamyadmin.php.Php.SessionMap;
+import org.springframework.stereotype.Service;
 
 /**
  * Static methods for URL/hidden inputs generating
  *
  * @package PhpMyAdmin
  */
+@Service
 public class Url {
 
-	public static String getHiddenInputs(HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION) {
+	public String getHiddenInputs(HttpServletRequest req, Globals GLOBALS, SessionMap $_SESSION) {
 		return getHiddenInputs(null, null, 0, null, req, GLOBALS, $_SESSION);
 	}
 	
@@ -39,7 +41,7 @@ public class Url {
      *
      * @access  public
      */
-    public static String getHiddenInputs(
+    public String getHiddenInputs(
         String db /*= "" */,
         String table /*= "" */,
         int indent /*= 0 */,
@@ -76,7 +78,7 @@ public class Url {
 	        }
         }
 
-        return Url.getHiddenFields(params, "", false, (String)$_SESSION.get(" PMA_token "));
+        return getHiddenFields(params, "", false, (String)$_SESSION.get(" PMA_token "));
     }
 
     /**
@@ -110,7 +112,7 @@ public class Url {
      *
      * @return string form fields of type hidden
      */
-    public static String getHiddenFields(Map<String,Object> values,
+    public String getHiddenFields(Map<String,Object> values,
     		String pre /*= ""*/,
     		boolean is_token /*= false*/,
     		String pmaToken  /*i.e. $_SESSION.get(" PMA_token ") */ )
@@ -137,7 +139,7 @@ public class Url {
             }
             
             if (value instanceof Map) {
-                fields += Url.getHiddenFields((Map)value, name, true, pmaToken);
+                fields += getHiddenFields((Map)value, name, true, pmaToken);
             } else {
                 // do not generate an ending "\n" because
                 // Url.getHiddenInputs() is sometimes called
@@ -150,11 +152,11 @@ public class Url {
         return fields;
     }
 
-    public static String getHiddenFields(Map<String,Object> values, String pre, String pmaToken) {
+    public String getHiddenFields(Map<String,Object> values, String pre, String pmaToken) {
     	return getHiddenFields(values, pre, false, pmaToken);
     }
     
-    public static String getHiddenFields(Map<String,Object> values, String pmaToken) {
+    public String getHiddenFields(Map<String,Object> values, String pmaToken) {
     	return getHiddenFields(values, "", false, pmaToken);
     }
     
@@ -187,17 +189,17 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommon(Map<String, String> params /*= []*/, String divider /*= "?"*/)
+    public String getCommon(Map<String, String> params /*= []*/, String divider /*= "?"*/)
     {
         return htmlspecialchars(
-            Url.getCommonRaw(params, divider)
+            getCommonRaw(params, divider)
         );
     }
     
     /**
      * Generates text with URL parameters.
      */
-    public static String getCommon(Map<String, String> params) {
+    public String getCommon(Map<String, String> params) {
     	return getCommon(params, "?");
     }
 
@@ -230,7 +232,7 @@ public class Url {
      * @return string   string with URL parameters
      * @access  public
      */
-    public static String getCommonRaw(Map<String, String> params /*= []*/, String divider /*= "?"*/)
+    public String getCommonRaw(Map<String, String> params /*= []*/, String divider /*= "?"*/)
     {
     	if (params == null) {
     		params = new HashMap<>();
@@ -265,11 +267,11 @@ public class Url {
         return "";
     }
     
-    public static String getCommonRaw(Map<String, String> params) {
+    public String getCommonRaw(Map<String, String> params) {
     	return getCommonRaw(params, "?");
     }
     
-    public static String getCommonRaw() {
+    public String getCommonRaw() {
     	return getCommonRaw(null, "?");
     }
     
@@ -288,7 +290,7 @@ public class Url {
      * @return string  character used for separating url parts usually ; or &
      * @access  public
      */
-    public static String getArgSeparator(String encode /*= "none"*/)
+    public String getArgSeparator(String encode /*= "none"*/)
     {
         if ($separator == null) {
         	// Here. PhpMyAdmin uses separator defined in ini_get("arg_separator.input")
@@ -306,7 +308,7 @@ public class Url {
         }
     }
 
-    public static String getArgSeparator() {
+    public String getArgSeparator() {
     	return getArgSeparator("none");
     }
     
@@ -316,7 +318,7 @@ public class Url {
      * @param array  additionalParameters Additional URL parameters
      * @return string
      */
-    public static String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */)
+    public String getFromRoute(String route, Map<String, String> additionalParameters /* = [] */)
     {
     	if (route == null) {
     		return "";
@@ -327,7 +329,7 @@ public class Url {
         return /*"index.php?route=" + */ route + getCommon(additionalParameters, "&");
     }
     
-    public static String getFromRoute(String route)
+    public String getFromRoute(String route)
     {
         return getFromRoute(route, null);
     }

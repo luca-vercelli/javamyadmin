@@ -41,6 +41,8 @@ public class Util {
 	private Sanitize sanitize;
 	@Autowired
 	private Config config;
+    @Autowired
+    private Url url;
 	
     /**
      * Checks whether configuration value tells to show icons.
@@ -664,12 +666,12 @@ public class Util {
                 if (strlen($table) > 0) {
                     $_url_params["db"] = $db;
                     $_url_params["table"] = $table;
-                    $doedit_goto = "<a href='" + Url.getFromRoute("/table/sql", $_url_params) + "'>";
+                    $doedit_goto = "<a href='" + url.getFromRoute("/table/sql", $_url_params) + "'>";
                 } else if (strlen($db) > 0) {
                     $_url_params["db"] = $db;
-                    $doedit_goto = "<a href='" + Url.getFromRoute("/database/sql", $_url_params) + "'>";
+                    $doedit_goto = "<a href='" + url.getFromRoute("/database/sql", $_url_params) + "'>";
                 } else {
-                    $doedit_goto = "<a href='" + Url.getFromRoute("/server/sql", $_url_params) + "'>";
+                    $doedit_goto = "<a href='" + url.getFromRoute("/server/sql", $_url_params) + "'>";
                 }
 
                 $error_msg += $doedit_goto
@@ -1122,12 +1124,12 @@ public class Util {
                 $url_params["db"] = GLOBALS["db"];
                 if (strlen(GLOBALS["table"]) > 0) {
                     $url_params["table"] = GLOBALS["table"];
-                    $edit_link = Url.getFromRoute("/table/sql");
+                    $edit_link = url.getFromRoute("/table/sql");
                 } else {
-                    $edit_link = Url.getFromRoute("/database/sql");
+                    $edit_link = url.getFromRoute("/database/sql");
                 }
             } else {
-                $edit_link = Url.getFromRoute("/server/sql");
+                $edit_link = url.getFromRoute("/server/sql");
             }
 
             // Want to have the query explained
@@ -1141,7 +1143,7 @@ public class Util {
                     $explain_params["sql_query"] = "EXPLAIN " + $sql_query;
                     $explain_link = " [&nbsp;"
                         + linkOrButton(
-                            Url.getFromRoute("/import", $explain_params),
+                            url.getFromRoute("/import", $explain_params),
                             __("Explain SQL")
                         ) + "&nbsp;]";
                 } else if (preg_match(
@@ -1152,7 +1154,7 @@ public class Util {
                         = mb_substr($sql_query, 8);
                     $explain_link = " [&nbsp;"
                         + linkOrButton(
-                            Url.getFromRoute("/import", $explain_params),
+                            url.getFromRoute("/import", $explain_params),
                             __("Skip Explain SQL")
                         ) + "]";
                     $url = "https://mariadb.org/explain_analyzer/analyze/"
@@ -1176,7 +1178,7 @@ public class Util {
             if (! empty($cfg["SQLQuery"]["Edit"])
                 && empty(GLOBALS["show_as_php"])
             ) {
-                $edit_link += Url.getCommon($url_params);
+                $edit_link += url.getCommon($url_params);
                 $edit_link = " [&nbsp;"
                     + linkOrButton($edit_link, __("Edit"))
                     + "&nbsp;]";
@@ -1190,14 +1192,14 @@ public class Util {
                 if (! empty(GLOBALS["show_as_php"])) {
                     $php_link = " [&nbsp;"
                         + linkOrButton(
-                            Url.getFromRoute("/import", $url_params),
+                            url.getFromRoute("/import", $url_params),
                             __("Without PHP code")
                         )
                         + "&nbsp;]";
 
                     $php_link += " [&nbsp;"
                         + linkOrButton(
-                            Url.getFromRoute("/import", $url_params),
+                            url.getFromRoute("/import", $url_params),
                             __("Submit query")
                         )
                         + "&nbsp;]";
@@ -1206,7 +1208,7 @@ public class Util {
                     $php_params["show_as_php"] = 1;
                     $php_link = " [&nbsp;"
                         + linkOrButton(
-                            Url.getFromRoute("/import", $php_params),
+                            url.getFromRoute("/import", $php_params),
                             __("Create PHP code")
                         )
                         + "&nbsp;]";
@@ -1220,7 +1222,7 @@ public class Util {
                 && ! !empty(GLOBALS["show_as_php"]) // "Submit query" does the same
                 && preg_match("@^(SELECT|SHOW)[[:space:]]+@i", $sql_query)
             ) {
-                $refresh_link = Url.getFromRoute("/import", $url_params);
+                $refresh_link = url.getFromRoute("/import", $url_params);
                 $refresh_link = " [&nbsp;"
                     + linkOrButton($refresh_link, __("Refresh")) + "]";
             } else {
@@ -1232,8 +1234,8 @@ public class Util {
             $retval += "</div>";
 
             $retval += "<div class="tools print_ignore">";
-            $retval += "<form action='" + Url.getFromRoute("/sql") + "" method="post">";
-            $retval += Url.getHiddenInputs(GLOBALS["db"], GLOBALS["table"]);
+            $retval += "<form action='" + url.getFromRoute("/sql") + "" method="post">";
+            $retval += url.getHiddenInputs(GLOBALS["db"], GLOBALS["table"]);
             $retval += "<input type="hidden" name="sql_query" value='"
                 + htmlspecialchars($sql_query) + "'>";
 
@@ -1633,9 +1635,9 @@ public class Util {
                 $url_params = array_merge($url_params, (Map)$tab.getArgs());
             }
             if (!(($tab.getLink().contains( "?") ))) {
-            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params));
+            	$tab.setLink(htmlentities($tab.getLink()) + url.getCommon($url_params));
             } else {
-            	$tab.setLink(htmlentities($tab.getLink()) + Url.getCommon($url_params, "&"));
+            	$tab.setLink(htmlentities($tab.getLink()) + url.getCommon($url_params, "&"));
             }
         }
 
@@ -1830,7 +1832,7 @@ public class Util {
     {
     	return null; //TODO
         /*// decode encoded url separators
-        $separator = Url.getArgSeparator();
+        $separator = url.getArgSeparator();
         // on most places separator is still hard coded ...
         if (!$separator.equals( "&")) {
             // ... so always replace & with $separator
@@ -2388,19 +2390,19 @@ public class Util {
 
                 $_url_params[$name] = 0;
                 $list_navigator_html += "<a" + $class + $title1 + " href='" + $script
-                    + Url.getCommon($_url_params, "&") + "'>" + $caption1
+                    + url.getCommon($_url_params, "&") + "'>" + $caption1
                     + "</a>";
 
                 $_url_params[$name] = $pos - $max_count;
                 $list_navigator_html += " <a" + $class + $title2
-                    + " href='" + $script + Url.getCommon($_url_params, "&") + "'>"
+                    + " href='" + $script + url.getCommon($_url_params, "&") + "'>"
                     + $caption2 + "</a>";
             }
 
             $list_navigator_html += "<form action='" + $script
                 + "" method="post">";
 
-            $list_navigator_html += Url.getHiddenInputs($_url_params);
+            $list_navigator_html += url.getHiddenInputs($_url_params);
             $list_navigator_html += pageselector(
                 $name,
                 $max_count,
@@ -2425,7 +2427,7 @@ public class Util {
 
                 $_url_params[$name] = $pos + $max_count;
                 $list_navigator_html += "<a" + $class + $title3 + " href='" + $script
-                    + Url.getCommon($_url_params, "&") + "" >" + $caption3
+                    + url.getCommon($_url_params, "&") + "" >" + $caption3
                     + "</a>";
 
                 $_url_params[$name] = floor($count / $max_count) * $max_count;
@@ -2434,7 +2436,7 @@ public class Util {
                 }
 
                 $list_navigator_html += " <a" + $class + $title4
-                    + " href='" + $script + Url.getCommon($_url_params, "&") + "" >"
+                    + " href='" + $script + url.getCommon($_url_params, "&") + "" >"
                     + $caption4 + "</a>";
             }
             $list_navigator_html += "</div>" + "\n";
@@ -2530,7 +2532,7 @@ public class Util {
         params.put("db", $database);
         return "<a href='"
             + $scriptName
-            + Url.getCommon(params, ($scriptName.contains( "?") ? "&" : "?"))
+            + url.getCommon(params, ($scriptName.contains( "?") ? "&" : "?"))
             + "' title='"
             + htmlspecialchars(
                 String.format(
@@ -3219,27 +3221,27 @@ public class Util {
             // Values for $cfg["DefaultTabServer"]
             switch ($target) {
                 case "welcome":
-                    return Url.getFromRoute("/");
+                    return url.getFromRoute("/");
                 case "databases":
-                    return Url.getFromRoute("/server/databases");
+                    return url.getFromRoute("/server/databases");
                 case "status":
-                    return Url.getFromRoute("/server/status");
+                    return url.getFromRoute("/server/status");
                 case "variables":
-                    return Url.getFromRoute("/server/variables");
+                    return url.getFromRoute("/server/variables");
                 case "privileges":
-                    return Url.getFromRoute("/server/privileges");
+                    return url.getFromRoute("/server/privileges");
             }
         } else if ("database".equals($location)) {
             // Values for $cfg["DefaultTabDatabase"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/database/structure");
+                    return url.getFromRoute("/database/structure");
                 case "sql":
-                    return Url.getFromRoute("/database/sql");
+                    return url.getFromRoute("/database/sql");
                 case "search":
-                    return Url.getFromRoute("/database/search");
+                    return url.getFromRoute("/database/search");
                 case "operations":
-                    return Url.getFromRoute("/database/operations");
+                    return url.getFromRoute("/database/operations");
             }
         } else if ("table".equals($location)) {
             // Values for $cfg["DefaultTabTable"],
@@ -3247,15 +3249,15 @@ public class Util {
             // $cfg["NavigationTreeDefaultTabTable2"]
             switch ($target) {
                 case "structure":
-                    return Url.getFromRoute("/table/structure");
+                    return url.getFromRoute("/table/structure");
                 case "sql":
-                    return Url.getFromRoute("/table/sql");
+                    return url.getFromRoute("/table/sql");
                 case "search":
-                    return Url.getFromRoute("/table/search");
+                    return url.getFromRoute("/table/search");
                 case "insert":
-                    return Url.getFromRoute("/table/change");
+                    return url.getFromRoute("/table/change");
                 case "browse":
-                    return Url.getFromRoute("/sql");
+                    return url.getFromRoute("/sql");
             }
         }
 
@@ -5016,7 +5018,7 @@ public class Util {
             $urlParams["tbl_group"] = $_REQUEST["tbl_group"];
         }
 
-        $url = Url.getFromRoute("/database/structure", $urlParams);
+        $url = url.getFromRoute("/database/structure", $urlParams);
 
         return linkOrButton($url, $title + $orderImg, $orderLinkParams);*/
     }

@@ -2,7 +2,6 @@ package org.javamyadmin.helpers.navigation;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Config;
 import org.javamyadmin.helpers.DatabaseInterface;
-import org.javamyadmin.helpers.Relation;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Sanitize;
 import org.javamyadmin.helpers.Template;
@@ -69,6 +67,8 @@ public class Navigation {
 	private Sanitize sanitize;
     @Autowired
 	private Select select;
+    @Autowired
+    protected Url url;
 	
 	/**
 	 * Navigation constructor.
@@ -115,8 +115,8 @@ public class Navigation {
 					UrlComponents components = parse_url((String) $logo.get("link"));
 					if (empty(components.host)) {
 						boolean $hasStartChar = ((String) $logo.get("link")).contains("?");
-						$logo.put("link", $logo.get("link") + Url.getCommon(new HashMap<>(),
-								$hasStartChar ? "?" : Url.getArgSeparator()));
+						$logo.put("link", $logo.get("link") + url.getCommon(new HashMap<>(),
+								$hasStartChar ? "?" : url.getArgSeparator()));
 					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();

@@ -10,10 +10,7 @@ import java.util.Map;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 
-import org.javamyadmin.helpers.Core;
 import org.javamyadmin.helpers.Table;
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.jtwig.JtwigFactory;
 import org.javamyadmin.php.Array;
@@ -76,10 +73,6 @@ public class StructureController extends AbstractController {
 
 	@Autowired
 	private BeanFactory beanFactory;
-	@Autowired
-	private Core core;
-	@Autowired
-	private Util util;
 	
 	/**
      * Retrieves database information for further use
@@ -138,7 +131,7 @@ public class StructureController extends AbstractController {
         	map.put("db", this.db);
         	map.put("pos", Integer.toString(Math.max(0, this.totalNumTables - new Integer((String)config.get("MaxTableList")))));
         	map.put("reload", "1");
-            String $uri = "database/structure" + Url.getCommonRaw(map, "&");
+            String $uri = "database/structure" + url.getCommonRaw(map, "&");
             core.sendHeaderLocation($uri, false, httpRequest, httpResponse);
         }
         // TODO include_once ROOT_PATH + "libraries/replication.inc.php";
@@ -159,7 +152,7 @@ public class StructureController extends AbstractController {
                 this.totalNumTables,
                 this.position,
                 $urlParams,
-                Url.getFromRoute("/database/structure"),
+                url.getFromRoute("/database/structure"),
                 "frame_content",
                 config.get("MaxTableList")
             );

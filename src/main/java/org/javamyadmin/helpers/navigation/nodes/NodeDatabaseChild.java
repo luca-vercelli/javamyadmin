@@ -5,8 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
@@ -57,8 +55,8 @@ public abstract class NodeDatabaseChild extends Node {
             $params.put("dbName", $db);
 
             $ret = "<span class='navItemControls'>"
-                + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
-                + Url.getCommon($params, "") + "'"
+                + "<a href='" + url.getFromRoute("/navigation") + "' data-post='"
+                + url.getCommon($params, "") + "'"
                 + " class='hideNavItem ajax'>"
                 + util.getImage("hide", __("Hide"))
                 + "</a></span>";

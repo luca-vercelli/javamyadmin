@@ -10,8 +10,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.javamyadmin.helpers.Url;
-import org.javamyadmin.helpers.Util;
 import org.javamyadmin.php.Globals;
 
 import static org.javamyadmin.php.Php.*;
@@ -58,7 +56,7 @@ public class NodeDatabase extends Node {
                 + "server=" + GLOBALS.getServer()
                 + "&amp;db=%1$s");
         this.links.put(
-            "icon", Url.getFromRoute("/database/operations") + "&amp;server=" + GLOBALS.getServer()
+            "icon", url.getFromRoute("/database/operations") + "&amp;server=" + GLOBALS.getServer()
                 + "&amp;db=%1$s&amp;");
         this.links.put("title", __("Structure"));
         this.classes = "database";
@@ -522,8 +520,8 @@ public class NodeDatabase extends Node {
                 $params.put("showUnhideDialog", "true");
                 $params.put("dbName", this.realName);
                 $ret = "<span class='dbItemControls'>"
-                    + "<a href='" + Url.getFromRoute("/navigation") + "' data-post='"
-                    + Url.getCommon($params, "") + "'"
+                    + "<a href='" + url.getFromRoute("/navigation") + "' data-post='"
+                    + url.getCommon($params, "") + "'"
                     + " class='showUnhide ajax'>"
                     + util.getImage(
                         "show",

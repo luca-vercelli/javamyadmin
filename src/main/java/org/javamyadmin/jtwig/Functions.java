@@ -34,7 +34,8 @@ public class Functions {
 		ApplicationContext context = ApplicationContextProvider.getApplicationContext();
 		Util util = context.getBean(Util.class);
 		Sanitize sanitize = context.getBean(Sanitize.class);
-//FIXME Url
+		Url url = context.getBean(Url.class);
+
 		if (functions == null) {
 			functions = new ArrayList<>();
 			// Message extension ==========================
@@ -42,10 +43,10 @@ public class Functions {
 			functions.add(new JtwigFunction1Ary("error", x -> Message.error(x == null? null : x.toString()).getDisplay()));
 			functions.add(new JtwigFunction1Ary("raw_success", x -> Message.rawSuccess(x == null? null : x.toString()).getDisplay()));
 			// URL Extension ==========================
-			functions.add(new JtwigFunction1Ary("url", x -> Url.getFromRoute((String) x)));
-			functions.add(new JtwigFunction1Ary("get_hidden_inputs", x -> x /*Url.getHiddenInputs()*/)); // TODO needs HttpRequest !
-			functions.add(new JtwigFunction2Ary("get_common", (x, y) -> Url.getCommon((Map) x, (String) y), null, ""));
-			functions.add(new JtwigFunction2Ary("get_common_raw", (x, y) -> Url.getCommonRaw((Map) x, (String) y), null, ""));
+			functions.add(new JtwigFunction1Ary("url", x -> url.getFromRoute((String) x)));
+			functions.add(new JtwigFunction1Ary("get_hidden_inputs", x -> x /*url.getHiddenInputs()*/)); // TODO needs HttpRequest !
+			functions.add(new JtwigFunction2Ary("get_common", (x, y) -> url.getCommon((Map) x, (String) y), null, ""));
+			functions.add(new JtwigFunction2Ary("get_common_raw", (x, y) -> url.getCommonRaw((Map) x, (String) y), null, ""));
 			functions.add(new JtwigFunctionVarargs("get_hidden_fields",
 					getMethod(Url.class, "getHiddenFields",
 							new Class[] { Map.class, String.class, String.class }), 

@@ -55,6 +55,8 @@ public class Menu {
     @Autowired
 	private Config config;
     @Autowired
+    private Url url;
+    @Autowired
 	private Util util;
 
     private static Map<String, MenuStruct> serverTabs;
@@ -377,7 +379,7 @@ public class Menu {
         $retval += String.format(
             $item,
             $scriptName,
-            Url.getCommon(null, $scriptName.contains( "?") ? "&" : "?"),
+            url.getCommon(null, $scriptName.contains( "?") ? "&" : "?"),
             htmlspecialchars($server_info),
             __("Server")
         );
@@ -400,7 +402,7 @@ public class Menu {
             $retval += String.format(
                 $item,
                 $scriptName,
-                Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
+                url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
                 htmlspecialchars(this._db),
                 __("Database")
             );
@@ -438,7 +440,7 @@ public class Menu {
                 $retval += String.format(
                     $item,
                     $scriptName,
-                    Url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
+                    url.getCommon(paramsDb, $scriptName.contains( "?") ? "&" : "?"),
                     htmlspecialchars(this._table).replace(" ", "&nbsp;"),
                     $tbl_is_view ? __("View") : __("Table")
                 );
@@ -518,21 +520,21 @@ public class Menu {
         params.put("pos", "0");
         
         $tabs.put("browse", new MenuStruct("b_browse",
-        		Url.getFromRoute("/sql", (Map)session, request, GLOBALS),
+        		url.getFromRoute("/sql", (Map)session, request, GLOBALS),
         		__("Browse"),
         		GLOBALS.getRoute().equals("/sql"),
         		params
         		));
 
         $tabs.put("structure", new MenuStruct("b_props",
-        		Url.getFromRoute("/table/structure", (Map)session, request, GLOBALS),
+        		url.getFromRoute("/table/structure", (Map)session, request, GLOBALS),
         		__("Structure"),
         		GLOBALS.getRoute().equals("/sql"),
         		params
         		));
 
         multiput($tabs,"structure", "icon",  "b_props");
-        multiput($tabs,"structure", "link",  Url.getFromRoute("/table/structure", request, GLOBALS));
+        multiput($tabs,"structure", "link",  url.getFromRoute("/table/structure", request, GLOBALS));
         multiput($tabs,"structure", "text",  __("Structure"));
         multiput($tabs,"structure", "active",  in_array(GLOBALS.getRoute(), new String[] {
             "/table/relation",
@@ -540,13 +542,13 @@ public class Menu {
         }));
 
         multiput($tabs,"sql", "icon",  "b_sql");
-        multiput($tabs,"sql", "link",  Url.getFromRoute("/table/sql", request, GLOBALS));
+        multiput($tabs,"sql", "link",  url.getFromRoute("/table/sql", request, GLOBALS));
         multiput($tabs,"sql", "text",  __("SQL"));
         multiput($tabs,"sql", "active",  GLOBALS.getRoute().equals("/table/sql"));
 
         multiput($tabs,"search", "icon",  "b_search");
         multiput($tabs,"search", "text",  __("Search"));
-        multiput($tabs,"search", "link",  Url.getFromRoute("/table/search", request, GLOBALS));
+        multiput($tabs,"search", "link",  url.getFromRoute("/table/search", request, GLOBALS));
         multiput($tabs,"search", "active",  in_array(GLOBALS.getRoute(), new String[] {
             "/table/find_replace",
             "/table/search",
@@ -555,13 +557,13 @@ public class Menu {
 
         if (! $db_is_system_schema && (! $tbl_is_view || $updatable_view)) {
             multiput($tabs,"insert", "icon",  "b_insrow");
-            multiput($tabs,"insert", "link",  Url.getFromRoute("/table/change", request, GLOBALS));
+            multiput($tabs,"insert", "link",  url.getFromRoute("/table/change", request, GLOBALS));
             multiput($tabs,"insert", "text",  __("Insert"));
             multiput($tabs,"insert", "active",  GLOBALS.getRoute().equals("/table/change"));
         }
 
         multiput($tabs,"export", "icon",  "b_tblexport");
-        multiput($tabs,"export", "link",  Url.getFromRoute("/table/export", request, GLOBALS));
+        multiput($tabs,"export", "link",  url.getFromRoute("/table/export", request, GLOBALS));
         multiput($tabs,"export", "args", "single_table",  "true");
         multiput($tabs,"export", "text",  __("Export"));
         multiput($tabs,"export", "active",  GLOBALS.getRoute().equals("/table/export"));
@@ -570,14 +572,14 @@ public class Menu {
         
         if (! $tbl_is_view && ! $db_is_system_schema) {
             multiput($tabs,"import", "icon",  "b_tblimport");
-            multiput($tabs,"import", "link",  Url.getFromRoute("/table/import", request, GLOBALS));
+            multiput($tabs,"import", "link",  url.getFromRoute("/table/import", request, GLOBALS));
             multiput($tabs,"import", "text",  __("Import"));
             multiput($tabs,"import", "active",  GLOBALS.getRoute().equals("/table/import"));
         }
         if (($is_superuser || $isCreateOrGrantUser)
             && ! $db_is_system_schema
         ) {
-            multiput($tabs,"privileges", "link",  Url.getFromRoute("/server/privileges", request, GLOBALS));
+            multiput($tabs,"privileges", "link",  url.getFromRoute("/server/privileges", request, GLOBALS));
             multiput($tabs,"privileges", "args", "checkprivsdb",  this._db);
             multiput($tabs,"privileges", "args", "checkprivstable",  this._table);
             // stay on table view
@@ -590,14 +592,14 @@ public class Menu {
        
         if (! $tbl_is_view && ! $db_is_system_schema) {
             multiput($tabs,"operation", "icon",  "b_tblops");
-            multiput($tabs,"operation", "link",  Url.getFromRoute("/table/operations", request, GLOBALS));
+            multiput($tabs,"operation", "link",  url.getFromRoute("/table/operations", request, GLOBALS));
             multiput($tabs,"operation", "text",  __("Operations"));
             multiput($tabs,"operation", "active",  GLOBALS.getRoute().equals("/table/operations"));
         }
         // Views support a limited number of operations
         if ($tbl_is_view && ! $db_is_system_schema) {
             multiput($tabs,"operation", "icon",  "b_tblops");
-            multiput($tabs,"operation", "link",  Url.getFromRoute("/view/operations", request, GLOBALS));
+            multiput($tabs,"operation", "link",  url.getFromRoute("/view/operations", request, GLOBALS));
             multiput($tabs,"operation", "text",  __("Operations"));
             multiput($tabs,"operation", "active",  GLOBALS.getRoute().equals("/view/operations"));
         }
@@ -605,7 +607,7 @@ public class Menu {
         if (Tracker.isActive() && ! $db_is_system_schema) {
             multiput($tabs,"tracking", "icon",  "eye");
             multiput($tabs,"tracking", "text",  __("Tracking"));
-            multiput($tabs,"tracking", "link",  Url.getFromRoute("/table/tracking", request, GLOBALS));
+            multiput($tabs,"tracking", "link",  url.getFromRoute("/table/tracking", request, GLOBALS));
             multiput($tabs,"tracking", "active",  GLOBALS.getRoute().equals("/table/tracking");
         }
         if (! $db_is_system_schema
@@ -616,7 +618,7 @@ public class Menu {
             )
             && ! $tbl_is_view
         ) {
-            multiput($tabs,"triggers", "link",  Url.getFromRoute("/table/triggers", request, GLOBALS));
+            multiput($tabs,"triggers", "link",  url.getFromRoute("/table/triggers", request, GLOBALS));
             multiput($tabs,"triggers", "text",  __("Triggers"));
             multiput($tabs,"triggers", "icon",  "b_triggers");
             multiput($tabs,"triggers", "active",  GLOBALS.getRoute().equals("/table/triggers"));
@@ -648,19 +650,19 @@ public class Menu {
         $tabs.putAll(dbTabs);
 
         /*
-        $tabs["structure"]["link"] = Url.getFromRoute("/database/structure");
+        $tabs["structure"]["link"] = url.getFromRoute("/database/structure");
         $tabs["structure"]["text"] = __("Structure");
         $tabs["structure"]["icon"] = "b_props";
         $tabs["structure"]["active"] = GLOBALS.route == "/database/structure";
 
-        $tabs["sql"]["link"] = Url.getFromRoute("/database/sql");
+        $tabs["sql"]["link"] = url.getFromRoute("/database/sql");
         $tabs["sql"]["text"] = __("SQL");
         $tabs["sql"]["icon"] = "b_sql";
         $tabs["sql"]["active"] = GLOBALS.route == "/database/sql";
 
         $tabs["search"]["text"] = __("Search");
         $tabs["search"]["icon"] = "b_search";
-        $tabs["search"]["link"] = Url.getFromRoute("/database/search");
+        $tabs["search"]["link"] = url.getFromRoute("/database/search");
         $tabs["search"]["active"] = GLOBALS.route.equals("/database/search";
         if ($num_tables == 0) {
             $tabs["search"]["warning"] = __("Database seems to be empty!");
@@ -668,7 +670,7 @@ public class Menu {
 
         $tabs["query"]["text"] = __("Query");
         $tabs["query"]["icon"] = "s_db";
-        $tabs["query"]["link"] = Url.getFromRoute("/database/multi_table_query");
+        $tabs["query"]["link"] = url.getFromRoute("/database/multi_table_query");
         $tabs["query"]["active"] = GLOBALS.route.equals("/database/multi_table_query" || GLOBALS.route.equals("/database/qbe";
         if ($num_tables == 0) {
             $tabs["query"]["warning"] = __("Database seems to be empty!");
@@ -676,25 +678,25 @@ public class Menu {
 
         $tabs["export"]["text"] = __("Export");
         $tabs["export"]["icon"] = "b_export";
-        $tabs["export"]["link"] = Url.getFromRoute("/database/export");
+        $tabs["export"]["link"] = url.getFromRoute("/database/export");
         $tabs["export"]["active"] = GLOBALS.route.equals("/database/export";
         if ($num_tables == 0) {
             $tabs["export"]["warning"] = __("Database seems to be empty!");
         }
 
         if (! $db_is_system_schema) {
-            $tabs["import"]["link"] = Url.getFromRoute("/database/import");
+            $tabs["import"]["link"] = url.getFromRoute("/database/import");
             $tabs["import"]["text"] = __("Import");
             $tabs["import"]["icon"] = "b_import";
             $tabs["import"]["active"] = GLOBALS.route.equals("/database/import";
 
-            $tabs["operation"]["link"] = Url.getFromRoute("/database/operations");
+            $tabs["operation"]["link"] = url.getFromRoute("/database/operations");
             $tabs["operation"]["text"] = __("Operations");
             $tabs["operation"]["icon"] = "b_tblops";
             $tabs["operation"]["active"] = GLOBALS.route.equals("/database/operations";
 
             if ($is_superuser || $isCreateOrGrantUser) {
-                $tabs["privileges"]["link"] = Url.getFromRoute("/server/privileges");
+                $tabs["privileges"]["link"] = url.getFromRoute("/server/privileges");
                 $tabs["privileges"]["args"]["checkprivsdb"] = this._db;
                 // stay on database view
                 $tabs["privileges"]["args"]["viewing_mode"] = "db";
@@ -703,20 +705,20 @@ public class Menu {
                 $tabs["privileges"]["active"] = GLOBALS.route.equals("/server/privileges";
             }
 
-            $tabs["routines"]["link"] = Url.getFromRoute("/database/routines");
+            $tabs["routines"]["link"] = url.getFromRoute("/database/routines");
             $tabs["routines"]["text"] = __("Routines");
             $tabs["routines"]["icon"] = "b_routines";
             $tabs["routines"]["active"] = GLOBALS.route.equals("/database/routines";
 
             if (util.currentUserHasPrivilege("EVENT", this._db)) {
-                $tabs["events"]["link"] = Url.getFromRoute("/database/events");
+                $tabs["events"]["link"] = url.getFromRoute("/database/events");
                 $tabs["events"]["text"] = __("Events");
                 $tabs["events"]["icon"] = "b_events";
                 $tabs["events"]["active"] = GLOBALS.route.equals("/database/events";
             }
 
             if (util.currentUserHasPrivilege("TRIGGER", this._db)) {
-                $tabs["triggers"]["link"] = Url.getFromRoute("/database/triggers");
+                $tabs["triggers"]["link"] = url.getFromRoute("/database/triggers");
                 $tabs["triggers"]["text"] = __("Triggers");
                 $tabs["triggers"]["icon"] = "b_triggers";
                 $tabs["triggers"]["active"] = GLOBALS.route.equals("/database/triggers";
@@ -726,14 +728,14 @@ public class Menu {
         if (Tracker.isActive() && ! $db_is_system_schema) {
             $tabs["tracking"]["text"] = __("Tracking");
             $tabs["tracking"]["icon"] = "eye";
-            $tabs["tracking"]["link"] = Url.getFromRoute("/database/tracking");
+            $tabs["tracking"]["link"] = url.getFromRoute("/database/tracking");
             $tabs["tracking"]["active"] = GLOBALS.route.equals("/database/tracking";
         }
 
         if (! $db_is_system_schema) {
             $tabs["designer"]["text"] = __("Designer");
             $tabs["designer"]["icon"] = "b_relations";
-            $tabs["designer"]["link"] = Url.getFromRoute("/database/designer");
+            $tabs["designer"]["link"] = url.getFromRoute("/database/designer");
             $tabs["designer"]["id"] = "designer_tab";
             $tabs["designer"]["active"] = GLOBALS.route.equals("/database/designer";
         }
@@ -743,7 +745,7 @@ public class Menu {
         ) {
             $tabs["central_columns"]["text"] = __("Central columns");
             $tabs["central_columns"]["icon"] = "centralColumns";
-            $tabs["central_columns"]["link"] = Url.getFromRoute("/database/central_columns");
+            $tabs["central_columns"]["link"] = url.getFromRoute("/database/central_columns");
             $tabs["central_columns"]["active"] = GLOBALS.route.equals("/database/central_columns";
         }*/
         return $tabs;
@@ -780,17 +782,17 @@ public class Menu {
         
         /*
         $tabs.put("databases", new MenuStruct("s_db",
-				Url.getFromRoute("/server/databases",
+				url.getFromRoute("/server/databases",
 				__("Databases"),
 				GLOBALS.route.equals("/server/databases")
 				)));
         $tabs.put("sql", new MenuStruct("b_sql",
-				Url.getFromRoute("/server/sql",
+				url.getFromRoute("/server/sql",
 				__("SQL"),
 				GLOBALS.route.equals("/server/sql")
 				)));
         $tabs.put("status", new MenuStruct("s_status",
-				Url.getFromRoute("/server/status",
+				url.getFromRoute("/server/status",
 				__("Status"),
 				statusRoutes.contains(GLOBALS.route)
 				)));
@@ -799,7 +801,7 @@ public class Menu {
         	Map params = new HashMap();
         	params.put("viewing_mode", "server");
         	$tabs.put("rights", new MenuStruct("s_rights",
-    				Url.getFromRoute("/server/privileges",
+    				url.getFromRoute("/server/privileges",
     				__("User accounts"),
     				privilegesRoutes.contains(GLOBALS.route),
     				params
@@ -807,23 +809,23 @@ public class Menu {
         }
 
         $tabs.put("status", new MenuStruct("b_export",
-				Url.getFromRoute("/server/export"),
+				url.getFromRoute("/server/export"),
 				__("Export"),
 				GLOBALS.route.equals("/server/export")
 				)));
         
         $tabs["export"]["icon"] = "b_export";
-        $tabs["export"]["link"] = Url.getFromRoute("/server/export");
+        $tabs["export"]["link"] = url.getFromRoute("/server/export");
         $tabs["export"]["text"] = __("Export");
         $tabs["export"]["active"] = GLOBALS.route.equals("/server/export";
 
         $tabs["import"]["icon"] = "b_import";
-        $tabs["import"]["link"] = Url.getFromRoute("/server/import");
+        $tabs["import"]["link"] = url.getFromRoute("/server/import");
         $tabs["import"]["text"] = __("Import");
         $tabs["import"]["active"] = GLOBALS.route.equals("/server/import";
 
         $tabs["settings"]["icon"] = "b_tblops";
-        $tabs["settings"]["link"] = Url.getFromRoute("/preferences/manage");
+        $tabs["settings"]["link"] = url.getFromRoute("/preferences/manage");
         $tabs["settings"]["text"] = __("Settings");
         $tabs["settings"]["active"] = in_array(GLOBALS.route, [
             "/preferences/forms",
@@ -833,35 +835,35 @@ public class Menu {
 
         if (! empty($binary_logs)) {
             $tabs["binlog"]["icon"] = "s_tbl";
-            $tabs["binlog"]["link"] = Url.getFromRoute("/server/binlog");
+            $tabs["binlog"]["link"] = url.getFromRoute("/server/binlog");
             $tabs["binlog"]["text"] = __("Binary log");
             $tabs["binlog"]["active"] = GLOBALS.route.equals("/server/binlog");
         }
 
         if ($is_superuser) {
             $tabs["replication"]["icon"] = "s_replication";
-            $tabs["replication"]["link"] = Url.getFromRoute("/server/replication");
+            $tabs["replication"]["link"] = url.getFromRoute("/server/replication");
             $tabs["replication"]["text"] = __("Replication");
             $tabs["replication"]["active"] = GLOBALS.route.equals("/server/replication");
         }
 
         $tabs["vars"]["icon"] = "s_vars";
-        $tabs["vars"]["link"] = Url.getFromRoute("/server/variables");
+        $tabs["vars"]["link"] = url.getFromRoute("/server/variables");
         $tabs["vars"]["text"] = __("Variables");
         $tabs["vars"]["active"] = GLOBALS.route.equals("/server/variables";
 
         $tabs["charset"]["icon"] = "s_asci";
-        $tabs["charset"]["link"] = Url.getFromRoute("/server/collations");
+        $tabs["charset"]["link"] = url.getFromRoute("/server/collations");
         $tabs["charset"]["text"] = __("Charsets");
         $tabs["charset"]["active"] = GLOBALS.route.equals("/server/collations");
 
         $tabs["engine"]["icon"] = "b_engine";
-        $tabs["engine"]["link"] = Url.getFromRoute("/server/engines");
+        $tabs["engine"]["link"] = url.getFromRoute("/server/engines");
         $tabs["engine"]["text"] = __("Engines");
         $tabs["engine"]["active"] = GLOBALS.route.equals("/server/engines");
 
         $tabs["plugins"]["icon"] = "b_plugin";
-        $tabs["plugins"]["link"] = Url.getFromRoute("/server/plugins");
+        $tabs["plugins"]["link"] = url.getFromRoute("/server/plugins");
         $tabs["plugins"]["text"] = __("Plugins");
         $tabs["plugins"]["active"] = GLOBALS.route.equals("/server/plugins");
 		*/
