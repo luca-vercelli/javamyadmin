@@ -49,7 +49,9 @@ public class Menu {
 	private SessionMap session;
 	private SmartMap cfg;
     @Autowired
-	private HttpServletRequest request;
+	private HttpServletRequest httpRequest;
+    @Autowired
+	private HttpServletResponse httpResponse;
     @Autowired
 	private Globals GLOBALS;
     @Autowired
@@ -222,9 +224,9 @@ public class Menu {
      * @throws IOException 
      * @throws SQLException 
      */
-    public void display(HttpServletRequest request, HttpServletResponse response, Globals GLOBALS) throws IOException, SQLException
+    public void display() throws IOException, SQLException
     {
-        response.getWriter().write(this.getDisplay(request, GLOBALS));
+        httpResponse.getWriter().write(this.getDisplay());
     }
 
     /**
@@ -233,9 +235,9 @@ public class Menu {
      * @return string
      * @throws SQLException 
      */
-    public String getDisplay(HttpServletRequest request, Globals GLOBALS) throws SQLException
+    public String getDisplay() throws SQLException
     {
-        String  $retval  = this._getBreadcrumbs(request, GLOBALS);
+        String  $retval  = this._getBreadcrumbs();
         $retval += this._getMenu();
         return $retval;
     }
@@ -249,7 +251,7 @@ public class Menu {
     public String getHash() throws SQLException
     {
         return 
-            md5(this._getMenu() + this._getBreadcrumbs(request, GLOBALS)).substring(0,8);
+            md5(this._getMenu() + this._getBreadcrumbs()).substring(0,8);
     }
 
     /**
@@ -284,7 +286,7 @@ public class Menu {
                 $tabs.remove($entry.getKey());
             }
         }
-        return util.getHtmlTabs($tabs, $url_params, "topmenu", true, request, GLOBALS, session);
+        return util.getHtmlTabs($tabs, $url_params, "topmenu", true, httpRequest, GLOBALS, session);
     }
 
     /**
@@ -339,7 +341,7 @@ public class Menu {
      * @return string HTML formatted breadcrumbs
      * @throws SQLException 
      */
-    private String  _getBreadcrumbs(HttpServletRequest request, Globals GLOBALS) throws SQLException
+    private String  _getBreadcrumbs() throws SQLException
     {
         String $retval = "";
         boolean $tbl_is_view = GLOBALS.getDbi().getTable(this._db, this._table)
@@ -410,7 +412,7 @@ public class Menu {
             // so do not display the table name in upper div
             String $show_comment;
             if (! empty(this._table)
-                && ! ("1".equals(request.getParameter("purge")))
+                && ! ("1".equals(httpRequest.getParameter("purge")))
             ) {
                 Table $table_class_object = GLOBALS.getDbi().getTable(
                     GLOBALS.getDb(),

@@ -312,7 +312,7 @@ public class Response {
                         "menu",
                         this.getHeader()
                             .getMenu()
-                            .getDisplay(request, GLOBALS)
+                            .getDisplay()
                     );
                 }
             }

@@ -490,7 +490,7 @@ public class Header {
                 }
 
                 if (this._menuEnabled && GLOBALS.getServer() > 0) {
-                    $menu = this._menu.getDisplay(request, GLOBALS);
+                    $menu = this._menu.getDisplay();
                 }
                 $console = this._console.getDisplay();
                 $messages = this.getMessage();

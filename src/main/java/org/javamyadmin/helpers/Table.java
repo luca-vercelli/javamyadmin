@@ -3,7 +3,6 @@ package org.javamyadmin.helpers;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.javamyadmin.php.Globals;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
