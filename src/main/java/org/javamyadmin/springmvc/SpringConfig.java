@@ -103,8 +103,8 @@ public class SpringConfig implements WebMvcConfigurer {
 
 	@Bean
 	@RequestScope
-	public NavigationTree getNavigationTree(HttpServletRequest req, Globals GLOBALS) {
-		return new NavigationTree(req, GLOBALS);
+	public NavigationTree getNavigationTree() {
+		return new NavigationTree();
 	}
 
 	@Bean

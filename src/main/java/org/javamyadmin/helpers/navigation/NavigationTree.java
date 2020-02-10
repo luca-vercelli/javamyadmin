@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.javamyadmin.helpers.Config;
@@ -133,8 +134,11 @@ public class NavigationTree {
      * @param Template          $template Template instance
      * @param DatabaseInterface $dbi      DatabaseInterface instance
      */
-    public NavigationTree(HttpServletRequest httpRequest, Globals GLOBALS)
-    {
+    public NavigationTree()
+    {}
+    
+    @PostConstruct
+    private void init() {
 
         /* TODO $checkUserPrivileges = new CheckUserPrivileges(this.dbi);
         $checkUserPrivileges.getPrivileges();*/
