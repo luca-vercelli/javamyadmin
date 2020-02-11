@@ -41,32 +41,32 @@ public class ThemeManager {
 	/**
 	 * @var array available themes
 	 */
-	public Map<String, Theme> themes = new HashMap<>();
+	protected Map<String, Theme> themes = new HashMap<>();
 
 	/**
 	 * @var String cookie name
 	 */
-	public String cookie_name = "pma_theme";
+	protected String cookie_name = "pma_theme";
 
 	/**
 	 * @var boolean
 	 */
-	public boolean per_server = false;
+	protected boolean per_server = false;
 
 	/**
 	 * @var String name of active theme
 	 */
-	public String active_theme = "";
+	protected String active_theme = "";
 
 	/**
 	 * @var Theme Theme active theme
 	 */
-	public Theme theme = null;
+	protected Theme theme = null;
 
 	/**
 	 * @var String
 	 */
-	public String theme_default;
+	protected String theme_default;
 
 	/**
 	 * @final String The name of the fallback theme
@@ -385,6 +385,46 @@ public class ThemeManager {
 		 * @global String GLOBALS["pmaThemeImage"]
 		 */
 		GLOBALS.setPmaThemeImage(this.theme.getImgPath(null, null));
+	}
+
+	public Map<String, Theme> getThemes() {
+		return themes;
+	}
+
+	public void setThemes(Map<String, Theme> themes) {
+		this.themes = themes;
+	}
+
+	public boolean isPer_server() {
+		return per_server;
+	}
+
+	public void setPer_server(boolean per_server) {
+		this.per_server = per_server;
+	}
+
+	public String getActive_theme() {
+		return active_theme;
+	}
+
+	public void setActive_theme(String active_theme) {
+		this.active_theme = active_theme;
+	}
+
+	public Theme getTheme() {
+		return theme;
+	}
+
+	public void setTheme(Theme theme) {
+		this.theme = theme;
+	}
+
+	public String getTheme_default() {
+		return theme_default;
+	}
+
+	public void setTheme_default(String theme_default) {
+		this.theme_default = theme_default;
 	}
 
 }

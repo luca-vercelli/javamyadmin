@@ -85,7 +85,8 @@ public class Config {
     private HttpServletResponse httpResponse;
     @Autowired
     private LanguageManager languageManager;
-	
+    @Autowired
+    private ThemeManager themeManager;
 	
     /**
      * constructor
@@ -514,28 +515,27 @@ public class Config {
 
         // save theme
         // @var ThemeManager tmanager
-        ThemeManager tmanager = GLOBALS.getThemeManager();
-        if (!empty(tmanager.getThemeCookie(httpRequest)) || !empty(httpRequest.getParameter("set_theme"))) {
+        if (!empty(themeManager.getThemeCookie(httpRequest)) || !empty(httpRequest.getParameter("set_theme"))) {
             if ((!config_data.containsKey("ThemeDefault")
-                && !tmanager.theme.getId().equals("original"))
+                && !themeManager.getTheme().getId().equals("original"))
                 || config_data.containsKey("ThemeDefault")
-                && !config_data.get("ThemeDefault").equals(tmanager.theme.getId())
+                && !config_data.get("ThemeDefault").equals(themeManager.getTheme().getId())
             ) {
                 // new theme was set in common.inc.php
                 this.setUserValue(
                     null,
                     "ThemeDefault",
-                    tmanager.theme.getId(),
+                    themeManager.getTheme().getId(),
                     "original"
                 );
             }
         } else {
             // no cookie - read default from settings
-            if (!this.settings.get("ThemeDefault").equals(tmanager.theme.getId())
-                && tmanager.checkTheme((String) this.settings.get("ThemeDefault"))
+            if (!this.settings.get("ThemeDefault").equals(themeManager.getTheme().getId())
+                && themeManager.checkTheme((String) this.settings.get("ThemeDefault"))
             ) {
-                tmanager.setActiveTheme((String) this.settings.get("ThemeDefault"));
-                tmanager.setThemeCookie(httpRequest, httpResponse);
+            	themeManager.setActiveTheme((String) this.settings.get("ThemeDefault"));
+            	themeManager.setThemeCookie(httpRequest, httpResponse);
             }
         }
 
