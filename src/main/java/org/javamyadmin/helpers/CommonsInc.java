@@ -167,7 +167,7 @@ public class CommonsInc {
 		config.checkServers();
 
 		// current server
-		GLOBALS.setServer(config.selectServer(httpRequest));
+		GLOBALS.setServer(config.selectServer());
 		if (GLOBALS.getServer() != null) {
 			GLOBALS.getUrlParameters().put("server", Integer.toString(GLOBALS.getServer()));
 		}
@@ -304,7 +304,7 @@ public class CommonsInc {
 		    }
 		}
 		// load user preferences
-		config.loadUserPreferences(GLOBALS, $_SESSION, httpRequest, httpResponse, languageManager);
+		config.loadUserPreferences();
 		return true;
 	}
 }

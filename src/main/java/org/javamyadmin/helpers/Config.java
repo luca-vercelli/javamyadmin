@@ -75,7 +75,18 @@ public class Config {
     
     @Autowired
     private Core core;
-    
+    @Autowired
+    private HttpServletRequest httpRequest;
+    @Autowired
+    private Globals GLOBALS;
+    @Autowired
+    private SessionMap _SESSION;
+    @Autowired
+    private HttpServletResponse httpResponse;
+    @Autowired
+    private LanguageManager languageManager;
+	
+	
     /**
      * constructor
      *
@@ -456,8 +467,7 @@ public class Config {
      *
      * @return void
      */
-    public void loadUserPreferences(Globals GLOBALS, SessionMap _SESSION, HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-    		/*should be @Autowired*/ LanguageManager $languageManager)
+    public void loadUserPreferences()
     {
     	UserPreferences userPreferences = new UserPreferences();
         // index.php should load these settings, so that phpmyadmin.css.php
@@ -541,7 +551,7 @@ public class Config {
         } else {
             // read language from settings
             if (config_data.containsKey("lang")) {
-                Language language = $languageManager.getLanguage(
+                Language language = languageManager.getLanguage(
                     (String)config_data.get("lang"), httpRequest
                 );
                 if (language != null) {
@@ -1146,9 +1156,9 @@ public class Config {
      *
      * @return integer
      */
-    public int selectServer(HttpServletRequest req)
+    public int selectServer()
     {
-        String request = req.getParameter("server") == null ? "0" : req.getParameter("server");
+        String request = httpRequest.getParameter("server") == null ? "0" : httpRequest.getParameter("server");
         Integer req_number = null;
         try {
         	req_number = Integer.parseInt(request);
