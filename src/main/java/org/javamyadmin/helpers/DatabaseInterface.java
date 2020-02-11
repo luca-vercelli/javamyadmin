@@ -70,9 +70,11 @@ public class DatabaseInterface {
      * Last error for given conenction
      */
     public Map<Integer, String> _errMessages = new HashMap<>();
-    
+
     @Autowired
     private Globals GLOBALS;
+    @Autowired
+    private Config $cfg;
     @Autowired
     private BeanFactory beanFactory;
     
@@ -823,7 +825,6 @@ public class DatabaseInterface {
      */
     public ConnectionParams getConnectionParams(int $mode, Map<String, Object> $serverMap /*= null*/)
     {
-        Config $cfg = GLOBALS.getConfig();
         ConnectionParams connectionParams = new ConnectionParams();
         String $user = null;
         String $password = null;
