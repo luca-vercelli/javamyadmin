@@ -1233,6 +1233,9 @@ public class DatabaseInterface {
     }
     
     public Connection getLink(int $link) {
+    	if (!_links.containsKey($link)) {
+    		throw new IllegalStateException("A connection is required at this point!");
+    	}
     	return _links.get($link);
     }
     
