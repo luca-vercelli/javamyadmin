@@ -364,8 +364,6 @@ public class ThemeManager {
 	 */
 	public void initializeTheme() {
 
-		GLOBALS.setThemeManager(this);
-
 		/**
 		 * the theme object
 		 *

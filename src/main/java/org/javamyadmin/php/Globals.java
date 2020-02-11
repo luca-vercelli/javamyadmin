@@ -37,13 +37,9 @@ public class Globals {
 	private static String TEMPLATES_PATH;
 	public static String LOCALES_BUNDLE = "org.javamyadmin.Translations";
 	
-	/* TODO. This should be a Bean. However this means Globals.getConfig() won't be static anymore. */
-	private Config PMA_Config = new Config(null);
-	
 	private static boolean pma_config_loading = false;
 	private static File PMA_PHP_SELF = new File("???"); // TODO
 	private ListDatabase dblist;
-	
 	private Integer server = 0;
 	private boolean PMA_MINIMUM_COMMON = false;
 	private boolean IS_TRANSFORMATION_WRAPPER = false;
@@ -54,25 +50,17 @@ public class Globals {
 	private String db;
 	private String table;
 	private String _goto, back;
-	
-	@Autowired
-	private DatabaseInterface dbi;
-	
 	private String sql_query;
 	private String error_message;
 	// private Object error_handler; // Unsupported
 	private String text_dir;
 	private String active_page;
 	private boolean is_upload;
-	
-	@Deprecated // should always be false
 	private boolean PMA_NO_SESSION = false;
-	
 	private String message;
 	private String buffer_message;
 	private String route;
-	
-	private ThemeManager themeManager;
+
 	
 	/* Backward compatibility (see Config.enableBc())
 	 * 
@@ -106,6 +94,12 @@ public class Globals {
 
 	@Autowired
 	private HttpServletRequest httpRequest;
+	@Autowired
+	private DatabaseInterface dbi;
+	@Autowired
+	private Config PMA_Config;
+	@Autowired
+	private ThemeManager themeManager;
 	
 	@PostConstruct
 	public void init() {
@@ -141,10 +135,6 @@ public class Globals {
 
 	public Config getConfig() {
 		return PMA_Config;
-	}
-
-	public void setConfig(Config config) {
-		PMA_Config = config;
 	}
 
 	public static boolean isConfigLoading() {
@@ -317,10 +307,6 @@ public class Globals {
 
 	public ThemeManager getThemeManager() {
 		return themeManager;
-	}
-
-	public void setThemeManager(ThemeManager themeManager) {
-		this.themeManager = themeManager;
 	}
 
 	public Object getReload() {
