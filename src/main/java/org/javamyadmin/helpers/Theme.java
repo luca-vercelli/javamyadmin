@@ -7,8 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.javamyadmin.jtwig.JtwigFactory;
+import javax.annotation.PostConstruct;
+
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -91,23 +93,42 @@ public class Theme {
     /**
      * @var Template
      */
-    // TODO public Template template = new Template();
+    @Autowired
+    public Template template = new Template();
+    
+    @Autowired
+    public Globals GLOBALS;
+    
+    public boolean load_ok = false;
 
     /**
      * Theme constructor.
      */
-    private Theme(String path)
+    public Theme(String path)
     {
     	this.path = path;
     }
 
+    @PostConstruct
+    public void init() {
+
+        if (! loadInfo()) {
+            return;
+        }
+
+        checkImgPath();
+        
+        load_ok = true;
+    }
+    
     /**
      * Loads theme information
      *
-     * @return boolean whether loading them info was successful or not
+     * @return boolean whether loading theme info was successful or not
      * @access  public
      */
-    public boolean loadInfo(Globals GLOBALS)
+    
+    public boolean loadInfo()
     {
     	File infofile = new File(Globals.getRootPath() + "/" + Globals.getThemesPath() + "/" + this.getPath() + "/theme.json");
         if (!infofile.exists()) {
@@ -171,35 +192,12 @@ public class Theme {
     }
 
     /**
-     * returns theme object loaded from given folder
-     * or false if theme is invalid
-     *
-     * @param String folder path to theme
-     *
-     * @return Theme|false
-     * @static
-     * @access public
-     */
-    public static Theme load(String path, Globals GLOBALS)
-    {
-        Theme theme = new Theme(path);
-
-        if (! theme.loadInfo(GLOBALS)) {
-            return null;
-        }
-
-        theme.checkImgPath(GLOBALS);
-
-        return theme;
-    }
-
-    /**
      * checks image path for existence - if not found use img from fallback theme
      *
      * @access public
      * @return boolean
      */
-    public boolean checkImgPath(Globals GLOBALS)
+    public boolean checkImgPath()
     {
     	File pathFile = new File(Globals.getRootPath() + "/" + Globals.getThemesPath() +"/" + this.getPath());
         // try current theme first
@@ -388,7 +386,7 @@ public class Theme {
         data.put("screen", screen);
         
         
-        return JtwigFactory.render("theme_preview", data);
+        return template.render("theme_preview", data);
     }
 
     @Override

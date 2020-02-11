@@ -8,8 +8,8 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpRequest;
 import org.javamyadmin.php.Globals;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.javamyadmin.php.Php.*;
@@ -83,6 +83,8 @@ public class ThemeManager {
 	private Config cfg;
     @Autowired
     private Url url;
+    @Autowired
+    private BeanFactory beanFactory;
 
 	/**
 	 * Constructor for Theme Manager class
@@ -271,8 +273,8 @@ public class ThemeManager {
 			if (this.themes.containsKey(name)) {
 				continue;
 			}
-			Theme new_theme = Theme.load(PMA_Theme.getName(), GLOBALS);
-			if (new_theme != null) {
+			Theme new_theme = beanFactory.getBean(Theme.class, PMA_Theme.getName());
+			if (new_theme.load_ok) {
 				new_theme.setId(name);
 				this.themes.put(name, new_theme);
 			}
@@ -280,7 +282,7 @@ public class ThemeManager {
 
 		return true;
 	}
-
+	
 	/**
 	 * checks if given theme name is a known theme
 	 *

@@ -16,6 +16,7 @@ import org.javamyadmin.helpers.RecentFavoriteTable;
 import org.javamyadmin.helpers.Response;
 import org.javamyadmin.helpers.Scripts;
 import org.javamyadmin.helpers.Table;
+import org.javamyadmin.helpers.Theme;
 import org.javamyadmin.helpers.ThemeManager;
 import org.javamyadmin.helpers.config.PageSettings;
 import org.javamyadmin.helpers.navigation.NavigationTree;
@@ -141,5 +142,12 @@ public class SpringConfig implements WebMvcConfigurer {
 	@SessionScope
 	public RecentFavoriteTable getFavoriteTables(SessionMap $_SESSION, Globals GLOBALS) {
 		return new RecentFavoriteTable("favorite", $_SESSION, GLOBALS);
+	}
+	
+	@Bean
+	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	public Theme loadTheme(String path) {
+        Theme theme = new Theme(path);
+        return theme;
 	}
 }
